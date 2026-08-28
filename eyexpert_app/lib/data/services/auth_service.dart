@@ -17,19 +17,9 @@ class AuthService {
     required String username,
     required String password,
     required UserRole roleRequested,
-    bool isDemo = true,
+    bool isDemo = false,
   }) async {
-    // 1. If explicit demo account requested
-    if (isDemo || username.contains('demo')) {
-      final UserModel user = roleRequested == UserRole.clinician
-          ? UserModel.demoClinician
-          : UserModel.demoHealthWorker;
-      await SecureStorage.saveToken('DEMO_JWT_TOKEN_${user.id}');
-      await SecureStorage.saveUserData(jsonEncode(user.toJson()));
-      return user;
-    }
-
-    // 2. Real Supabase Auth attempt
+    // 1. Genuine Supabase Auth attempt
     if (SupabaseService.isInitialized) {
       try {
         final supaUser = await _supabaseService.signIn(
@@ -44,20 +34,21 @@ class AuthService {
           await SecureStorage.saveUserData(jsonEncode(supaUser.toJson()));
           return supaUser;
         }
-      } catch (_) {
-        // Fall back to REST API
+      } catch (e) {
+        // Fall through to backend API if Supabase returns error or offline
       }
     }
 
-    // 3. Fallback to API Backend
-    final response = await _apiClient.post(
-      ApiEndpoints.login,
-      body: {
-        'username': username,
-        'password': password,
-        'role_requested': roleRequested.name.toUpperCase(),
-      },
-    );
+    // 2. Fallback to API Backend
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.login,
+        body: {
+          'username': username,
+          'password': password,
+          'role_requested': roleRequested.name.toUpperCase(),
+        },
+      );
 
     final token = response['token'];
     if (token != null) {
