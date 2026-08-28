@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/services/mock_data_service.dart';
 import '../../shared/widgets/clinical_card.dart';
@@ -25,15 +26,40 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
   String? _selectedImagePath;
   Map<String, dynamic>? _selectedScenario;
   bool _isCaptured = false;
+  final ImagePicker _picker = ImagePicker();
 
   final List<Map<String, dynamic>> _scenarios = MockDataService.getDemoScenarios();
 
   @override
   void initState() {
     super.initState();
-    // Default to Moderate NPDR scenario
+    // Default to Moderate NPDR scenario for instant preview
     _selectedScenario = _scenarios[2];
     _selectedImagePath = _selectedScenario!['imageAsset'];
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: source,
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 95,
+      );
+      if (photo != null) {
+        setState(() {
+          _selectedImagePath = photo.path;
+          _selectedScenario = null; // Custom uploaded image
+          _isCaptured = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Image acquisition error: $e')),
+        );
+      }
+    }
   }
 
   void _selectScenario(Map<String, dynamic> scenario) {
@@ -62,7 +88,7 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
       padding: const EdgeInsets.all(16),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 700),
+          constraints: const BoxConstraints(maxWidth: 760),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -74,17 +100,21 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Retinal Fundus Image Capture',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        'Retinal Fundus Image Acquisition',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary),
                       ),
                       Text(
                         'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • ID: ${session.screeningId ?? "Pending"}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],
                   ),
                   OutlinedButton(
                     onPressed: widget.onCancel,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: const BorderSide(color: AppColors.border),
+                    ),
                     child: const Text('Cancel Session'),
                   ),
                 ],
@@ -93,16 +123,16 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
 
               // Viewfinder Framing Guide / Preview
               Container(
-                height: 300,
+                height: 320,
                 decoration: BoxDecoration(
                   color: Colors.black,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary, width: 2),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.accent, width: 2),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Captured image or camera simulation
+                    // Captured image or preview
                     if (_selectedImagePath != null)
                       FundusImageViewer(
                         originalImagePath: _selectedImagePath!,
@@ -123,7 +153,7 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.black87.withOpacity(0.8),
+                          color: Colors.black87.withOpacity(0.85),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.white24),
                         ),
@@ -151,30 +181,73 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
               ),
               const SizedBox(height: 12),
 
+              // Camera Acquisition Buttons Strip (Camera, Gallery, Retake)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.camera),
+                      icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                      label: const Text('Capture with Camera'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.gallery),
+                      icon: const Icon(Icons.photo_library_outlined, size: 18),
+                      label: const Text('Select from File'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.border),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
               // Instructions Checklist Card
               ClinicalCard(
                 padding: const EdgeInsets.all(12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _guidanceItem(Icons.crop_free_rounded, 'Center retinal field'),
-                    _guidanceItem(Icons.auto_fix_high_rounded, 'Maintain sharp focus'),
-                    _guidanceItem(Icons.wb_sunny_outlined, 'Ensure illumination'),
-                    _guidanceItem(Icons.vibration_rounded, 'Hold camera steady'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _guidanceItem(Icons.crop_free_rounded, 'Center retinal field'),
+                        _guidanceItem(Icons.auto_fix_high_rounded, 'Maintain sharp focus'),
+                        _guidanceItem(Icons.wb_sunny_outlined, 'Ensure illumination'),
+                        _guidanceItem(Icons.vibration_rounded, 'Hold camera steady'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Compatible with handheld fundus cameras, ophthalmic slit-lamp smartphone adapters, and direct device uploads.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 10.5, color: AppColors.textMuted, fontStyle: FontStyle.italic),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // Sample Retinal Fundus Selector
+              // Verified Scenarios Selector for Validation/Demonstration
               ClinicalCard(
-                title: 'Select Verified Retinal Scenario (Demonstration / Evaluation)',
+                title: 'Or Select Verified Reference Scenario (Held-out Evaluation)',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Choose a curated fundus photograph to test the full quality & AI screening workflow:',
-                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                      'Choose a verified benchmark fundus photograph to test the full quality & AI screening pipeline:',
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -193,18 +266,18 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                                     ? Icons.notification_important_rounded
                                     : Icons.check_circle_outline,
                             size: 16,
-                            color: isSelected ? Colors.white : Colors.black54,
+                            color: isSelected ? Colors.white : AppColors.textSecondary,
                           ),
                           label: Text(
                             s['title'],
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                             ),
                           ),
                           selected: isSelected,
                           selectedColor: AppColors.primary,
-                          labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87),
+                          labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary),
                           onSelected: (_) => _selectScenario(s),
                         );
                       }).toList(),
@@ -235,6 +308,8 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                     label: const Text('Retake'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.border),
                     ),
                   ),
                 ],
@@ -250,9 +325,9 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: AppColors.primary),
+        Icon(icon, size: 16, color: AppColors.accent),
         const SizedBox(width: 6),
-        Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+        Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
       ],
     );
   }
