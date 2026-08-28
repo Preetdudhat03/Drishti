@@ -19,7 +19,7 @@ class SyncManagerScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        await ref.read(syncQueueProvider.notifier).syncAllPending();
+        await ref.read(syncQueueProvider.notifier).syncNow();
       },
       color: AppColors.primary,
       child: SingleChildScrollView(
