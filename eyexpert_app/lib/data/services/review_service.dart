@@ -19,20 +19,33 @@ class ReviewService {
 
   List<ScreeningCaseModel> get cachedCases => List.unmodifiable(_cachedCases);
 
-  Future<List<ScreeningCaseModel>> getPendingReviews({bool isDemo = true}) async {
-    if (isDemo) {
-      // Sort cases by Priority (Referable / Level >= 2 first)
-      _cachedCases.sort((a, b) {
-        if (a.isReferable && !b.isReferable) return -1;
-        if (!a.isReferable && b.isReferable) return 1;
-        return b.createdAt.compareTo(a.createdAt);
-      });
-      return _cachedCases;
+  Future<List<ScreeningCaseModel>> getPendingReviews({bool isDemo = false}) async {
+    // 1. Fetch real-time cases from Supabase cloud database
+    if (SupabaseService.isInitialized) {
+      final supaCases = await _supabaseService.fetchScreeningCases();
+      if (supaCases.isNotEmpty) {
+        final existingIds = supaCases.map((c) => c.screeningId).toSet();
+        final combined = [
+          ...supaCases,
+          ..._cachedCases.where((c) => !existingIds.contains(c.screeningId)),
+        ];
+        combined.sort((a, b) {
+          if (a.isReferable && !b.isReferable) return -1;
+          if (!a.isReferable && b.isReferable) return 1;
+          return b.createdAt.compareTo(a.createdAt);
+        });
+        _cachedCases = combined;
+        return combined;
+      }
     }
 
-    final response = await _apiClient.get(ApiEndpoints.pendingReviews);
-    final List<dynamic> casesList = response['cases'] ?? [];
-    return casesList.map((c) => ScreeningCaseModel.fromJson(c)).toList();
+    // 2. Fallback to cached cases with clinical triage priority sorting
+    _cachedCases.sort((a, b) {
+      if (a.isReferable && !b.isReferable) return -1;
+      if (!a.isReferable && b.isReferable) return 1;
+      return b.createdAt.compareTo(a.createdAt);
+    });
+    return _cachedCases;
   }
 
   Future<ScreeningCaseModel> submitClinicianReview({
