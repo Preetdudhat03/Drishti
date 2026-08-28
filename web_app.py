@@ -2069,6 +2069,7 @@ def api_v1_explainability(id):
     return jsonify({
         "screening_id": id,
         "target_layer": "layer4[1].conv2",
+        "original_image_url": orig_b64 if orig_b64 else "",
         "gradcam_image_url": cam_b64 if cam_b64 else "",
         "overlay_image_url": overlay_b64 if overlay_b64 else "",
         "model_attended_regions": ["Temporal vascular arcade", "Perimacular microaneurysms", "Posterior pole"],
