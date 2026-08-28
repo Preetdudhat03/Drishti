@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:eyexpert_app/data/models/clinician_review_model.dart';
-import 'package:eyexpert_app/data/services/review_service.dart';
-import 'package:eyexpert_app/core/errors/app_exceptions.dart';
+import 'package:drishti_app/data/models/clinician_review_model.dart';
+import 'package:drishti_app/data/services/review_service.dart';
+import 'package:drishti_app/core/errors/app_exceptions.dart';
 
 void main() {
   group('ClinicianReview Validation and Override Tests', () {
