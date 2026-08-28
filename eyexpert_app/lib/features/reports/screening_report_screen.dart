@@ -38,14 +38,14 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
     // Fallback template
     return ScreeningCaseModel(
       screeningId: 'EX-2026-000124',
-      patient: const PatientModel(
+      patient: PatientModel(
         patientId: 'PT-2026-8819',
         age: 54,
         gender: 'FEMALE',
         diabetesDurationYears: 8,
         eye: 'OD',
         facilityId: 'PHC-RAMGARH-01',
-        createdAt: null,
+        createdAt: DateTime.now(),
       ),
       status: ScreeningStatus.readyForReview,
       createdAt: DateTime.now(),
