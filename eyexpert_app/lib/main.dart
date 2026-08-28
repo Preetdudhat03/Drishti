@@ -4,6 +4,7 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 import 'data/models/user_model.dart';
 import 'data/models/screening_case_model.dart';
+import 'data/services/supabase_service.dart';
 import 'shared/widgets/responsive_scaffold.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
@@ -22,26 +23,28 @@ import 'features/system_status/system_status_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/screening/screening_session_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Supabase Data/Platform Layer
+  await SupabaseService.initialize();
+
   runApp(
     const ProviderScope(
-      child: EyeXpertApp(),
+      child: DrishtiApp(),
     ),
   );
 }
 
-class EyeXpertApp extends ConsumerWidget {
-  const EyeXpertApp({super.key});
+class DrishtiApp extends ConsumerWidget {
+  const DrishtiApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: AppConstants.appName,
+      title: '${AppConstants.appName} (${AppConstants.appHindiName})',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      theme: AppTheme.clinicalTheme,
       home: const RootScreen(),
     );
   }
@@ -101,12 +104,12 @@ class _RootScreenState extends ConsumerState<RootScreen> {
       Widget body;
       String title = 'Ophthalmologist Portal';
       if (_navIndex == 0) {
-        title = 'Pending Reviews Queue';
+        title = 'Review Queue';
         body = CaseQueueScreen(
           onSelectCase: (c) => setState(() => _activeCaseReview = c),
         );
       } else if (_navIndex == 1) {
-        title = 'System & AI Telemetry';
+        title = 'System & Microservices';
         body = const SystemStatusScreen();
       } else {
         title = 'Clinician Profile';
@@ -204,9 +207,6 @@ class _RootScreenState extends ConsumerState<RootScreen> {
       currentIndex: _navIndex,
       onNavigationIndexChanged: (idx) => setState(() {
         _navIndex = idx;
-        if (idx == 1 && _screeningStep > 4) {
-          // Keep active result or reset
-        }
       }),
       title: title,
       currentUser: user,
