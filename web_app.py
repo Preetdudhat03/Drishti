@@ -1950,13 +1950,15 @@ def api_v1_analyze(id):
     clean_b64 = img_b64.split(',', 1)[1] if ',' in img_b64 else img_b64
     img_bytes = base64.b64decode(clean_b64)
     img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
-    infer_out = run_real_inference_and_gradcam(img)
+    infer_out = execute_model_inference(img)
     
-    level = infer_out['dr_level']
+    level = infer_out['pred_level']
     triage = get_clinical_triage(level)
     
     cam_b64 = pil_to_b64(infer_out['cam_colored'])
     overlay_b64 = pil_to_b64(infer_out['overlay_img'])
+    
+    probs_dict = {str(i): infer_out['probabilities'][i] for i in range(len(infer_out['probabilities']))}
     
     record["dr_level"] = level
     record["cam_b64"] = cam_b64
@@ -1973,7 +1975,7 @@ def api_v1_analyze(id):
         "referable": triage['referable'],
         "model_probability": infer_out['model_probability'],
         "calibrated_confidence": None,
-        "class_probabilities": infer_out['probabilities'],
+        "class_probabilities": probs_dict,
         "review_priority": "HIGH" if triage['referable'] else "NORMAL",
         "recommendation": triage['recommendation'],
         "provenance": MODEL_PROVENANCE,
