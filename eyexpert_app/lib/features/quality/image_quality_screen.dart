@@ -106,9 +106,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       ),
                     ],
                   ),
-                ),
-
-              // 5. UNGRADABLE SAFETY GATE ALERT (BLOCKS INFERENCE)
+                ),              // 5. UNGRADABLE SAFETY GATE ALERT (BLOCKS INFERENCE)
               if (quality != null && quality.isUngradable) ...[
                 Container(
                   padding: const EdgeInsets.all(18),
@@ -124,172 +122,125 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                         children: [
                           const Icon(Icons.dangerous_rounded, color: AppColors.statusUngradable, size: 24),
                           const SizedBox(width: 10),
-                                      : 'STATUS: OPTIMAL FOR SCREENING',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: quality.isUngradable
-                                    ? AppColors.statusUngradable
-                                    : quality.isBorderline
-                                        ? AppColors.statusBorderline
-                                        : AppColors.statusGood,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // Breakdown Metrics Gauges Card
-                ClinicalCard(
-                  title: 'Quality Assessment Breakdown',
-                  child: Column(
-                    children: [
-                      _metricRow(
-                        label: 'Focus & Sharpness',
-                        score: quality.sharpness.score,
-                        status: quality.sharpness.status,
-                        icon: Icons.filter_center_focus_rounded,
-                        isFailed: quality.sharpness.score < 0.45,
-                      ),
-                      const Divider(height: 16),
-                      _metricRow(
-                        label: 'Illumination & Exposure',
-                        score: quality.illumination.score,
-                        status: quality.illumination.status,
-                        icon: Icons.wb_sunny_outlined,
-                        isFailed: quality.illumination.score < 0.40,
-                      ),
-                      const Divider(height: 16),
-                      _metricRow(
-                        label: 'Retinal Field of View',
-                        score: quality.fieldOfView.score,
-                        status: quality.fieldOfView.status,
-                        icon: Icons.crop_free_rounded,
-                        isFailed: quality.fieldOfView.score < 0.35,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Specific Clinical Feedback Messages Banner
-                if (quality.feedbackMessages.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: quality.isUngradable
-                          ? AppColors.statusUngradableBg
-                          : quality.isBorderline
-                              ? AppColors.statusBorderlineBg
-                              : AppColors.statusGoodBg,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: quality.isUngradable
-                            ? AppColors.statusUngradable.withOpacity(0.3)
-                            : quality.isBorderline
-                                ? AppColors.statusBorderline.withOpacity(0.3)
-                                : AppColors.statusGood.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              quality.isUngradable
-                                  ? Icons.error_outline_rounded
-                                  : quality.isBorderline
-                                      ? Icons.info_outline_rounded
-                                      : Icons.check_circle_outline_rounded,
-                              size: 16,
-                              color: quality.isUngradable
-                                  ? AppColors.statusUngradable
-                                  : quality.isBorderline
-                                      ? AppColors.statusBorderline
-                                      : AppColors.statusGood,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              quality.isUngradable
-                                  ? 'CLINICAL RECAPTURE REQUIRED'
-                                  : quality.isBorderline
-                                      ? 'ADAPTIVE PREPROCESSING ACTION'
-                                      : 'IMAGE QUALITY VERIFIED',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: quality.isUngradable
-                                    ? AppColors.statusUngradable
-                                    : quality.isBorderline
-                                        ? AppColors.statusBorderline
-                                        : AppColors.statusGood,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        for (final msg in quality.feedbackMessages)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
+                          const Expanded(
                             child: Text(
-                              '• $msg',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                              'IMAGE NOT SUITABLE FOR AUTOMATED SCREENING',
+                              style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 18),
-
-                // Strict Safety-Gated Action Buttons
-                if (quality.isUngradable) ...[
-                  PrimaryButton(
-                    text: 'Recapture Retinal Image',
-                    icon: Icons.replay_rounded,
-                    isDestructive: true,
-                    onPressed: widget.onRetake,
-                  ),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text(
-                      'Automated DR prediction is blocked for ungradable images to maintain clinical safety.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 11, color: AppColors.statusUngradable, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ] else if (quality.isBorderline) ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: PrimaryButton(
-                          text: 'Apply CLAHE Enhancement & Screen',
-                          icon: Icons.auto_fix_high_rounded,
-                          onPressed: widget.onProceedToProcessing,
-                        ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.statusUngradable,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text('SAFETY GATE ACTIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: widget.onRetake,
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Retake Optional'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      const SizedBox(height: 10),
+                      Text(
+                        quality.feedbackMessages.isNotEmpty
+                            ? quality.feedbackMessages.first
+                            : 'Severe optical blur, illumination clipping, or non-retinal subject detected.',
+                        style: const TextStyle(color: AppColors.darkTextSecondary, fontSize: 12),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: widget.onRetake,
+                          icon: const Icon(Icons.replay_rounded, size: 18),
+                          label: const Text('RETAKE RETINAL IMAGE', style: TextStyle(letterSpacing: 0.5)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.statusUngradable,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ] else ...[
-                  PrimaryButton(
-                    text: 'Continue to AI Screening',
-                    icon: Icons.arrow_forward_rounded,
-                    onPressed: widget.onProceedToProcessing,
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              // 6. QUALITY METRICS STRIP (NO REPETITIVE CARDS)
+              if (quality != null && !quality.isUngradable) ...[
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.lightBorder),
                   ),
-                ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'OPTICAL METRICS BREAKDOWN',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                          ),
+                          Text(
+                            'Composite Quality Score: ${AppFormatters.formatPercent(quality.overallScore)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: quality.isBorderline ? AppColors.statusBorderline : AppColors.statusGood,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      _metricRow('Focus & Sharpness', quality.sharpness.score, quality.sharpness.status),
+                      const SizedBox(height: 8),
+                      _metricRow('Illumination & Exposure', quality.illumination.score, quality.illumination.status),
+                      const SizedBox(height: 8),
+                      _metricRow('Retinal Field of View', quality.fieldOfView.score, quality.fieldOfView.status),
+                      if (quality.isBorderline) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.statusBorderlineBg,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.statusBorderline.withValues(alpha: 0.4)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.info_outline, color: AppColors.statusBorderline, size: 16),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Borderline contrast detected: Green-channel CLAHE contrast normalization will be applied automatically prior to PyTorch inference.',
+                                  style: TextStyle(color: Color(0xFF92400E), fontSize: 11, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 7. PROCEED TO AI INFERENCE CTA
+                ElevatedButton.icon(
+                  onPressed: widget.onProceedToProcessing,
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                  label: const Text('PROCEED TO AI SCREENING & GRAD-CAM', style: TextStyle(letterSpacing: 0.5)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.electricBlue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
               ],
               const SizedBox(height: 16),
 
@@ -301,115 +252,60 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
     );
   }
 
-  Widget _metricRow({
-    required String label,
-    required double score,
-    required String status,
-    required IconData icon,
-    required bool isFailed,
-  }) {
-    final color = isFailed ? AppColors.statusUngradable : AppColors.statusGood;
-    return Row(
+  Widget _metricRow(String title, double score, String status) {
+    final isGood = score >= 0.70;
+    final isBorderline = score >= 0.45 && score < 0.70;
+    final statusColor = isGood ? AppColors.statusGood : isBorderline ? AppColors.statusBorderline : AppColors.statusUngradable;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
-              const SizedBox(height: 4),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: LinearProgressIndicator(
-                  value: score,
-                  minHeight: 6,
-                  backgroundColor: Colors.grey.shade200,
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 14),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppFormatters.formatPercentage(score), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
-            Text(status, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+            Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text('${(score * 100).toStringAsFixed(1)}% • $status', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: statusColor)),
           ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: LinearProgressIndicator(
+            value: score,
+            minHeight: 6,
+            backgroundColor: Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+          ),
         ),
       ],
     );
   }
 
-  Widget _pipelineStep({
-    required String stepNumber,
-    required String title,
-    required String description,
-    bool isDone = false,
-    bool isActive = false,
-  }) {
-    final Color indicatorColor = isDone
-        ? AppColors.statusGood
-        : isActive
-            ? AppColors.primary
-            : Colors.grey.shade400;
+  Widget _qualityPill(String status) {
+    Color color;
+    Color bg;
+    if (status.contains('GOOD')) {
+      color = AppColors.statusGood;
+      bg = AppColors.statusGoodBg;
+    } else if (status.contains('BORDER')) {
+      color = AppColors.statusBorderline;
+      bg = AppColors.statusBorderlineBg;
+    } else {
+      color = AppColors.statusUngradable;
+      bg = AppColors.statusUngradableBg;
+    }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            color: indicatorColor.withOpacity(0.15),
-            shape: BoxShape.circle,
-            border: Border.all(color: indicatorColor, width: 1.5),
-          ),
-          child: Center(
-            child: isDone
-                ? const Icon(Icons.check, size: 13, color: AppColors.statusGood)
-                : isActive
-                    ? const SizedBox(
-                        width: 10,
-                        height: 10,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                      )
-                    : Text(
-                        stepNumber,
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: indicatorColor),
-                      ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isDone || isActive ? AppColors.textPrimary : AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 1),
-              Text(
-                description,
-                style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-              ),
-            ],
-          ),
-        ),
-        if (isDone)
-          const Text(
-            'DONE',
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.statusGood),
-          ),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5),
+      ),
     );
   }
 }
-
