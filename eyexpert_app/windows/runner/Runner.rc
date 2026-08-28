@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.eyexpert.sih" "\0"
-            VALUE "FileDescription", "eyexpert_app" "\0"
+            VALUE "CompanyName", "com.drishti.sih" "\0"
+            VALUE "FileDescription", "Drishti — Explainable AI DR Screening Platform" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "eyexpert_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.eyexpert.sih. All rights reserved." "\0"
-            VALUE "OriginalFilename", "eyexpert_app.exe" "\0"
-            VALUE "ProductName", "eyexpert_app" "\0"
+            VALUE "InternalName", "drishti_app" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Drishti AI. All rights reserved." "\0"
+            VALUE "OriginalFilename", "drishti.exe" "\0"
+            VALUE "ProductName", "Drishti" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
