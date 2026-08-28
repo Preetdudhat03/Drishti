@@ -50,8 +50,14 @@ class ReviewQueueState {
 
   int get pendingReferableCount =>
       cases.where((c) => c.isReferable && c.isPendingReview).length;
+  int get referableCount => cases.where((c) => c.isReferable).length;
   int get totalPendingCount => cases.where((c) => c.isPendingReview).length;
   int get completedCount => cases.where((c) => c.hasReviewed).length;
+  int get recaptureNeededCount => cases.where((c) =>
+      (c.quality?.isUngradable ?? false) ||
+      c.status == ScreeningStatus.recaptureRequired ||
+      c.status == ScreeningStatus.ungradable).length;
+  int get totalScreenedCount => cases.length;
 
   ReviewQueueState copyWith({
     List<ScreeningCaseModel>? cases,
