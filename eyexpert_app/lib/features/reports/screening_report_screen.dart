@@ -187,8 +187,10 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                         color: Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Wrap(
+                        spacing: 16,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.spaceBetween,
                         children: [
                           _infoBlock('Patient ID', c.patient.patientId),
                           _infoBlock('Age / Gender', '${c.patient.age ?? "N/A"} / ${c.patient.gender ?? "N/A"}'),
@@ -202,13 +204,17 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                     // Section 1: Image Quality
                     const Text('1. Image Quality Assessment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 6,
                       children: [
-                        Text('Overall Status: ${quality?.status.label ?? "GOOD"} (${AppFormatters.formatPercentage(quality?.overallScore)})'),
-                        Text('Focus: ${quality?.sharpness.status ?? "GOOD"}'),
-                        Text('Illumination: ${quality?.illumination.status ?? "GOOD"}'),
-                        Text('FOV: ${quality?.fieldOfView.status ?? "ADEQUATE"}'),
+                        Text(
+                          'Overall Status: ${quality?.status.label ?? "GOOD"} (${AppFormatters.formatPercentage(quality?.overallScore)})',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                        Text('• Focus: ${quality?.sharpness.status ?? "GOOD"}', style: const TextStyle(fontSize: 12)),
+                        Text('• Illumination: ${quality?.illumination.status ?? "GOOD"}', style: const TextStyle(fontSize: 12)),
+                        Text('• FOV: ${quality?.fieldOfView.status ?? "ADEQUATE"}', style: const TextStyle(fontSize: 12)),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -228,18 +234,23 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                pred != null
-                                    ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
-                                    : 'Classification Blocked (Ungradable Quality)',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                              if (pred != null)
-                                Text(
-                                  'Model Probability: ${AppFormatters.formatProbability(pred.modelProbability)}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              Expanded(
+                                child: Text(
+                                  pred != null
+                                      ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
+                                      : 'Classification Blocked (Ungradable Quality)',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                                 ),
+                              ),
+                              if (pred != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Prob: ${AppFormatters.formatProbability(pred.modelProbability)}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+                                ),
+                              ],
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -270,8 +281,10 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Action: ${review.action.label}',
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                    Expanded(
+                                      child: Text('Action: ${review.action.label}',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                    ),
                                     Text('Reviewer: ${review.clinicianName ?? "Ophthalmologist"}',
                                         style: const TextStyle(fontSize: 12)),
                                   ],
@@ -284,13 +297,19 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                                     style: TextStyle(fontSize: 10, color: Colors.grey.shade700)),
                               ],
                             )
-                          : const Row(
+                          : Row(
                               children: [
-                                Icon(Icons.hourglass_top_rounded, color: Colors.amber, size: 18),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Human Validation State: PENDING OPHTHALMOLOGIST REVIEW',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber),
+                                const Icon(Icons.hourglass_top_rounded, color: Colors.amber, size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Human Validation State: PENDING OPHTHALMOLOGIST REVIEW',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber.shade900,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
