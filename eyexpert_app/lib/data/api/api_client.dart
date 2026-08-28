@@ -51,6 +51,41 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> uploadMultipart(
+    String url, {
+    required String filePath,
+    List<int>? fileBytes,
+    String? filename,
+    Map<String, String>? fields,
+  }) async {
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse(url));
+      final headers = await _getHeaders();
+      headers.remove('Content-Type'); // Let http set multipart boundary
+      request.headers.addAll(headers);
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      if (fileBytes != null && fileBytes.isNotEmpty) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          fileBytes,
+          filename: filename ?? 'fundus_image.png',
+        ));
+      } else if (filePath.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      }
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 45));
+      final response = await http.Response.fromStream(streamedResponse);
+      return _processResponse(response);
+    } catch (e) {
+      _handleException(e);
+    }
+  }
+
   dynamic _processResponse(http.Response response) {
     dynamic body;
     try {
