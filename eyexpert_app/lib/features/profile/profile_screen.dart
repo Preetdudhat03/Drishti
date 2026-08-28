@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/user_model.dart';
 import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../auth/auth_provider.dart';
@@ -16,7 +14,6 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
-    final workflowMode = authState.workflowMode;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
