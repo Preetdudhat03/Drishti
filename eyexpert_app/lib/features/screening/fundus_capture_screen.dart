@@ -24,18 +24,14 @@ class FundusCaptureScreen extends ConsumerStatefulWidget {
 
 class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
   String? _selectedImagePath;
-  Map<String, dynamic>? _selectedScenario;
   bool _isCaptured = false;
   final ImagePicker _picker = ImagePicker();
-
-  final List<Map<String, dynamic>> _scenarios = MockDataService.getDemoScenarios();
 
   @override
   void initState() {
     super.initState();
-    // Default to Moderate NPDR scenario for instant preview
-    _selectedScenario = _scenarios[2];
-    _selectedImagePath = _selectedScenario!['imageAsset'];
+    _selectedImagePath = null;
+    _isCaptured = false;
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -49,7 +45,6 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
       if (photo != null) {
         setState(() {
           _selectedImagePath = photo.path;
-          _selectedScenario = null; // Custom uploaded image
           _isCaptured = true;
         });
       }
@@ -62,19 +57,10 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
     }
   }
 
-  void _selectScenario(Map<String, dynamic> scenario) {
-    setState(() {
-      _selectedScenario = scenario;
-      _selectedImagePath = scenario['imageAsset'];
-      _isCaptured = true;
-    });
-  }
-
   void _confirmImage() {
     if (_selectedImagePath == null) return;
     ref.read(screeningSessionProvider.notifier).setImage(
       path: _selectedImagePath!,
-      demoScenario: _selectedScenario,
     );
     widget.onProceedToQuality();
   }
