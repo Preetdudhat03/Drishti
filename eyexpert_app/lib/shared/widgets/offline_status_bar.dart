@@ -1,59 +1,78 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 
 class OfflineStatusBar extends StatelessWidget {
-  final bool isOffline;
+  final bool isOnline;
   final int pendingCount;
-  final VoidCallback? onSyncPressed;
+  final VoidCallback? onTap;
 
   const OfflineStatusBar({
     super.key,
-    required this.isOffline,
-    this.pendingCount = 0,
-    this.onSyncPressed,
+    required this.isOnline,
+    required this.pendingCount,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (!isOffline && pendingCount == 0) {
+    if (isOnline && pendingCount == 0) {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: isOffline ? AppColors.offlineBannerBg : AppColors.secondary,
-      child: Row(
-        children: [
-          Icon(
-            isOffline ? Icons.cloud_off_rounded : Icons.sync_rounded,
-            color: Colors.white,
-            size: 16,
+    final isOffline = !isOnline;
+    final bgColor = isOffline ? AppColors.offlineBannerBg : AppColors.statusGoodBg;
+    final fgColor = isOffline ? Colors.white : AppColors.statusGood;
+    final borderColor = isOffline ? Colors.transparent : AppColors.statusGood.withOpacity(0.3);
+
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: bgColor,
+          border: Border(
+            bottom: BorderSide(color: borderColor, width: 1),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isOffline ? const Color(0xFFF87171) : AppColors.statusGood,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
               isOffline
-                  ? AppConstants.offlineNotice
-                  : '$pendingCount captured screening(s) queued for synchronization.',
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
-            ),
-          ),
-          if (!isOffline && pendingCount > 0 && onSyncPressed != null)
-            TextButton(
-              onPressed: onSyncPressed,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                minimumSize: Size.zero,
-              ),
-              child: const Text(
-                'SYNC NOW',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                  ? (pendingCount > 0
+                      ? 'Offline — $pendingCount ${pendingCount == 1 ? "case" : "cases"} waiting to sync'
+                      : 'Offline — data will be synchronized when connectivity is restored')
+                  : '✓ All cases synchronized',
+              style: TextStyle(
+                color: fgColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.1,
               ),
             ),
-        ],
+            if (pendingCount > 0) ...[
+              const SizedBox(width: 8),
+              Text(
+                'Tap to manage',
+                style: TextStyle(
+                  color: fgColor.withOpacity(0.8),
+                  fontSize: 11,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
