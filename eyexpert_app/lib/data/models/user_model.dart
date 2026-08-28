@@ -63,19 +63,19 @@ class UserModel {
     };
   }
 
-  static const UserModel demoHealthWorker = UserModel(
-    id: 'HW-DEMO-001',
+  static const UserModel healthWorkerDefault = UserModel(
+    id: 'HW-RAMGARH-001',
     name: 'Sunita Sharma',
     role: UserRole.healthWorker,
-    organization: 'Demo Primary Health Centre',
-    isDemoAccount: true,
+    organization: 'PHC Ramgarh Tele-Screening Unit',
+    isDemoAccount: false,
   );
 
-  static const UserModel demoClinician = UserModel(
-    id: 'DOC-DEMO-002',
+  static const UserModel clinicianDefault = UserModel(
+    id: 'DOC-DISTRICT-002',
     name: 'Dr. Rajesh Kumar',
     role: UserRole.clinician,
-    organization: 'Demo Ophthalmology Unit',
-    isDemoAccount: true,
+    organization: 'District Eye Hospital (Retina Clinic)',
+    isDemoAccount: false,
   );
 }
