@@ -819,6 +819,15 @@ HTML_PAGE = """
                         <button class="btn btn-warning btn-sm" onclick="clinicianOverride()">⚠ Override Grade</button>
                     </div>
 
+                    <div style="margin-bottom: 8px;">
+                        <span style="font-size:10px; color:var(--text-muted); font-weight:600;">QUICK FINDINGS:</span>
+                        <span class="chip" onclick="addFinding('Clear retina, no DR lesions')">+ Normal</span>
+                        <span class="chip" onclick="addFinding('Isolated microaneurysms detected')">+ Microaneurysms</span>
+                        <span class="chip" onclick="addFinding('Hard exudates & blot hemorrhages')">+ Exudates</span>
+                        <span class="chip" onclick="addFinding('Cotton wool spots & venous beading')">+ Cotton Wool</span>
+                        <span class="chip" onclick="addFinding('Neovascularization present (Urgent referral)')">+ Neovasc</span>
+                    </div>
+
                     <input type="text" id="clinicianRationale" placeholder="Enter ophthalmologist clinical findings..." value="Verified. Findings consistent with clinical grade.">
                     
                     <div style="display: flex; gap: 8px;">
