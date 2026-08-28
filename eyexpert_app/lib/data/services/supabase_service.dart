@@ -182,8 +182,8 @@ class SupabaseService {
 
     try {
       // 1. Insert into 'screenings' (with image_url included)
-      final imgUrl = screeningCase.fundusImage?.imageUrl ??
-          screeningCase.fundusImage?.localPath ??
+      final imgUrl = screeningCase.image?.imageUrl ??
+          screeningCase.image?.localPath ??
           screeningCase.imagePath ??
           screeningCase.explainability?.originalImageUrl;
 
