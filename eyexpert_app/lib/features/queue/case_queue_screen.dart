@@ -99,85 +99,67 @@ class CaseQueueScreen extends ConsumerWidget {
                     final isReferable = pred?.referable ?? false;
 
                     return Card(
+                      elevation: 0.5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: AppColors.border),
+                      ),
                       child: InkWell(
                         onTap: () => onSelectCase(c),
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
                           padding: const EdgeInsets.all(14),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Retinal / Status Indicator Icon
-                              CircleAvatar(
-                                radius: 22,
-                                backgroundColor: quality?.isUngradable ?? false
-                                    ? AppColors.statusUngradableBg
-                                    : isReferable
-                                        ? AppColors.referableAlertBg
-                                        : AppColors.statusGoodBg,
-                                child: Icon(
-                                  quality?.isUngradable ?? false
-                                      ? Icons.warning_amber_rounded
-                                      : isReferable
-                                          ? Icons.notification_important_rounded
-                                          : Icons.check_circle_outline,
-                                  color: quality?.isUngradable ?? false
-                                      ? AppColors.statusUngradable
-                                      : isReferable
-                                          ? AppColors.referableAlert
-                                          : AppColors.statusGood,
-                                  size: 22,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-
-                              // Patient / Screening Details
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                              // Top Row: Status Icon + Patient ID + Status Badge
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: quality?.isUngradable ?? false
+                                        ? AppColors.statusUngradableBg
+                                        : isReferable
+                                            ? AppColors.referableAlertBg
+                                            : AppColors.statusGoodBg,
+                                    child: Icon(
+                                      quality?.isUngradable ?? false
+                                          ? Icons.warning_amber_rounded
+                                          : isReferable
+                                              ? Icons.notification_important_rounded
+                                              : Icons.check_circle_outline,
+                                      color: quality?.isUngradable ?? false
+                                          ? AppColors.statusUngradable
+                                          : isReferable
+                                              ? AppColors.referableAlert
+                                              : AppColors.statusGood,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          c.patient.patientId,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                          '${c.patient.patientId} (${AppFormatters.formatEye(c.patient.eye)})',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                                         ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '(${AppFormatters.formatEye(c.patient.eye)})',
-                                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                        ),
-                                        const SizedBox(width: 8),
                                         Text(
                                           c.screeningId,
-                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      quality?.isUngradable ?? false
-                                          ? 'Image Quality: UNGRADABLE • Recapture Required'
-                                          : 'AI: Level ${pred?.drLevel} (${pred?.severityLabel}) • Prob: ${AppFormatters.formatProbability(pred?.modelProbability)}',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Recorded: ${AppFormatters.formatDateTime(c.createdAt)}',
-                                      style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Status Pill & Review Action
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
+                                  ),
+                                  const SizedBox(width: 8),
                                   StatusBadge(
                                     label: review != null
                                         ? 'REVIEWED'
                                         : isReferable
-                                            ? 'REFERABLE (URGENT)'
+                                            ? 'REFERABLE'
                                             : 'NON-REFERABLE',
                                     color: review != null
                                         ? AppColors.primary
@@ -191,17 +173,50 @@ class CaseQueueScreen extends ConsumerWidget {
                                             : AppColors.statusGoodBg,
                                     icon: review != null ? Icons.verified : Icons.priority_high_rounded,
                                   ),
-                                  const SizedBox(height: 6),
+                                ],
+                              ),
+                              const Divider(height: 16),
+
+                              // Bottom Row: Prediction/Status Info + Action Button
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          quality?.isUngradable ?? false
+                                              ? 'Quality: UNGRADABLE • Recapture Required'
+                                              : pred != null
+                                                  ? 'AI: Level ${pred.drLevel} (${pred.severityLabel}) • Prob: ${AppFormatters.formatProbability(pred.modelProbability)}'
+                                                  : c.status == ScreeningStatus.awaitingImage
+                                                      ? 'Awaiting retinal image capture'
+                                                      : 'Screening in progress',
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Recorded: ${AppFormatters.formatDateTime(c.createdAt)}',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
                                   ElevatedButton(
                                     onPressed: () => onSelectCase(c),
                                     style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       minimumSize: Size.zero,
                                       backgroundColor: isReferable ? AppColors.referableAlert : AppColors.primary,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
                                     child: Text(
                                       review != null ? 'View Details' : 'Review Case',
-                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
                                     ),
                                   ),
                                 ],
@@ -214,7 +229,7 @@ class CaseQueueScreen extends ConsumerWidget {
                   },
                 ),
           ),
-        ),
+        ),  ),
       ],
     );
   }
