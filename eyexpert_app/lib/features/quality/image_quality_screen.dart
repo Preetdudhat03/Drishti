@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
-import '../../data/models/quality_assessment_model.dart';
 import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/primary_button.dart';
