@@ -163,6 +163,7 @@ class ScreeningCaseModel {
 
   bool get isReferable => prediction?.referable ?? false;
   bool get hasReviewed => review != null;
+  String? get imagePath => image?.localPath ?? image?.imageUrl;
   bool get isPendingReview =>
       status == ScreeningStatus.readyForReview ||
       status == ScreeningStatus.pendingClinicianReview;
