@@ -7,7 +7,6 @@ import '../models/dr_prediction_model.dart';
 import '../models/explainability_model.dart';
 import '../models/screening_case_model.dart';
 import '../../core/errors/app_exceptions.dart';
-import 'mock_data_service.dart';
 import 'supabase_service.dart';
 
 class ScreeningService {
@@ -24,7 +23,6 @@ class ScreeningService {
     bool isDemo = true,
   }) async {
     final String id = 'DR-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-    
     final screeningCase = ScreeningCaseModel(
       screeningId: id,
       patient: patient,
@@ -35,10 +33,7 @@ class ScreeningService {
 
     // Primary: Cloud Supabase Registration
     if (SupabaseService.isInitialized) {
-      await _supabaseService.registerScreening(
-        screeningId: id,
-        patient: patient,
-      );
+      await _supabaseService.saveScreeningCase(screeningCase);
     }
 
     if (isDemo) {
@@ -72,7 +67,9 @@ class ScreeningService {
           final bytes = await file.readAsBytes();
           await _supabaseService.uploadFundusImage(
             screeningId: screeningId,
-            imageBytes: bytes,
+            facilityId: 'PHC-RAMGARH-01',
+            imageBytesOrFile: bytes,
+            filename: 'fundus_photo.jpg',
           );
         }
       } catch (_) {}
@@ -86,31 +83,17 @@ class ScreeningService {
       );
 
       if (uploadRes != null && uploadRes is Map && uploadRes.containsKey('quality')) {
-        final q = QualityAssessmentModel.fromJson(
+        return QualityAssessmentModel.fromJson(
           Map<String, dynamic>.from(uploadRes['quality'] as Map),
           screeningId: screeningId,
         );
-        if (SupabaseService.isInitialized) {
-          await _supabaseService.recordQualityAssessment(
-            screeningId: screeningId,
-            quality: q,
-          );
-        }
-        return q;
       }
 
       final response = await _apiClient.get(ApiEndpoints.screeningQuality(screeningId));
-      final q = QualityAssessmentModel.fromJson(
+      return QualityAssessmentModel.fromJson(
         Map<String, dynamic>.from(response as Map),
         screeningId: screeningId,
       );
-      if (SupabaseService.isInitialized) {
-        await _supabaseService.recordQualityAssessment(
-          screeningId: screeningId,
-          quality: q,
-        );
-      }
-      return q;
     } catch (e) {
       // Edge / Local Quality Fallback when remote server is sleeping/unreachable
       if (imagePath.isNotEmpty) {
@@ -118,24 +101,30 @@ class ScreeningService {
         if (await file.exists()) {
           final size = await file.length();
           final isReadable = size > 8000;
-          final q = QualityAssessmentModel(
+          return QualityAssessmentModel(
             screeningId: screeningId,
-            status: isReadable ? QualityStatus.good : QualityStatus.ungradable,
             overallScore: isReadable ? 0.88 : 0.20,
-            sharpnessScore: isReadable ? 0.90 : 0.15,
-            illuminationScore: isReadable ? 0.86 : 0.20,
-            fovScore: isReadable ? 0.89 : 0.25,
+            status: isReadable ? QualityStatus.good : QualityStatus.ungradable,
+            sharpness: QualityMetric(
+              score: isReadable ? 0.90 : 0.15,
+              status: isReadable ? 'GOOD' : 'POOR',
+              metricName: 'Focus & Sharpness',
+            ),
+            illumination: QualityMetric(
+              score: isReadable ? 0.86 : 0.20,
+              status: isReadable ? 'GOOD' : 'POOR',
+              metricName: 'Illumination & Exposure',
+            ),
+            fieldOfView: QualityMetric(
+              score: isReadable ? 0.89 : 0.25,
+              status: isReadable ? 'GOOD' : 'POOR',
+              metricName: 'Field of View Coverage',
+            ),
             feedbackMessages: isReadable
                 ? ['Retinal focus sharp & illumination balanced.', 'Passed edge quality safety checks.']
                 : ['Image file is underexposed or unreadable. Please recapture.'],
+            evaluatedAt: DateTime.now(),
           );
-          if (SupabaseService.isInitialized) {
-            await _supabaseService.recordQualityAssessment(
-              screeningId: screeningId,
-              quality: q,
-            );
-          }
-          return q;
         }
       }
       if (e is AppException) rethrow;
@@ -172,13 +161,6 @@ class ScreeningService {
           Map<String, dynamic>.from(expResponse as Map),
         );
 
-        if (SupabaseService.isInitialized) {
-          await _supabaseService.recordAiPrediction(
-            screeningId: screeningId,
-            prediction: pred,
-          );
-        }
-
         return {
           'prediction': pred,
           'explainability': explainability,
@@ -191,28 +173,29 @@ class ScreeningService {
       screeningId: screeningId,
       drLevel: 2,
       severityLabel: 'Moderate Non-Proliferative Retinopathy',
-      isReferable: true,
+      severityCode: 'LEVEL_2',
+      referable: true,
       modelProbability: 0.914,
-      classProbabilities: [0.012, 0.054, 0.914, 0.015, 0.005],
+      classProbabilities: const {0: 0.012, 1: 0.054, 2: 0.914, 3: 0.015, 4: 0.005},
       reviewPriority: 'HIGH',
       recommendation: 'Refer to ophthalmologist within 2-4 weeks for comprehensive retinal examination.',
+      provenance: ModelProvenanceModel.defaultProvenance,
+      analyzedAt: DateTime.now(),
     );
     final explainability = ExplainabilityModel(
+      screeningId: screeningId,
       targetLayer: 'layer4[1].conv2',
-      modelAttendedRegions: ['Temporal vascular arcade', 'Perimacular microaneurysms', 'Posterior pole'],
+      gradcamImageUrl: '',
+      overlayImageUrl: '',
+      originalImageUrl: '',
+      modelAttendedRegions: const ['Temporal vascular arcade', 'Perimacular microaneurysms', 'Posterior pole'],
       disclaimer: 'Highlighted regions represent areas contributing to the model prediction.',
     );
-
-    if (SupabaseService.isInitialized) {
-      await _supabaseService.recordAiPrediction(
-        screeningId: screeningId,
-        prediction: pred,
-      );
-    }
 
     return {
       'prediction': pred,
       'explainability': explainability,
     };
   }
+}
 }
