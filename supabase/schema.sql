@@ -151,48 +151,54 @@ ALTER TABLE public.explainability_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clinician_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_events ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated health workers & clinicians full read/write access
-CREATE POLICY "Allow authenticated read screenings" ON public.screenings
-    FOR SELECT TO authenticated USING (true);
+-- Allow public and authenticated health workers & clinicians full read/write access
+CREATE POLICY "Allow public read screenings" ON public.screenings
+    FOR SELECT TO public USING (true);
 
-CREATE POLICY "Allow authenticated insert screenings" ON public.screenings
-    FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Allow public insert screenings" ON public.screenings
+    FOR INSERT TO public WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated update screenings" ON public.screenings
-    FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Allow public update screenings" ON public.screenings
+    FOR UPDATE TO public USING (true);
 
-CREATE POLICY "Allow authenticated read quality" ON public.quality_assessments
-    FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Allow public read quality" ON public.quality_assessments
+    FOR SELECT TO public USING (true);
 
-CREATE POLICY "Allow authenticated insert quality" ON public.quality_assessments
-    FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Allow public insert quality" ON public.quality_assessments
+    FOR INSERT TO public WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated read predictions" ON public.ai_predictions
-    FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Allow public read predictions" ON public.ai_predictions
+    FOR SELECT TO public USING (true);
 
-CREATE POLICY "Allow authenticated insert predictions" ON public.ai_predictions
-    FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Allow public insert predictions" ON public.ai_predictions
+    FOR INSERT TO public WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated read explainability" ON public.explainability_results
-    FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Allow public read explainability" ON public.explainability_results
+    FOR SELECT TO public USING (true);
 
-CREATE POLICY "Allow authenticated insert explainability" ON public.explainability_results
-    FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Allow public insert explainability" ON public.explainability_results
+    FOR INSERT TO public WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated read reviews" ON public.clinician_reviews
-    FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Allow public read reviews" ON public.clinician_reviews
+    FOR SELECT TO public USING (true);
 
-CREATE POLICY "Allow authenticated insert reviews" ON public.clinician_reviews
-    FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Allow public insert reviews" ON public.clinician_reviews
+    FOR INSERT TO public WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated insert audit" ON public.audit_events
-    FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Allow public update reviews" ON public.clinician_reviews
+    FOR UPDATE TO public USING (true);
 
-CREATE POLICY "Allow authenticated read profiles" ON public.profiles
-    FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Allow public insert audit" ON public.audit_events
+    FOR INSERT TO public WITH CHECK (true);
+
+CREATE POLICY "Allow public read audit" ON public.audit_events
+    FOR SELECT TO public USING (true);
+
+CREATE POLICY "Allow public read profiles" ON public.profiles
+    FOR SELECT TO public USING (true);
 
 CREATE POLICY "Allow user update own profile" ON public.profiles
-    FOR UPDATE TO authenticated USING (auth.uid() = id);
+    FOR UPDATE TO public USING (true);
 
 -- ----------------------------------------------------------------------------
 -- 9. STORAGE BUCKET SETUP
@@ -203,8 +209,8 @@ VALUES ('fundus-images', 'fundus-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage RLS policy
-CREATE POLICY "Allow authenticated uploads to fundus-images"
-ON storage.objects FOR INSERT TO authenticated
+CREATE POLICY "Allow public uploads to fundus-images"
+ON storage.objects FOR INSERT TO public
 WITH CHECK (bucket_id = 'fundus-images');
 
 CREATE POLICY "Allow public read from fundus-images"
