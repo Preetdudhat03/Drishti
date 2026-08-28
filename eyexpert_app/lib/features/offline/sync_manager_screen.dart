@@ -214,7 +214,6 @@ class SyncManagerScreen extends ConsumerWidget {
       ),
     );
   }
-  }
 
   Widget _statBox({required String title, required String value, required Color color}) {
     return Container(
