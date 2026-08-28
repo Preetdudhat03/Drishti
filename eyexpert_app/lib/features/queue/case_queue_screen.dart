@@ -52,25 +52,46 @@ class CaseQueueScreen extends ConsumerWidget {
         ),
         const Divider(height: 1),
 
-        // Cases List
+        // Cases List with Pull-to-Refresh
         Expanded(
-          child: cases.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.folder_open_rounded, size: 48, color: Colors.grey),
-                      const SizedBox(height: 12),
-                      Text('No cases found matching "${queueState.searchQuery}"',
-                          style: TextStyle(color: Colors.grey.shade600)),
-                    ],
-                  ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: cases.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+            color: AppColors.primary,
+            child: cases.isEmpty
+                ? LayoutBuilder(
+                    builder: (context, constraints) => SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.folder_open_rounded, size: 54, color: Colors.grey),
+                              const SizedBox(height: 12),
+                              Text(
+                                queueState.searchQuery.isEmpty
+                                    ? 'No cases currently in review queue.'
+                                    : 'No cases found matching "${queueState.searchQuery}"',
+                                style: TextStyle(color: Colors.grey.shade600, fontSize: 13.5),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Swipe down to refresh from Supabase cloud database',
+                                style: TextStyle(color: Colors.grey.shade400, fontSize: 11.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    itemCount: cases.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
                     final c = cases[index];
                     final pred = c.prediction;
                     final quality = c.quality;
