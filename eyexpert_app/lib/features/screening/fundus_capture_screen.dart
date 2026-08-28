@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
@@ -31,6 +33,25 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
     super.initState();
     _selectedImagePath = null;
     _isCaptured = false;
+  }
+
+  Future<void> _loadSampleAsset(String assetPath) async {
+    try {
+      final byteData = await rootBundle.load(assetPath);
+      final filename = assetPath.split('/').last;
+      final file = File('${Directory.systemTemp.path}/$filename');
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      setState(() {
+        _selectedImagePath = file.path;
+        _isCaptured = true;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading sample: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -195,6 +216,67 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+
+              // Benchmark Clinical Retinal Cases Dropdown (for Evaluator / Testing)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.science_outlined, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          hint: const Text(
+                            'Load Clinical Benchmark Case (APTOS)...',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'assets/sample_fundus/sample_good_normal.png',
+                              child: Text('Level 0: Normal Retina (Non-Referable)', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: 'assets/sample_fundus/sample_good_npdr_mild.png',
+                              child: Text('Level 1: Mild NPDR (Non-Referable)', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: 'assets/sample_fundus/sample_good_npdr_moderate.png',
+                              child: Text('Level 2: Moderate NPDR (Referable)', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: 'assets/sample_fundus/sample_good_pdr_severe.png',
+                              child: Text('Level 4: Proliferative DR (Referable)', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: 'assets/sample_fundus/sample_borderline_illum.png',
+                              child: Text('Borderline: Low Contrast (CLAHE Target)', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: 'assets/sample_fundus/sample_ungradable_blur.png',
+                              child: Text('Ungradable: Motion Blur (Safety Gate)', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: 'assets/sample_fundus/sample_ungradable_dark.png',
+                              child: Text('Ungradable: Underexposed (Safety Gate)', style: TextStyle(fontSize: 12)),
+                            ),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) _loadSampleAsset(val);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 12),
 
