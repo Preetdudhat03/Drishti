@@ -332,48 +332,6 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Section 4: Model Provenance
-                    const Text('4. Model Provenance & Traceability',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Model: Drishti DR Classifier (ResNet-18) | Training Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
-                      style: TextStyle(fontSize: 10, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Statutory Disclaimer
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        AppConstants.standardDisclaimer,
-                        style: TextStyle(fontSize: 10, color: Colors.black87, height: 1.3),
-                      ),
-                    ),
-                          Text(
-                            severity?.fullName ?? 'No Diabetic Retinopathy Detected',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isReferable
-                                ? 'Automated screening detected high-attention microvascular anomalies indicative of diabetic retinopathy. Confirmatory dilated biomicroscopy by an ophthalmologist is recommended within 2 to 4 weeks.'
-                                : 'Automated screening detected no sight-threatening microvascular anomalies. Patient should maintain regular glycemic control and return for annual retinal photography screening.',
-                            style: const TextStyle(fontSize: 12, height: 1.4),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
                     // Clinician Sign-off Block (Clean & Professional, No Cartoon Seals)
                     Container(
                       padding: const EdgeInsets.all(16),
