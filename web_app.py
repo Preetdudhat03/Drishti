@@ -76,7 +76,11 @@ if os.path.isfile(LOAD_MODEL_PATH):
     try:
         REAL_MODEL = models.resnet18(weights=None)
         REAL_MODEL.fc = nn.Linear(REAL_MODEL.fc.in_features, 5)
-        ckpt = torch.load(LOAD_MODEL_PATH, map_location=DEVICE, weights_only=False)
+        try:
+            ckpt = torch.load(LOAD_MODEL_PATH, map_location=DEVICE, weights_only=False)
+        except TypeError:
+            ckpt = torch.load(LOAD_MODEL_PATH, map_location=DEVICE)
+            
         if isinstance(ckpt, dict) and 'model_state_dict' in ckpt:
             REAL_MODEL.load_state_dict(ckpt['model_state_dict'])
         elif isinstance(ckpt, dict) and 'state_dict' in ckpt:
