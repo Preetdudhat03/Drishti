@@ -82,16 +82,29 @@ class QualityAssessmentModel {
   bool get isBorderline => status == QualityStatus.borderline;
   bool get isGood => status == QualityStatus.good;
 
-  factory QualityAssessmentModel.fromJson(Map<String, dynamic> json) {
+  factory QualityAssessmentModel.fromJson(Map<String, dynamic> json, {String? screeningId}) {
     return QualityAssessmentModel(
-      screeningId: json['screening_id'] ?? '',
-      overallScore: (json['overall_score'] as num?)?.toDouble() ?? 0.0,
+      screeningId: screeningId ?? json['screening_id'] ?? '',
+      overallScore: (json['overall_score'] as num?)?.toDouble() ??
+          (json['overallScore'] as num?)?.toDouble() ??
+          0.0,
       status: QualityStatus.fromString(json['status']),
-      sharpness: QualityMetric.fromJson(json['sharpness'] ?? {}, 'Focus & Sharpness'),
-      illumination: QualityMetric.fromJson(json['illumination'] ?? {}, 'Illumination & Exposure'),
-      fieldOfView: QualityMetric.fromJson(json['field_of_view'] ?? {}, 'Field of View Coverage'),
-      enhancementApplied: json['enhancement_applied'] ?? false,
-      feedbackMessages: (json['feedback_messages'] as List<dynamic>?)
+      sharpness: QualityMetric.fromJson(
+        json['sharpness'] is Map ? Map<String, dynamic>.from(json['sharpness']) : {},
+        'Focus & Sharpness',
+      ),
+      illumination: QualityMetric.fromJson(
+        json['illumination'] is Map ? Map<String, dynamic>.from(json['illumination']) : {},
+        'Illumination & Exposure',
+      ),
+      fieldOfView: QualityMetric.fromJson(
+        (json['field_of_view'] ?? json['fov']) is Map
+            ? Map<String, dynamic>.from(json['field_of_view'] ?? json['fov'])
+            : {},
+        'Field of View Coverage',
+      ),
+      enhancementApplied: json['enhancement_applied'] ?? json['clahe_applied'] ?? false,
+      feedbackMessages: ((json['feedback_messages'] ?? json['feedback']) as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
