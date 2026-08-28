@@ -72,7 +72,7 @@ class ReviewService {
         action: action,
         finalDrLevel: finalDrLevel,
         clinicalNotes: clinicalNotes,
-        clinicianName: review.clinicianName,
+        clinicianName: review.clinicianName ?? 'Dr. Rajesh Kumar',
       );
     }
 
