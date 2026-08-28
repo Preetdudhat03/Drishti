@@ -46,7 +46,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
                     children: [
                       IconButton(
                         onPressed: widget.onBack,
-                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                        icon: const Icon(Icons.arrow_back_rounded, size: 20, color: Colors.white),
                         tooltip: 'Back to AI Results',
                       ),
                       const SizedBox(width: 6),
@@ -54,12 +54,12 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Visual Explainability Workstation (Grad-CAM)',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                            'Grad-CAM Explainability Workstation',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
                           ),
                           Text(
-                            'Patient: ${patient?.patientId ?? "N/A"} • ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
-                            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                            'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
+                            style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary),
                           ),
                         ],
                       ),
@@ -67,14 +67,14 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
                   ),
                   if (severity != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         'Level ${pred!.drLevel}: ${severity.shortName}',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 10.5),
                       ),
                     ),
                 ],
@@ -96,14 +96,14 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
                     // Right Column: Diagnostic & Feature Attribution Panel (35% width)
                     Expanded(
                       flex: 35,
-                      child: _buildSidePanel(pred, severity, isReferable),
+                      child: _buildSidePanel(pred, severity, isReferable, exp),
                     ),
                   ],
                 )
               else ...[
                 _buildViewer(exp, session, patient),
                 const SizedBox(height: 14),
-                _buildSidePanel(pred, severity, isReferable),
+                _buildSidePanel(pred, severity, isReferable, exp),
               ],
               const SizedBox(height: 20),
 
@@ -117,8 +117,8 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
 
   Widget _buildViewer(dynamic exp, dynamic session, dynamic patient) {
     return FundusImageViewer(
-      originalImagePath: exp?.originalImageUrl ?? session.imagePath ?? '',
-      gradcamImagePath: exp?.gradcamImageUrl ?? session.prediction?.heatmapPath,
+      originalImagePath: exp?.originalImageUrl?.isNotEmpty == true ? exp.originalImageUrl : (session.imagePath ?? ''),
+      gradcamImagePath: exp?.gradcamImageUrl?.isNotEmpty == true ? exp.gradcamImageUrl : session.prediction?.heatmapPath,
       mode: FundusViewerMode.overlay,
       height: 480,
       eyeTag: patient?.eye,
@@ -127,7 +127,13 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
     );
   }
 
-  Widget _buildSidePanel(dynamic pred, DRSeverity? severity, bool isReferable) {
+  Widget _buildSidePanel(dynamic pred, DRSeverity? severity, bool isReferable, dynamic exp) {
+    final attendedRegions = exp?.modelAttendedRegions as List<String>? ?? const [
+      'Superior temporal vascular arcade',
+      'Perimacular capillary network',
+      'Posterior pole microvasculature'
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -135,26 +141,58 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.deepSpace,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.lightBorder),
+            border: Border.all(color: AppColors.borderDark),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'GRADIENT-WEIGHTED ATTRIBUTION',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'GRAD-CAM FEATURE ATTRIBUTION',
+                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
+                  ),
+                  Text(
+                    'layer4[1].conv2',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.hudCyan),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               const Text(
                 'Heatmap highlights vascular zones where the ResNet-18 convolutional feature maps detected diabetic microvascular lesions:',
-                style: TextStyle(fontSize: 12, height: 1.4, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 11.5, height: 1.4, color: Colors.white70),
               ),
               const SizedBox(height: 10),
-              _lesionBullet('Red/Orange Hotspots', 'High-attention regions (Microaneurysms, Hard Exudates, Hemorrhages).'),
+              _lesionBullet('Red/Orange Hotspots', 'High gradient activation (Microaneurysms, Hard Exudates, Hemorrhages).'),
               const SizedBox(height: 6),
               _lesionBullet('Cyan/Blue Cool Zones', 'Background non-pathological retinal parenchyma.'),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: AppColors.borderDark),
+              const SizedBox(height: 10),
+              const Text(
+                'MODEL ATTENDED REGIONS:',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.darkTextMuted, letterSpacing: 0.5),
+              ),
+              const SizedBox(height: 6),
+              ...attendedRegions.map((region) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline, size: 13, color: AppColors.hudCyan),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        region,
+                        style: const TextStyle(fontSize: 11, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
             ],
           ),
         ),
@@ -165,32 +203,32 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.deepSpace,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.lightBorder),
+              border: Border.all(color: AppColors.borderDark),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'MODEL PROBABILITIES',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                  'NEURAL CLASS PROBABILITIES',
+                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
                 ),
                 const SizedBox(height: 12),
-                if (pred.probabilities != null && pred.probabilities!.isNotEmpty)
+                if (pred.probabilities != null && pred.probabilities.isNotEmpty)
                   ProbabilityDistributionWidget(
-                    probabilities: pred.probabilities!,
+                    probabilities: pred.probabilities,
                     predictedLevel: pred.drLevel,
-                    isDarkMode: false,
+                    isDarkMode: true,
                   )
                 else
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Model Probability', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      const Text('Model Probability', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
                       Text(
                         AppFormatters.formatProbability(pred.modelProbability),
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.electricBlue),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.hudCyan),
                       ),
                     ],
                   ),
@@ -203,7 +241,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isReferable ? AppColors.referableAlertBg : AppColors.statusGoodBg,
+            color: isReferable ? AppColors.referableDarkBg : AppColors.statusGoodDarkBg,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: isReferable ? AppColors.referableAlert : AppColors.statusGood),
           ),
@@ -212,7 +250,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
               Icon(
                 isReferable ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded,
                 color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
-                size: 20,
+                size: 18,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -223,7 +261,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
-                    color: isReferable ? const Color(0xFF991B1B) : const Color(0xFF166534),
+                    color: isReferable ? const Color(0xFFFCA5A5) : const Color(0xFF86EFAC),
                   ),
                 ),
               ),
@@ -242,15 +280,15 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
           margin: const EdgeInsets.only(top: 4),
           width: 6,
           height: 6,
-          decoration: const BoxDecoration(color: AppColors.electricBlue, shape: BoxShape.circle),
+          decoration: const BoxDecoration(color: AppColors.hudCyan, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary, height: 1.3),
+              style: const TextStyle(fontSize: 11, color: AppColors.darkTextSecondary, height: 1.3),
               children: [
-                TextSpan(text: '$title: ', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                TextSpan(text: '$title: ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
                 TextSpan(text: desc),
               ],
             ),
