@@ -264,9 +264,7 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                     _stepRow(
                       stepNum: 3,
                       title: 'Deep retinopathy classification',
-                      subtitle: isDemo
-                          ? 'ResNet-18 benchmark reference classification'
-                          : 'PyTorch ResNet-18 forward pass on Render backend',
+                      subtitle: 'PyTorch ResNet-18 forward pass on cloud inference engine',
                       isDone: currentStep > 3,
                       isInProgress: currentStep == 3,
                     ),
