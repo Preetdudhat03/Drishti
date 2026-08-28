@@ -189,9 +189,8 @@ def assess_image_quality(img_rgb):
     retina_area = float(np.sum(mask))
     coverage_fraction = retina_area / max(1.0, total_pixels)
 
-    # Sharpness: Laplacian variance across retinal tissue
-    laplacian_kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
-    lap = convolve2d(img_gray, laplacian_kernel, mode='same', boundary='symm')
+    # Sharpness: Laplacian variance across retinal tissue using OpenCV
+    lap = cv2.Laplacian(img_gray, cv2.CV_32F)
     valid_lap = lap[mask] if np.any(mask) else lap.flatten()
     raw_var = float(np.var(valid_lap)) if len(valid_lap) > 0 else 0.0
 
