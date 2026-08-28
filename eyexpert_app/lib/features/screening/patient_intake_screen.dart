@@ -77,12 +77,12 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
               // 2. HEADER
               const Text(
                 'Patient & Screening Intake',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
               ),
               const SizedBox(height: 3),
               const Text(
                 'Initialize patient record and designate examination eye before retinal imaging.',
-                style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 12, color: AppColors.darkTextSecondary),
               ),
               const SizedBox(height: 16),
 
@@ -90,23 +90,24 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.deepSpace,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.lightBorder),
+                  border: Border.all(color: AppColors.borderDark),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'PATIENT IDENTIFIERS',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _patientIdController,
+                      style: const TextStyle(color: Colors.white, fontSize: 13.5),
                       decoration: const InputDecoration(
                         labelText: 'Patient Identifier / Screening Token *',
-                        prefixIcon: Icon(Icons.tag_rounded, size: 20, color: AppColors.electricBlue),
+                        prefixIcon: Icon(Icons.tag_rounded, size: 20, color: AppColors.hudCyan),
                         hintText: 'e.g. PT-2026-8819',
                       ),
                     ),
@@ -117,6 +118,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                           child: TextField(
                             controller: _ageController,
                             keyboardType: TextInputType.number,
+                            style: const TextStyle(color: Colors.white, fontSize: 13.5),
                             decoration: const InputDecoration(
                               labelText: 'Age (Years)',
                               prefixIcon: Icon(Icons.calendar_today_outlined, size: 18),
@@ -126,15 +128,17 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            initialValue: _selectedGender,
+                            value: _selectedGender,
+                            dropdownColor: AppColors.deepSpace,
+                            style: const TextStyle(color: Colors.white, fontSize: 13.5),
                             decoration: const InputDecoration(
                               labelText: 'Gender',
                               prefixIcon: Icon(Icons.wc_rounded, size: 18),
                             ),
                             items: const [
-                              DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
-                              DropdownMenuItem(value: 'MALE', child: Text('Male')),
-                              DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+                              DropdownMenuItem(value: 'FEMALE', child: Text('Female', style: TextStyle(color: Colors.white))),
+                              DropdownMenuItem(value: 'MALE', child: Text('Male', style: TextStyle(color: Colors.white))),
+                              DropdownMenuItem(value: 'OTHER', child: Text('Other', style: TextStyle(color: Colors.white))),
                             ],
                             onChanged: (val) {
                               if (val != null) setState(() => _selectedGender = val);
@@ -147,6 +151,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                     TextField(
                       controller: _diabetesDurationController,
                       keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white, fontSize: 13.5),
                       decoration: const InputDecoration(
                         labelText: 'Known Diabetes Duration (Years, Optional)',
                         prefixIcon: Icon(Icons.history_toggle_off_rounded, size: 20),
@@ -161,16 +166,16 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.deepSpace,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.lightBorder),
+                  border: Border.all(color: AppColors.borderDark),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'TARGET RETINAL FIELD',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -182,10 +187,10 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                               decoration: BoxDecoration(
-                                color: _selectedEye == 'OD' ? AppColors.accentLight : Colors.white,
+                                color: _selectedEye == 'OD' ? AppColors.obsidian : AppColors.graphite,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: _selectedEye == 'OD' ? AppColors.electricBlue : AppColors.lightBorder,
+                                  color: _selectedEye == 'OD' ? AppColors.hudCyan : AppColors.borderDark,
                                   width: _selectedEye == 'OD' ? 2 : 1,
                                 ),
                               ),
@@ -193,7 +198,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                                 children: [
                                   Icon(
                                     Icons.remove_red_eye_outlined,
-                                    color: _selectedEye == 'OD' ? AppColors.electricBlue : AppColors.textMuted,
+                                    color: _selectedEye == 'OD' ? AppColors.hudCyan : AppColors.darkTextMuted,
                                     size: 28,
                                   ),
                                   const SizedBox(height: 6),
@@ -202,10 +207,10 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 13,
-                                      color: _selectedEye == 'OD' ? AppColors.electricBlue : AppColors.textPrimary,
+                                      color: _selectedEye == 'OD' ? AppColors.hudCyan : Colors.white,
                                     ),
                                   ),
-                                  const Text('Oculus Dexter', style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                                  const Text('Oculus Dexter', style: TextStyle(fontSize: 10.5, color: AppColors.darkTextMuted)),
                                 ],
                               ),
                             ),
@@ -219,10 +224,10 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                               decoration: BoxDecoration(
-                                color: _selectedEye == 'OS' ? AppColors.accentLight : Colors.white,
+                                color: _selectedEye == 'OS' ? AppColors.obsidian : AppColors.graphite,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: _selectedEye == 'OS' ? AppColors.electricBlue : AppColors.lightBorder,
+                                  color: _selectedEye == 'OS' ? AppColors.hudCyan : AppColors.borderDark,
                                   width: _selectedEye == 'OS' ? 2 : 1,
                                 ),
                               ),
@@ -230,7 +235,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                                 children: [
                                   Icon(
                                     Icons.remove_red_eye_outlined,
-                                    color: _selectedEye == 'OS' ? AppColors.electricBlue : AppColors.textMuted,
+                                    color: _selectedEye == 'OS' ? AppColors.hudCyan : AppColors.darkTextMuted,
                                     size: 28,
                                   ),
                                   const SizedBox(height: 6),
@@ -239,10 +244,10 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 13,
-                                      color: _selectedEye == 'OS' ? AppColors.electricBlue : AppColors.textPrimary,
+                                      color: _selectedEye == 'OS' ? AppColors.hudCyan : Colors.white,
                                     ),
                                   ),
-                                  const Text('Oculus Sinister', style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                                  const Text('Oculus Sinister', style: TextStyle(fontSize: 10.5, color: AppColors.darkTextMuted)),
                                 ],
                               ),
                             ),
@@ -259,7 +264,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
               ElevatedButton.icon(
                 onPressed: _handleSubmit,
                 icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                label: const Text('PROCEED TO RETINAL IMAGE CAPTURE', style: TextStyle(letterSpacing: 0.5)),
+                label: const Text('PROCEED TO RETINAL IMAGE CAPTURE', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.electricBlue,
                   foregroundColor: Colors.white,
