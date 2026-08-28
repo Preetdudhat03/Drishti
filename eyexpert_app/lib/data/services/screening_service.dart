@@ -1,0 +1,152 @@
+import '../api/api_client.dart';
+import '../api/api_endpoints.dart';
+import '../models/patient_model.dart';
+import '../models/quality_assessment_model.dart';
+import '../models/dr_prediction_model.dart';
+import '../models/explainability_model.dart';
+import '../models/screening_case_model.dart';
+import '../../core/errors/app_exceptions.dart';
+import 'mock_data_service.dart';
+
+class ScreeningService {
+  final ApiClient _apiClient;
+
+  ScreeningService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+
+  Future<ScreeningCaseModel> createScreening({
+    required PatientModel patient,
+    required String clientRequestId,
+    bool isDemo = true,
+  }) async {
+    if (isDemo) {
+      final String id = 'EX-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      return ScreeningCaseModel(
+        screeningId: id,
+        clientRequestId: clientRequestId,
+        patient: patient,
+        status: ScreeningStatus.awaitingImage,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
+
+    final response = await _apiClient.post(
+      ApiEndpoints.screenings,
+      idempotencyKey: clientRequestId,
+      body: {
+        'client_request_id': clientRequestId,
+        ...patient.toJson(),
+      },
+    );
+
+    return ScreeningCaseModel.fromJson(response);
+  }
+
+  Future<QualityAssessmentModel> assessImageQuality({
+    required String screeningId,
+    required String imagePath,
+    bool isDemo = true,
+    Map<String, dynamic>? demoScenario,
+  }) async {
+    if (isDemo && demoScenario != null) {
+      final QualityStatus qStatus = demoScenario['qualityStatus'] as QualityStatus;
+      final bool isUngradable = qStatus == QualityStatus.ungradable;
+      final bool isBorderline = qStatus == QualityStatus.borderline;
+
+      return QualityAssessmentModel(
+        screeningId: screeningId,
+        overallScore: (demoScenario['qualityScore'] as num).toDouble(),
+        status: qStatus,
+        sharpness: QualityMetric(
+          score: (demoScenario['sharpness'] as num).toDouble(),
+          status: (demoScenario['sharpness'] as num) > 0.5 ? 'GOOD' : 'POOR',
+          metricName: 'Laplacian Focus & Sharpness',
+        ),
+        illumination: QualityMetric(
+          score: (demoScenario['illumination'] as num).toDouble(),
+          status: (demoScenario['illumination'] as num) > 0.5 ? 'GOOD' : 'ATTENTION',
+          metricName: 'Illumination & Exposure',
+        ),
+        fieldOfView: QualityMetric(
+          score: (demoScenario['fov'] as num).toDouble(),
+          status: (demoScenario['fov'] as num) > 0.4 ? 'ADEQUATE' : 'INADEQUATE',
+          metricName: 'Retinal Mask Field of View',
+        ),
+        enhancementApplied: isBorderline,
+        feedbackMessages: isUngradable
+            ? [
+                'Severe blur detected on retinal vasculature.',
+                'Field illumination sub-optimal.',
+                'Recapture required: Please steady the patient and camera.',
+              ]
+            : isBorderline
+                ? ['Sub-optimal exposure detected.', 'Adaptive CLAHE enhancement will be applied.']
+                : ['Optimal focus, exposure, and field coverage confirmed.'],
+        evaluatedAt: DateTime.now(),
+      );
+    }
+
+    final response = await _apiClient.get(ApiEndpoints.screeningQuality(screeningId));
+    return QualityAssessmentModel.fromJson(response);
+  }
+
+  Future<Map<String, dynamic>> analyzeScreening({
+    required String screeningId,
+    required QualityAssessmentModel quality,
+    bool isDemo = true,
+    Map<String, dynamic>? demoScenario,
+  }) async {
+    if (quality.isUngradable) {
+      throw UngradableImageException(
+        'Automated DR screening is blocked because the retinal photograph is ungradable. A clear recapture is required for patient safety.',
+      );
+    }
+
+    if (isDemo && demoScenario != null) {
+      final int level = demoScenario['expectedLevel'] ?? 2;
+      final Map<int, double> classProbs = Map<int, double>.from(demoScenario['classProbs'] ?? {});
+      final double modelProb = (demoScenario['modelProb'] as num?)?.toDouble() ?? 0.914;
+
+      final prediction = DRPredictionModel(
+        screeningId: screeningId,
+        drLevel: level,
+        severityLabel: demoScenario['title'] ?? 'Moderate NPDR',
+        severityCode: 'LEVEL_$level',
+        referable: demoScenario['expectedReferable'] ?? (level >= 2),
+        modelProbability: modelProb,
+        calibratedConfidence: 0.88,
+        classProbabilities: classProbs,
+        reviewPriority: level >= 2 ? 'HIGH' : 'NORMAL',
+        recommendation: 'Ophthalmologist review and dilated fundus examination recommended.',
+        provenance: ModelProvenanceModel.defaultProvenance,
+        analyzedAt: DateTime.now(),
+      );
+
+      final explainability = ExplainabilityModel(
+        screeningId: screeningId,
+        targetLayer: 'layer4[1].conv2',
+        gradcamImageUrl: demoScenario['gradcamAsset'] ?? 'assets/sample_fundus/real_aptos_gradcam_level_2_094858f005ab.png',
+        overlayImageUrl: demoScenario['gradcamAsset'] ?? 'assets/sample_fundus/real_aptos_gradcam_level_2_094858f005ab.png',
+        originalImageUrl: demoScenario['imageAsset'] ?? 'assets/sample_fundus/sample_good_npdr_moderate.png',
+        modelAttendedRegions: List<String>.from(demoScenario['attendedRegions'] ?? ['Posterior pole', 'Perimacular region']),
+        disclaimer: 'Highlighted regions represent areas contributing to the model prediction (Interpretability tool — not a definitive lesion diagnosis).',
+      );
+
+      return {
+        'prediction': prediction,
+        'explainability': explainability,
+      };
+    }
+
+    final response = await _apiClient.post(ApiEndpoints.screeningAnalyze(screeningId));
+    final pred = DRPredictionModel.fromJson(response, screeningId: screeningId);
+    
+    final expResponse = await _apiClient.get(ApiEndpoints.screeningExplainability(screeningId));
+    final explainability = ExplainabilityModel.fromJson(expResponse);
+
+    return {
+      'prediction': pred,
+      'explainability': explainability,
+    };
+  }
+}
