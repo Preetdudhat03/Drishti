@@ -159,7 +159,6 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
   Widget build(BuildContext context) {
     final c = widget.screeningCase;
     final pred = c.prediction;
-    final quality = c.quality;
     final patient = c.patient;
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
