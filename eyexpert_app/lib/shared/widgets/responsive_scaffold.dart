@@ -11,8 +11,6 @@ class ResponsiveScaffold extends StatelessWidget {
   final String title;
   final List<Widget>? actions;
   final UserModel? currentUser;
-  final String workflowMode;
-  final VoidCallback? onModeSwitchPressed;
   final Widget? floatingActionButton;
 
   const ResponsiveScaffold({
@@ -23,8 +21,6 @@ class ResponsiveScaffold extends StatelessWidget {
     required this.title,
     this.actions,
     this.currentUser,
-    this.workflowMode = 'DEMO',
-    this.onModeSwitchPressed,
     this.floatingActionButton,
   });
 
@@ -88,7 +84,7 @@ class ResponsiveScaffold extends StatelessWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            DrishtiLogo(
+            const DrishtiLogo(
               size: 26,
               showText: false,
               color: Colors.white,
@@ -98,69 +94,14 @@ class ResponsiveScaffold extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          title,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Mode Pill
-                      InkWell(
-                        onTap: onModeSwitchPressed,
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                          decoration: BoxDecoration(
-                            color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
-                                ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                                : Colors.white.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
-                                  ? const Color(0xFF34D399)
-                                  : Colors.white60,
-                              width: 0.8,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 5,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
-                                      ? const Color(0xFF34D399)
-                                      : Colors.amberAccent,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                workflowMode == 'VALIDATION' || workflowMode == 'REAL'
-                                    ? 'REAL MODEL INFERENCE'
-                                    : 'BENCHMARK SIMULATION',
-                                style: TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
-                                      ? const Color(0xFF34D399)
-                                      : Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: Colors.white),
                   ),
                   if (currentUser != null)
                     Text(
-                      '${currentUser!.isDemoAccount ? "DEMO " : ""}${currentUser!.role.displayName.toUpperCase()} • ${currentUser!.name}',
+                      '${currentUser!.role.displayName.toUpperCase()} • ${currentUser!.name}',
                       style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w500),
                     ),
                 ],
