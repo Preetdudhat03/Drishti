@@ -138,7 +138,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: _selectedGender,
+                            initialValue: _selectedGender,
                             decoration: const InputDecoration(
                               labelText: 'Gender',
                               prefixIcon: Icon(Icons.wc_rounded, size: 18),
