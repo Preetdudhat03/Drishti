@@ -1,5 +1,6 @@
 class ApiEndpoints {
-  static String baseUrl = 'http://localhost:5000/api/v1';
+  // Live Cloud AI Inference Backend on Render
+  static String baseUrl = 'https://eyexpert.onrender.com/api/v1';
 
   // Auth
   static String get login => '$baseUrl/auth/login';
