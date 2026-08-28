@@ -37,8 +37,9 @@ class AuthService {
           password: password,
         );
         if (supaUser != null) {
-          if (supaUser.token != null) {
-            await SecureStorage.saveToken(supaUser.token!);
+          final token = SupabaseService.client?.auth.currentSession?.accessToken;
+          if (token != null) {
+            await SecureStorage.saveToken(token);
           }
           await SecureStorage.saveUserData(jsonEncode(supaUser.toJson()));
           return supaUser;
