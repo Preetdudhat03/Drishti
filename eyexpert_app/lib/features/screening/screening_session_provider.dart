@@ -236,6 +236,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
+        imagePath: state.imagePath,
         isDemo: false,
       );
 
