@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/dr_severity.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/formatters.dart';
 import '../../core/utils/responsive_layout.dart';
-import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/fundus_image_viewer.dart';
 import '../../shared/widgets/probability_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
@@ -19,22 +18,7 @@ class ExplainabilityScreen extends ConsumerStatefulWidget {
   ConsumerState<ExplainabilityScreen> createState() => _ExplainabilityScreenState();
 }
 
-class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  double _overlayOpacity = 0.65;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 2);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(screeningSessionProvider);
@@ -43,260 +27,236 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
     final patient = session.patient;
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
-    Widget imageViewerWidget = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Tab Selector (ORIGINAL | GRAD-CAM | OVERLAY)
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            labelColor: Colors.white,
-            unselectedLabelColor: AppColors.textSecondary,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-            tabs: const [
-              Tab(text: 'ORIGINAL'),
-              Tab(text: 'GRAD-CAM'),
-              Tab(text: 'OVERLAY'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        // Fundus Viewer Container (Clean off-white frame with dark retinal canvas)
-        Container(
-          height: isDesktop ? 440 : 320,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border, width: 1.5),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: AnimatedBuilder(
-              animation: _tabController,
-              builder: (context, _) {
-                final tabIdx = _tabController.index;
-                if (tabIdx == 0) {
-                  return FundusImageViewer(
-                    originalImagePath: exp?.originalImageUrl ?? session.imagePath ?? '',
-                    showOverlay: false,
-                    eyeTag: patient?.eye,
-                  );
-                } else if (tabIdx == 1) {
-                  return FundusImageViewer(
-                    originalImagePath: exp?.gradcamImageUrl ?? '',
-                    showOverlay: false,
-                    eyeTag: 'Grad-CAM Heatmap',
-                  );
-                } else {
-                  return FundusImageViewer(
-                    originalImagePath: exp?.originalImageUrl ?? session.imagePath ?? '',
-                    gradcamImagePath: exp?.gradcamImageUrl,
-                    showOverlay: true,
-                    overlayOpacity: _overlayOpacity,
-                    eyeTag: '${patient?.eye ?? "OD"} (Overlay)',
-                  );
-                }
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        // Opacity Blend Slider
-        AnimatedBuilder(
-          animation: _tabController,
-          builder: (context, _) {
-            if (_tabController.index != 2) return const SizedBox.shrink();
-            return ClinicalCard(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.opacity_rounded, size: 16, color: AppColors.accent),
-                  const SizedBox(width: 8),
-                  const Text('Overlay Blend:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  Expanded(
-                    child: Slider(
-                      value: _overlayOpacity,
-                      min: 0.1,
-                      max: 1.0,
-                      divisions: 9,
-                      activeColor: AppColors.accent,
-                      label: '${(_overlayOpacity * 100).toInt()}%',
-                      onChanged: (val) => setState(() => _overlayOpacity = val),
-                    ),
-                  ),
-                  Text('${(_overlayOpacity * 100).toInt()}%', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-
-    Widget evidenceDetailsWidget = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // AI Evidence Card
-        ClinicalCard(
-          title: 'AI EVIDENCE & ATTENDED REGIONS',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Target Feature Layer:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text(exp?.targetLayer ?? 'layer4[1].conv2', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Image Quality:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  StatusBadge.good(label: '✓ GOOD'),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Model-Attended Retinal Structures:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: (exp?.modelAttendedRegions ?? ['Superior temporal arcade', 'Perimacular region'])
-                    .map(
-                      (region) => Chip(
-                        avatar: const Icon(Icons.location_searching_rounded, size: 14, color: AppColors.accent),
-                        label: Text(region, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                        backgroundColor: AppColors.accentLight,
-                        side: BorderSide.none,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        // Statutory Interpretability Disclaimer
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.statusBorderlineBg,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.statusBorderline.withOpacity(0.4)),
-          ),
-          child: const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.warning_amber_rounded, color: AppColors.statusBorderline, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '⚠ Interpretability output — highlights regions contributing to AI model prediction and does not represent a definitive lesion diagnosis.',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF78350F),
-                    height: 1.35,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        // Evidence Softmax Probabilities
-        if (pred != null)
-          ClinicalCard(
-            title: 'EVIDENCE SOFTMAX PROBABILITIES',
-            child: ProbabilityDistributionWidget(
-              classProbabilities: pred.classProbabilities,
-              predictedLevel: pred.drLevel,
-            ),
-          ),
-      ],
-    );
+    final severity = pred != null ? DRSeverity.fromLevel(pred.drLevel) : null;
+    final isReferable = pred?.referable ?? false;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1080),
+          constraints: const BoxConstraints(maxWidth: 1100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
+              // 1. TOP BAR WITH BACK ACTION & CONTEXT
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    onPressed: widget.onBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    tooltip: 'Back to Result',
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: widget.onBack,
+                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                        tooltip: 'Back to AI Results',
+                      ),
+                      const SizedBox(width: 6),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Visual Explainability Workstation (Grad-CAM)',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                          ),
+                          Text(
+                            'Patient: ${patient?.patientId ?? "N/A"} • ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
+                            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'EXPLAINABILITY (GRAD-CAM)',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary),
-                        ),
-                        Text(
-                          'Regions contributing to model prediction • Patient: ${patient?.patientId ?? "N/A"}',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                      ],
+                  if (severity != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Level ${pred!.drLevel}: ${severity.shortName}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11),
+                      ),
                     ),
-                  ),
-                  if (pred != null)
-                    StatusBadge.aiBadge(label: 'AI LEVEL ${pred.drLevel}'),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
 
-              // Responsive Layout
-              if (isDesktop) ...[
+              // 2. MAIN WORKSTATION CANVAS (Desktop: 2-Column, Mobile: Stacked)
+              if (isDesktop)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 6, child: imageViewerWidget),
+                    // Left Column: Retinal Hero Viewer (65% width)
+                    Expanded(
+                      flex: 65,
+                      child: _buildViewer(exp, session, patient),
+                    ),
                     const SizedBox(width: 16),
-                    Expanded(flex: 4, child: evidenceDetailsWidget),
-                  ],
-                ),
-              ] else ...[
-                imageViewerWidget,
-                const SizedBox(height: 12),
-                evidenceDetailsWidget,
-              ],
-              const SizedBox(height: 16),
 
-              const MedicalDisclaimerBanner(),
+                    // Right Column: Diagnostic & Feature Attribution Panel (35% width)
+                    Expanded(
+                      flex: 35,
+                      child: _buildSidePanel(pred, severity, isReferable),
+                    ),
+                  ],
+                )
+              else ...[
+                _buildViewer(exp, session, patient),
+                const SizedBox(height: 14),
+                _buildSidePanel(pred, severity, isReferable),
+              ],
+              const SizedBox(height: 20),
+
+              const MedicalDisclaimerBanner(isCompact: true),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildViewer(dynamic exp, dynamic session, dynamic patient) {
+    return FundusImageViewer(
+      originalImagePath: exp?.originalImageUrl ?? session.imagePath ?? '',
+      gradcamImagePath: exp?.gradcamImageUrl ?? session.prediction?.heatmapPath,
+      mode: FundusViewerMode.overlay,
+      height: 480,
+      eyeTag: patient?.eye,
+      imageId: session.screeningId,
+      showControls: true,
+    );
+  }
+
+  Widget _buildSidePanel(dynamic pred, DRSeverity? severity, bool isReferable) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1. NEURAL ATTRIBUTION EXPLANATION
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.lightBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'GRADIENT-WEIGHTED ATTRIBUTION',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Heatmap highlights vascular zones where the ResNet-18 convolutional feature maps detected diabetic microvascular lesions:',
+                style: TextStyle(fontSize: 12, height: 1.4, color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 10),
+              _lesionBullet('Red/Orange Hotspots', 'High-attention regions (Microaneurysms, Hard Exudates, Hemorrhages).'),
+              const SizedBox(height: 6),
+              _lesionBullet('Cyan/Blue Cool Zones', 'Background non-pathological retinal parenchyma.'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // 2. DIAGNOSTIC PREDICTION & PROBABILITY
+        if (pred != null)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.lightBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'MODEL PROBABILITIES',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 12),
+                if (pred.probabilities != null && pred.probabilities!.isNotEmpty)
+                  ProbabilityDistributionWidget(
+                    probabilities: pred.probabilities!,
+                    predictedLevel: pred.drLevel,
+                    isDarkMode: false,
+                  )
+                else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Model Probability', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text(
+                        AppFormatters.formatProbability(pred.modelProbability),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.electricBlue),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 12),
+
+        // 3. CLINICAL ACTION CARD
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: isReferable ? AppColors.referableAlertBg : AppColors.statusGoodBg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: isReferable ? AppColors.referableAlert : AppColors.statusGood),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isReferable ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded,
+                color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  isReferable
+                      ? 'Referable diabetic retinopathy detected. Specialist review advised.'
+                      : 'Non-referable findings. Routine annual follow-up recommended.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: isReferable ? const Color(0xFF991B1B) : const Color(0xFF166534),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _lesionBullet(String title, String desc) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 4),
+          width: 6,
+          height: 6,
+          decoration: const BoxDecoration(color: AppColors.electricBlue, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary, height: 1.3),
+              children: [
+                TextSpan(text: '$title: ', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                TextSpan(text: desc),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
