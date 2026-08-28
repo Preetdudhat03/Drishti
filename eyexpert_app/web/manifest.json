@@ -1,6 +1,6 @@
 {
-    "name": "eyexpert_app",
-    "short_name": "eyexpert_app",
+    "name": "Drishti — Explainable AI DR Screening",
+    "short_name": "Drishti",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
