@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 import '../api/api_client.dart';
 import '../api/api_endpoints.dart';
 import '../models/patient_model.dart';
@@ -19,6 +23,31 @@ class ScreeningService {
       : _apiClient = apiClient ?? ApiClient(),
         _supabaseService = supabaseService ?? SupabaseService();
 
+  Future<Uint8List?> _loadBytesFromPath(String path) async {
+    if (path.isEmpty) return null;
+    try {
+      if (path.startsWith('assets/')) {
+        final byteData = await rootBundle.load(path);
+        return byteData.buffer.asUint8List();
+      }
+      if (path.startsWith('data:image') || (path.length > 500 && !path.contains('/') && !path.contains('\\'))) {
+        final cleanBase64 = path.contains(',') ? path.split(',').last : path;
+        return base64Decode(cleanBase64.replaceAll('\n', '').replaceAll('\r', ''));
+      }
+      if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:')) {
+        final res = await http.get(Uri.parse(path));
+        if (res.statusCode == 200) return res.bodyBytes;
+      }
+      final file = File(path);
+      if (await file.exists()) {
+        return await file.readAsBytes();
+      }
+    } catch (e) {
+      debugPrint('[ScreeningService] Image load note: $e');
+    }
+    return null;
+  }
+
   Future<Map<String, dynamic>> _verifyRetinalSignature(Uint8List imageBytes) async {
     try {
       final codec = await ui.instantiateImageCodec(imageBytes, targetWidth: 64, targetHeight: 64);
@@ -29,19 +58,16 @@ class ScreeningService {
 
       final bytes = byteData.buffer.asUint8List();
       int redTotal = 0;
-      int greenTotal = 0;
       int blueTotal = 0;
       int blueDominantCount = 0;
-      int pixelCount = bytes.length ~/ 4;
+      final pixelCount = 64 * 64;
 
       for (int i = 0; i < bytes.length; i += 4) {
         final r = bytes[i];
-        final g = bytes[i + 1];
         final b = bytes[i + 2];
         redTotal += r;
-        greenTotal += g;
         blueTotal += b;
-        if (b > r + 15 && b > 50) {
+        if (b > r * 1.05 && b > 35) {
           blueDominantCount++;
         }
       }
@@ -108,24 +134,21 @@ class ScreeningService {
     required String imagePath,
     bool isDemo = false,
   }) async {
-    Uint8List? rawBytes;
-    if (imagePath.isNotEmpty) {
-      final file = File(imagePath);
-      if (await file.exists()) {
-        rawBytes = await file.readAsBytes();
-      }
-    }
+    final rawBytes = await _loadBytesFromPath(imagePath);
 
     // 1. Primary: Upload raw fundus image to Supabase Cloud Storage
     if (SupabaseService.isInitialized && rawBytes != null && rawBytes.isNotEmpty) {
       try {
-        await _supabaseService.uploadFundusImage(
+        final uploadedUrl = await _supabaseService.uploadFundusImage(
           screeningId: screeningId,
           facilityId: 'PHC-RAMGARH-01',
           imageBytesOrFile: rawBytes,
           filename: 'fundus_photo.jpg',
         );
-      } catch (_) {}
+        debugPrint('[ScreeningService] Uploaded fundus image to Supabase Storage: $uploadedUrl');
+      } catch (e) {
+        debugPrint('[ScreeningService] Storage upload note: $e');
+      }
     }
 
     // 2. Optical Retinal Signature Pre-check (Rejects non-retinal objects, icons, screens)
