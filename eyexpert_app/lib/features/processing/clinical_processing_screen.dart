@@ -124,6 +124,9 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
       );
     }
 
+    final isDemo = session.selectedDemoScenario != null;
+    final double progressPct = (currentStep / 5.0).clamp(0.1, 1.0);
+
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -133,8 +136,42 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // AI Badge Header
-              Center(child: StatusBadge.aiBadge(label: 'AI PROCESSING PIPELINE')),
+              // Real Backend vs Demo Badge
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isDemo ? const Color(0xFFF1F5F9) : const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDemo ? const Color(0xFFCBD5E1) : const Color(0xFF86EFAC),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isDemo ? Icons.science_outlined : Icons.cloud_done_rounded,
+                        size: 15,
+                        color: isDemo ? AppColors.textSecondary : const Color(0xFF15803D),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isDemo
+                            ? 'BENCHMARK SIMULATION'
+                            : 'LIVE BACKEND: PYTORCH RESNET-18',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                          color: isDemo ? AppColors.textSecondary : const Color(0xFF166534),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               
               // Pulsing Teal Icon
@@ -145,7 +182,7 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                   decoration: BoxDecoration(
                     color: AppColors.accentLight,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.accent.withOpacity(0.2), width: 1.5),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.2), width: 1.5),
                   ),
                   child: const Center(
                     child: SizedBox(
@@ -159,13 +196,13 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               const Text(
                 'Analyzing Retinal Photograph',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.primary,
                   letterSpacing: -0.2,
                 ),
@@ -176,7 +213,33 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
+              // Linear Progress Bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: progressPct,
+                  minHeight: 6,
+                  backgroundColor: const Color(0xFFE2E8F0),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Pipeline Progress: Step $currentStep of 5',
+                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    '${(progressPct * 100).toInt()}%',
+                    style: const TextStyle(fontSize: 11, color: AppColors.accent, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
 
               // Trustworthy Clinical Step Sequence
               ClinicalCard(
@@ -203,26 +266,28 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                     const Divider(height: 20),
                     _stepRow(
                       stepNum: 3,
-                      title: 'Analyzing retinal image...',
-                      subtitle: 'ResNet-18 diabetic retinopathy inference',
+                      title: 'Deep retinopathy classification',
+                      subtitle: isDemo
+                          ? 'ResNet-18 benchmark reference classification'
+                          : 'PyTorch ResNet-18 forward pass on Render backend',
                       isDone: currentStep > 3,
                       isInProgress: currentStep == 3,
                     ),
                     const Divider(height: 20),
                     _stepRow(
                       stepNum: 4,
-                      title: 'Generating explainability',
-                      subtitle: 'Layer-4 Grad-CAM activation heatmap',
+                      title: 'Explainability & Grad-CAM generation',
+                      subtitle: 'Layer-4 convolutional lesion activation map',
                       isDone: currentStep > 4,
                       isInProgress: currentStep == 4,
                     ),
                     const Divider(height: 20),
                     _stepRow(
                       stepNum: 5,
-                      title: 'Preparing clinical summary',
-                      subtitle: 'Ready for clinician validation',
-                      isDone: currentStep > 4,
-                      isInProgress: false,
+                      title: 'Packaging clinical triage summary',
+                      subtitle: 'Ready for ophthalmologist validation & report',
+                      isDone: currentStep >= 5,
+                      isInProgress: currentStep == 5,
                     ),
                   ],
                 ),
@@ -230,7 +295,7 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
               const SizedBox(height: 16),
 
               Text(
-                session.processingStepLabel ?? 'Executing medical AI inference...',
+                session.processingStepLabel ?? 'Executing medical AI inference on cloud backend...',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 12.5,
