@@ -1333,6 +1333,25 @@ let currentCase = null;
 let probChart = null;
 let cameraStream = null;
 
+function toggleSidebar(forceOpen) {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (!sidebar) return;
+    
+    if (typeof forceOpen === 'boolean') {
+        if (forceOpen) {
+            sidebar.classList.add('open');
+            if (backdrop) backdrop.classList.add('active');
+        } else {
+            sidebar.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('active');
+        }
+    } else {
+        const isOpen = sidebar.classList.toggle('open');
+        if (backdrop) backdrop.classList.toggle('active', isOpen);
+    }
+}
+
 function initChart() {
     const ctx = document.getElementById('probBarChart').getContext('2d');
     probChart = new Chart(ctx, {
