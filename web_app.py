@@ -1729,6 +1729,24 @@ def api_view_report(id):
     return html
 
 # ----------------- REST API V1 COMPLIANCE (FOR FLUTTER CLIENT) -----------------
+@app.route('/api/v1')
+@app.route('/api/v1/')
+def api_v1_index():
+    return jsonify({
+        "service": "Drishti Retinal AI Screening API",
+        "version": "1.0.0",
+        "status": "HEALTHY",
+        "model_status": MODEL_STATUS,
+        "endpoints": {
+            "system_status": "/api/v1/system/status",
+            "screenings": "/api/v1/screenings",
+            "upload_image": "/api/v1/screenings/<id>/image",
+            "quality_assessment": "/api/v1/screenings/<id>/quality",
+            "deep_analysis": "/api/v1/screenings/<id>/analyze",
+            "explainability": "/api/v1/screenings/<id>/explainability"
+        }
+    })
+
 @app.route('/api/v1/system/status')
 def api_v1_status():
     return jsonify({
