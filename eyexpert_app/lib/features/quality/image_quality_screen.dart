@@ -71,9 +71,103 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                             : StatusBadge.good(isLarge: true),
                 ],
               ),
-              const SizedBox(height: 14),
-
-              if (isEvaluating || quality == null) ...[
+              if (session.errorMessage != null) ...[
+                // Explicit Actionable Error Card
+                ClinicalCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFEE2E2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.error_outline_rounded, color: AppColors.statusUngradable, size: 28),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Quality Assessment Error',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'An issue occurred while evaluating the retinal fundus image.',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFCA5A5)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'ERROR DETAILS & DIAGNOSTICS:',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF991B1B)),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              session.errorMessage!,
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF7F1D1D), fontWeight: FontWeight.w500),
+                            ),
+                            if (session.imagePath != null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                'File: ${session.imagePath}',
+                                style: const TextStyle(fontSize: 10, color: Color(0xFF991B1B)),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: PrimaryButton(
+                              text: 'Retry Assessment',
+                              icon: Icons.refresh_rounded,
+                              onPressed: () {
+                                ref.read(screeningSessionProvider.notifier).runQualityAssessment();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: widget.onRetake,
+                              icon: const Icon(Icons.camera_alt_outlined),
+                              label: const Text('Recapture Image'),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (isEvaluating || quality == null) ...[
                 // Loading / Multi-Step Pipeline Evaluation State
                 ClinicalCard(
                   padding: const EdgeInsets.all(18),
