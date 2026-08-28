@@ -273,7 +273,7 @@ class _FundusReticlePainter extends CustomPainter {
     canvas.drawCircle(center, radius, paint);
 
     // Crosshair ticks
-    final tickLength = 12.0;
+    const tickLength = 12.0;
     canvas.drawLine(Offset(center.dx - radius - tickLength, center.dy), Offset(center.dx - radius + tickLength, center.dy), paint);
     canvas.drawLine(Offset(center.dx + radius - tickLength, center.dy), Offset(center.dx + radius + tickLength, center.dy), paint);
     canvas.drawLine(Offset(center.dx, center.dy - radius - tickLength), Offset(center.dx, center.dy - radius + tickLength), paint);
