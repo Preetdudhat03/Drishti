@@ -832,6 +832,44 @@ HTML_PAGE = """
                 font-size: 11.5px;
                 padding: 7px 12px;
             }
+            .modal-content {
+                width: 95vw !important;
+                max-height: 90vh !important;
+                padding: 14px !important;
+                overflow-y: auto !important;
+            }
+            .table-responsive {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* 4. Ultra-Small Phones (<= 480px) */
+        @media (max-width: 480px) {
+            header {
+                padding: 8px 10px;
+            }
+            .header-title-box h2 {
+                font-size: 14px;
+            }
+            .header-title-box p {
+                display: none;
+            }
+            .content-body {
+                padding: 8px 6px;
+            }
+            .card {
+                padding: 10px 8px;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 6px;
+            }
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
         }
     </style>
 </head>

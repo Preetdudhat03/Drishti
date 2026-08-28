@@ -46,11 +46,11 @@ class SyncManagerScreen extends ConsumerWidget {
               // Network Status Banner & Simulator Toggle
               ClinicalCard(
                 backgroundColor: syncState.isOnline
-                    ? AppColors.statusGoodBg.withOpacity(0.4)
-                    : AppColors.statusBorderlineBg.withOpacity(0.4),
+                    ? AppColors.statusGoodBg.withValues(alpha: 0.4)
+                    : AppColors.statusBorderlineBg.withValues(alpha: 0.4),
                 borderColor: syncState.isOnline
-                    ? AppColors.statusGood.withOpacity(0.4)
-                    : AppColors.statusBorderline.withOpacity(0.4),
+                    ? AppColors.statusGood.withValues(alpha: 0.4)
+                    : AppColors.statusBorderline.withValues(alpha: 0.4),
                 child: Row(
                   children: [
                     Icon(

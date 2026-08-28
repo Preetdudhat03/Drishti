@@ -12,9 +12,9 @@ class MedicalDisclaimerBanner extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(isCompact ? 8 : 12),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.5),
+        color: AppColors.primaryLight.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.primary.withOpacity(0.25)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

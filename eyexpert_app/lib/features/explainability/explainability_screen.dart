@@ -201,7 +201,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
           decoration: BoxDecoration(
             color: AppColors.statusBorderlineBg,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.statusBorderline.withOpacity(0.4)),
+            border: Border.all(color: AppColors.statusBorderline.withValues(alpha: 0.4)),
           ),
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,

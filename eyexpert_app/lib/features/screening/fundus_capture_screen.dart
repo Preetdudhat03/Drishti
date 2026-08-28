@@ -159,7 +159,7 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.black87.withOpacity(0.85),
+                          color: Colors.black87.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.white24),
                         ),
@@ -358,7 +358,7 @@ class _FundusReticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.tealAccent.withOpacity(0.6)
+      ..color = Colors.tealAccent.withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 

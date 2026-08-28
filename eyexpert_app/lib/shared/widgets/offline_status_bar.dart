@@ -22,7 +22,7 @@ class OfflineStatusBar extends StatelessWidget {
     final isOffline = !isOnline;
     final bgColor = isOffline ? AppColors.offlineBannerBg : AppColors.statusGoodBg;
     final fgColor = isOffline ? Colors.white : AppColors.statusGood;
-    final borderColor = isOffline ? Colors.transparent : AppColors.statusGood.withOpacity(0.3);
+    final borderColor = isOffline ? Colors.transparent : AppColors.statusGood.withValues(alpha: 0.3);
 
     return InkWell(
       onTap: onTap,
@@ -65,7 +65,7 @@ class OfflineStatusBar extends StatelessWidget {
               Text(
                 'Tap to manage',
                 style: TextStyle(
-                  color: fgColor.withOpacity(0.8),
+                  color: fgColor.withValues(alpha: 0.8),
                   fontSize: 11,
                   decoration: TextDecoration.underline,
                 ),

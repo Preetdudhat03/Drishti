@@ -72,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.accentLight,
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
                       ),
                       child: const Text(
                         'SIH 2026 | PS-26038',

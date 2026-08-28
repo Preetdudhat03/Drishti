@@ -264,17 +264,17 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: quality.isUngradable
-                              ? AppColors.statusUngradableBg.withOpacity(0.5)
+                              ? AppColors.statusUngradableBg.withValues(alpha: 0.5)
                               : quality.isBorderline
-                                  ? AppColors.statusBorderlineBg.withOpacity(0.5)
-                                  : AppColors.statusGoodBg.withOpacity(0.5),
+                                  ? AppColors.statusBorderlineBg.withValues(alpha: 0.5)
+                                  : AppColors.statusGoodBg.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: quality.isUngradable
-                                ? AppColors.statusUngradable.withOpacity(0.4)
+                                ? AppColors.statusUngradable.withValues(alpha: 0.4)
                                 : quality.isBorderline
-                                    ? AppColors.statusBorderline.withOpacity(0.4)
-                                    : AppColors.statusGood.withOpacity(0.4),
+                                    ? AppColors.statusBorderline.withValues(alpha: 0.4)
+                                    : AppColors.statusGood.withValues(alpha: 0.4),
                           ),
                         ),
                         child: Column(
@@ -368,10 +368,10 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: quality.isUngradable
-                            ? AppColors.statusUngradable.withOpacity(0.3)
+                            ? AppColors.statusUngradable.withValues(alpha: 0.3)
                             : quality.isBorderline
-                                ? AppColors.statusBorderline.withOpacity(0.3)
-                                : AppColors.statusGood.withOpacity(0.3),
+                                ? AppColors.statusBorderline.withValues(alpha: 0.3)
+                                : AppColors.statusGood.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -542,7 +542,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
           width: 22,
           height: 22,
           decoration: BoxDecoration(
-            color: indicatorColor.withOpacity(0.15),
+            color: indicatorColor.withValues(alpha: 0.15),
             shape: BoxShape.circle,
             border: Border.all(color: indicatorColor, width: 1.5),
           ),

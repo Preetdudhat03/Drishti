@@ -155,7 +155,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                           decoration: BoxDecoration(
-                            color: _selectedEye == 'OD' ? AppColors.primary.withOpacity(0.1) : Colors.white,
+                            color: _selectedEye == 'OD' ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: _selectedEye == 'OD' ? AppColors.primary : Colors.grey.shade300,
@@ -192,7 +192,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                           decoration: BoxDecoration(
-                            color: _selectedEye == 'OS' ? AppColors.primary.withOpacity(0.1) : Colors.white,
+                            color: _selectedEye == 'OS' ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: _selectedEye == 'OS' ? AppColors.primary : Colors.grey.shade300,

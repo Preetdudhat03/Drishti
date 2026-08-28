@@ -87,8 +87,8 @@ class AiResultScreen extends ConsumerWidget {
 
               // Dominant Result Card
               ClinicalCard(
-                borderColor: isReferable ? AppColors.referableAlert.withOpacity(0.4) : AppColors.border,
-                backgroundColor: isReferable ? AppColors.referableAlertBg.withOpacity(0.5) : Colors.white,
+                borderColor: isReferable ? AppColors.referableAlert.withValues(alpha: 0.4) : AppColors.border,
+                backgroundColor: isReferable ? AppColors.referableAlertBg.withValues(alpha: 0.5) : Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -192,8 +192,8 @@ class AiResultScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: isReferable
-                                      ? AppColors.referableAlert.withOpacity(0.3)
-                                      : AppColors.statusGood.withOpacity(0.3),
+                                      ? AppColors.referableAlert.withValues(alpha: 0.3)
+                                      : AppColors.statusGood.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Row(
@@ -244,8 +244,8 @@ class AiResultScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isReferable
-                            ? AppColors.referableAlert.withOpacity(0.3)
-                            : AppColors.statusGood.withOpacity(0.3),
+                            ? AppColors.referableAlert.withValues(alpha: 0.3)
+                            : AppColors.statusGood.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(

@@ -279,7 +279,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
         ClinicalCard(
           title: 'FINAL CLINICIAN DECISION',
           titleAction: StatusBadge.clinicianBadge(),
-          backgroundColor: review != null ? AppColors.accentLight.withOpacity(0.5) : Colors.white,
+          backgroundColor: review != null ? AppColors.accentLight.withValues(alpha: 0.5) : Colors.white,
           borderColor: review != null ? AppColors.accent : AppColors.border,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

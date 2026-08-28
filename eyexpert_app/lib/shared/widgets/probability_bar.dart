@@ -73,7 +73,7 @@ class ProbabilityDistributionWidget extends StatelessWidget {
               minHeight: isPredicted ? 8 : 6,
               backgroundColor: Colors.grey.shade200,
               valueColor: AlwaysStoppedAnimation<Color>(
-                isPredicted ? severity.color : severity.color.withOpacity(0.5),
+                isPredicted ? severity.color : severity.color.withValues(alpha: 0.5),
               ),
             ),
           ),
