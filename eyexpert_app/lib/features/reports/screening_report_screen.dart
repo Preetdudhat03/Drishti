@@ -58,9 +58,11 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
       final c = _getCase();
       await ReportService.printReport(c);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Print error: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Print error: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }
@@ -72,9 +74,11 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
       final c = _getCase();
       await ReportService.shareReport(c);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Share error: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Share error: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }
