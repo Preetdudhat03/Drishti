@@ -152,7 +152,7 @@ class ScreeningService {
       final response = await _apiClient.post(ApiEndpoints.screeningAnalyze(screeningId));
       if (response != null && response is Map) {
         final pred = DRPredictionModel.fromJson(
-          Map<String, dynamic>.from(response as Map),
+          Map<String, dynamic>.from(response),
           screeningId: screeningId,
         );
         
