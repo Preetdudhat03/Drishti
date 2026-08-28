@@ -220,35 +220,45 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
     );
 
     try {
+      final isDemo = state.selectedDemoScenario != null;
+
       // Step 2: Preprocessing & CLAHE
       state = state.copyWith(
         processingStep: 2,
         processingStepLabel: state.quality!.isBorderline
-            ? 'Step 2/4: Applying Adaptive CLAHE Contrast Enhancement...'
-            : 'Step 2/4: Retinal FOV Cropping & Preprocessing...',
+            ? 'Step 2/5: Applying Adaptive CLAHE Contrast Enhancement...'
+            : 'Step 2/5: Retinal FOV Cropping & 224x224 Tensor Normalization...',
       );
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 350));
 
       // Step 3: ResNet-18 Inference
       state = state.copyWith(
         processingStep: 3,
-        processingStepLabel: 'Step 3/4: Deep Retinopathy Classification (ResNet-18)...',
+        processingStepLabel: isDemo
+            ? 'Step 3/5: Loading Benchmark Model Reference Data...'
+            : 'Step 3/5: Running PyTorch ResNet-18 Inference on Cloud Backend...',
       );
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      // Step 4: Grad-CAM Explainability Generation
-      state = state.copyWith(
-        processingStep: 4,
-        processingStepLabel: 'Step 4/4: Generating Grad-CAM Heatmap & Anatomical Evidence...',
-      );
-      await Future.delayed(const Duration(milliseconds: 500));
 
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
-        isDemo: state.selectedDemoScenario != false,
+        isDemo: isDemo,
         demoScenario: state.selectedDemoScenario,
       );
+
+      // Step 4: Grad-CAM Explainability Generation
+      state = state.copyWith(
+        processingStep: 4,
+        processingStepLabel: 'Step 4/5: Generating Layer-4 Grad-CAM Lesion Activation Map...',
+      );
+      await Future.delayed(const Duration(milliseconds: 350));
+
+      // Step 5: Preparing Clinical Summary
+      state = state.copyWith(
+        processingStep: 5,
+        processingStepLabel: 'Step 5/5: Formatting Clinical Triage Summary & Registering Queue...',
+      );
+      await Future.delayed(const Duration(milliseconds: 300));
 
       final pred = result['prediction'] as DRPredictionModel;
       final exp = result['explainability'] as ExplainabilityModel;
