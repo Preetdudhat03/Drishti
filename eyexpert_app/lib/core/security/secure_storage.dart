@@ -1,9 +1,9 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SecureStorage {
-  static const String _keyToken = 'eyexpert_auth_token';
-  static const String _keyUser = 'eyexpert_auth_user';
-  static const String _keyWorkflowMode = 'eyexpert_workflow_mode';
+  static const String _keyToken = 'drishti_auth_token';
+  static const String _keyUser = 'drishti_auth_user';
+  static const String _keyWorkflowMode = 'drishti_workflow_mode';
 
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
