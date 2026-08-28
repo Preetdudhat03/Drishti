@@ -1,9 +1,11 @@
-# Large Model Weights (>50MB)
-models/
-*.pth
+# Large Model Weights (>100MB)
+models/EyeXpert_ResNet18_best.pth
 *.pt
 *.onnx
 *.bin
+
+# Whitelist clean model state_dict for deployment (<50MB)
+!models/EyeXpert_ResNet18_state_dict.pth
 
 # Datasets and Large Raw Images
 data/aptos/train_images/
