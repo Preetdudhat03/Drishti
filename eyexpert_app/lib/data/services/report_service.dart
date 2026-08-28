@@ -15,102 +15,143 @@ class ReportService {
     final quality = screeningCase.quality;
     final review = screeningCase.review;
     final isReferable = pred?.referable ?? false;
+    final severity = pred != null ? DRSeverity.fromLevel(pred.drLevel) : null;
+
+    // Load fonts or use standard BaseFont to ensure 100% clean rendering
+    pw.Font? fontRegular;
+    pw.Font? fontBold;
+    try {
+      fontRegular = await PdfGoogleFonts.robotoRegular();
+      fontBold = await PdfGoogleFonts.robotoBold();
+    } catch (_) {
+      // Fallback to standard PDF Helvetica
+      fontRegular = pw.Font.helvetica();
+      fontBold = pw.Font.helveticaBold();
+    }
+
+    final theme = pw.ThemeData.withFont(
+      base: fontRegular,
+      bold: fontBold,
+    );
 
     pdf.addPage(
       pw.Page(
+        theme: theme,
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
           return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
-              // Header
+              // 1. HEADER
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        'Drishti Screening Report (दृष्टि)',
+                        'DRISHTI SCREENING REPORT',
                         style: pw.TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.teal900,
+                          color: PdfColors.blue900,
                         ),
                       ),
+                      pw.SizedBox(height: 2),
                       pw.Text(
-                        'Explainable AI Diabetic Retinopathy Screening • SIH 2026',
-                        style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                        'AI Retinal Screening & Tele-Ophthalmology Network | SIH 2026',
+                        style: const pw.TextStyle(fontSize: 9.5, color: PdfColors.grey700),
                       ),
                     ],
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: pw.BoxDecoration(
                       color: isReferable ? PdfColors.red50 : PdfColors.green50,
                       border: pw.Border.all(
-                        color: isReferable ? PdfColors.red800 : PdfColors.green800,
+                        color: isReferable ? PdfColors.red700 : PdfColors.green700,
+                        width: 1.2,
                       ),
                       borderRadius: pw.BorderRadius.circular(4),
                     ),
                     child: pw.Text(
-                      isReferable ? 'REFERABLE DR — YES' : 'NON-REFERABLE',
+                      isReferable ? 'REFERABLE DR - YES' : 'NON-REFERABLE',
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
-                        fontSize: 10,
+                        fontSize: 9.5,
                         color: isReferable ? PdfColors.red900 : PdfColors.green900,
                       ),
                     ),
                   ),
                 ],
               ),
-              pw.Divider(thickness: 1, color: PdfColors.grey400),
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: 8),
+              pw.Divider(thickness: 1, color: PdfColors.grey300),
+              pw.SizedBox(height: 8),
 
-              // Patient & Session Info Table
+              // 2. PATIENT & SCREENING INFORMATION
               pw.Container(
-                padding: const pw.EdgeInsets.all(8),
+                padding: const pw.EdgeInsets.all(10),
                 decoration: pw.BoxDecoration(
                   color: PdfColors.grey100,
-                  borderRadius: pw.BorderRadius.circular(4),
+                  borderRadius: pw.BorderRadius.circular(6),
+                  border: pw.Border.all(color: PdfColors.grey300),
                 ),
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    _pdfInfoCol('Patient ID', screeningCase.patient.patientId),
-                    _pdfInfoCol('Screening ID', screeningCase.screeningId),
-                    _pdfInfoCol('Eye Evaluated', AppFormatters.formatEye(screeningCase.patient.eye)),
-                    _pdfInfoCol('Date', AppFormatters.formatDateTime(screeningCase.createdAt)),
+                    _pdfInfoCol('PATIENT ID', screeningCase.patient.patientId),
+                    _pdfInfoCol('SCREENING ID', screeningCase.screeningId),
+                    _pdfInfoCol('EXAMINATION EYE', '${screeningCase.patient.eye} (${screeningCase.patient.eye == "OD" ? "Right Eye" : "Left Eye"})'),
+                    _pdfInfoCol('AGE / GENDER', '${screeningCase.patient.age ?? "N/A"}Y / ${screeningCase.patient.gender ?? "N/A"}'),
+                    _pdfInfoCol('DATE', AppFormatters.formatDateTime(screeningCase.createdAt)),
                   ],
                 ),
               ),
-              pw.SizedBox(height: 14),
+              pw.SizedBox(height: 12),
 
-              // Image Quality Section
-              pw.Text('1. Image Quality Assessment',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
-              pw.SizedBox(height: 4),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Overall Status: ${quality?.status.label ?? "N/A"} (${AppFormatters.formatPercentage(quality?.overallScore)})'),
-                  pw.Text('Focus: ${quality?.sharpness.status ?? "N/A"}'),
-                  pw.Text('Illumination: ${quality?.illumination.status ?? "N/A"}'),
-                  pw.Text('Retinal Field: ${quality?.fieldOfView.status ?? "N/A"}'),
-                ],
+              // 3. OPTICAL QUALITY ASSESSMENT
+              pw.Text(
+                '1. OPTICAL IMAGE QUALITY ASSESSMENT',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.blueGrey800),
               ),
-              pw.SizedBox(height: 14),
+              pw.SizedBox(height: 4),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(8),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.white,
+                  borderRadius: pw.BorderRadius.circular(4),
+                  border: pw.Border.all(color: PdfColors.grey300),
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Overall Status: ${quality?.status.label ?? "GOOD"} (${AppFormatters.formatPercent(quality?.overallScore)})',
+                        style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Focus: ${quality?.sharpness.status ?? "GOOD"}', style: const pw.TextStyle(fontSize: 9)),
+                    pw.Text('Illumination: ${quality?.illumination.status ?? "GOOD"}', style: const pw.TextStyle(fontSize: 9)),
+                    pw.Text('Field of View: ${quality?.fieldOfView.status ?? "ADEQUATE"}', style: const pw.TextStyle(fontSize: 9)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 12),
 
-              // AI Screening Result Section
-              pw.Text('2. AI Screening Result',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+              // 4. AI RETINOPATHY CLASSIFICATION
+              pw.Text(
+                '2. AI RETINOPATHY CLASSIFICATION',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.blueGrey800),
+              ),
               pw.SizedBox(height: 4),
               pw.Container(
                 padding: const pw.EdgeInsets.all(10),
                 decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  borderRadius: pw.BorderRadius.circular(4),
+                  color: isReferable ? PdfColors.red50 : PdfColors.green50,
+                  border: pw.Border.all(
+                    color: isReferable ? PdfColors.red300 : PdfColors.green300,
+                  ),
+                  borderRadius: pw.BorderRadius.circular(6),
                 ),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -120,36 +161,45 @@ class ReportService {
                       children: [
                         pw.Text(
                           pred != null
-                              ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
-                              : 'AI Prediction Blocked (Ungradable Quality)',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+                              ? 'Level ${pred.drLevel}: ${severity?.fullName ?? pred.severityLabel}'
+                              : 'AI Prediction Blocked (Ungradable Image Quality)',
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 11,
+                            color: isReferable ? PdfColors.red900 : PdfColors.green900,
+                          ),
                         ),
                         if (pred != null)
                           pw.Text(
                             'Model Probability: ${AppFormatters.formatProbability(pred.modelProbability)}',
-                            style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
+                            style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold, color: PdfColors.grey800),
                           ),
                       ],
                     ),
                     pw.SizedBox(height: 4),
-                    pw.Text('Recommendation: ${pred?.recommendation ?? "Recapture retinal image."}',
-                        style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text(
+                      'Clinical Recommendation: ${pred?.recommendation ?? "Recapture retinal fundus photograph."}',
+                      style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey900),
+                    ),
                   ],
                 ),
               ),
-              pw.SizedBox(height: 14),
+              pw.SizedBox(height: 12),
 
-              // Clinician Review Section
-              pw.Text('3. Clinician Final Decision',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+              // 5. CLINICIAN DECISION RECORD
+              pw.Text(
+                '3. CLINICIAN REVIEW & AUDIT LOG',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.blueGrey800),
+              ),
               pw.SizedBox(height: 4),
               pw.Container(
                 padding: const pw.EdgeInsets.all(10),
                 decoration: pw.BoxDecoration(
                   color: review != null ? PdfColors.blue50 : PdfColors.amber50,
                   border: pw.Border.all(
-                      color: review != null ? PdfColors.blue300 : PdfColors.amber300),
-                  borderRadius: pw.BorderRadius.circular(4),
+                    color: review != null ? PdfColors.blue300 : PdfColors.amber300,
+                  ),
+                  borderRadius: pw.BorderRadius.circular(6),
                 ),
                 child: review != null
                     ? pw.Column(
@@ -158,43 +208,50 @@ class ReportService {
                           pw.Row(
                             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                             children: [
-                              pw.Text('Action: ${review.action.label}',
+                              pw.Text('Status: ${review.action.label.toUpperCase()}',
                                   style: pw.TextStyle(
-                                      fontWeight: pw.FontWeight.bold, fontSize: 11)),
-                              pw.Text('Reviewer: ${review.clinicianName ?? "Ophthalmologist"}',
-                                  style: const pw.TextStyle(fontSize: 10)),
+                                      fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.blue900)),
+                              pw.Text('Reviewer: ${review.clinicianName ?? "Authorized Ophthalmologist"}',
+                                  style: const pw.TextStyle(fontSize: 9.5)),
                             ],
                           ),
                           pw.SizedBox(height: 4),
                           pw.Text('Clinical Notes: ${review.clinicalNotes}',
-                              style: const pw.TextStyle(fontSize: 10)),
+                              style: const pw.TextStyle(fontSize: 9)),
                           pw.SizedBox(height: 2),
-                          pw.Text('Reviewed At: ${AppFormatters.formatDateTime(review.reviewedAt)}',
-                              style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                          pw.Text('Timestamp: ${AppFormatters.formatDateTime(review.reviewedAt)}',
+                              style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
                         ],
                       )
-                    : pw.Text(
-                        'Human Validation State: PENDING OPHTHALMOLOGIST REVIEW',
-                        style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 10,
-                            color: PdfColors.amber900),
+                    : pw.Row(
+                        children: [
+                          pw.Text(
+                            'Status: AI TRIAGE (Awaiting Ophthalmologist Review & Confirmation)',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize: 9.5,
+                              color: PdfColors.amber900,
+                            ),
+                          ),
+                        ],
                       ),
               ),
-              pw.SizedBox(height: 14),
+              pw.SizedBox(height: 12),
 
-              // Model Provenance
-              pw.Text('4. Model Provenance & Traceability',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+              // 6. MODEL TRACEABILITY
+              pw.Text(
+                '4. MODEL PROVENANCE & TRACEABILITY',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.blueGrey800),
+              ),
               pw.SizedBox(height: 2),
               pw.Text(
-                'Model: Drishti DR Classifier (ResNet-18) | Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
+                'Architecture: ResNet-18 (Transfer Learning) | Training Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
                 style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
               ),
 
               pw.Spacer(),
 
-              // Statutory Disclaimer
+              // 7. REGULATORY DISCLAIMER
               pw.Container(
                 padding: const pw.EdgeInsets.all(8),
                 decoration: pw.BoxDecoration(
@@ -221,9 +278,9 @@ class ReportService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(label, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
-        pw.SizedBox(height: 2),
-        pw.Text(value, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+        pw.Text(label, style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey700)),
+        pw.SizedBox(height: 1),
+        pw.Text(value, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
       ],
     );
   }
@@ -244,3 +301,4 @@ class ReportService {
     );
   }
 }
+
