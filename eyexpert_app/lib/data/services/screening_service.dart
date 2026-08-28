@@ -109,11 +109,17 @@ class ScreeningService {
       );
 
       if (uploadRes != null && uploadRes is Map && uploadRes.containsKey('quality')) {
-        return QualityAssessmentModel.fromJson(uploadRes['quality'], screeningId: screeningId);
+        return QualityAssessmentModel.fromJson(
+          Map<String, dynamic>.from(uploadRes['quality'] as Map),
+          screeningId: screeningId,
+        );
       }
 
       final response = await _apiClient.get(ApiEndpoints.screeningQuality(screeningId));
-      return QualityAssessmentModel.fromJson(response, screeningId: screeningId);
+      return QualityAssessmentModel.fromJson(
+        Map<String, dynamic>.from(response as Map),
+        screeningId: screeningId,
+      );
     } catch (e) {
       if (e is AppException) rethrow;
       throw NetworkException(
@@ -178,10 +184,15 @@ class ScreeningService {
       if (response == null || response is! Map) {
         throw ModelUnavailableException('Empty or invalid response received from PyTorch inference engine.');
       }
-      final pred = DRPredictionModel.fromJson(response, screeningId: screeningId);
+      final pred = DRPredictionModel.fromJson(
+        Map<String, dynamic>.from(response as Map),
+        screeningId: screeningId,
+      );
       
       final expResponse = await _apiClient.get(ApiEndpoints.screeningExplainability(screeningId));
-      final explainability = ExplainabilityModel.fromJson(expResponse);
+      final explainability = ExplainabilityModel.fromJson(
+        Map<String, dynamic>.from(expResponse as Map),
+      );
 
       return {
         'prediction': pred,
