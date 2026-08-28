@@ -533,6 +533,96 @@ CREATE TABLE IF NOT EXISTS public.audit_events (
 );
 ```
 
+### Demo Accounts & Supabase Auth Seeding
+
+To register default credentials in Supabase Auth and `public.profiles` for live testing and demonstration:
+
+| Account Type | Email / Username | Password | Assigned Name | Role & Facility |
+| :--- | :--- | :---: | :--- | :--- |
+| **Frontline Health Worker** | `healthworker.demo@drishti.org` | `demo1234` | Sunita Sharma | `Health Worker` (PHC-RAMGARH-01) |
+| **Ophthalmologist / Clinician** | `clinician.demo@drishti.org` | `demo1234` | Dr. Rajesh Kumar | `Ophthalmologist / Clinician` (District Hospital) |
+
+#### Supabase SQL Seeding Script:
+
+```sql
+-- ============================================================================
+-- SEED DEMO ACCOUNTS INTO SUPABASE AUTH & PROFILES
+-- Password for both accounts: demo1234
+-- ============================================================================
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- 1. Remove old demo records if they exist
+DELETE FROM auth.users WHERE email IN ('healthworker.demo@drishti.org', 'clinician.demo@drishti.org');
+
+-- 2. Insert Health Worker into auth.users
+INSERT INTO auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at
+)
+VALUES (
+    '00000000-0000-0000-0000-000000000000',
+    gen_random_uuid(),
+    'authenticated',
+    'authenticated',
+    'healthworker.demo@drishti.org',
+    crypt('demo1234', gen_salt('bf')),
+    NOW(),
+    '{"provider":"email","providers":["email"]}',
+    '{"name":"Sunita Sharma","role":"Health Worker"}',
+    NOW(),
+    NOW()
+);
+
+-- 3. Insert Clinician into auth.users
+INSERT INTO auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at
+)
+VALUES (
+    '00000000-0000-0000-0000-000000000000',
+    gen_random_uuid(),
+    'authenticated',
+    'authenticated',
+    'clinician.demo@drishti.org',
+    crypt('demo1234', gen_salt('bf')),
+    NOW(),
+    '{"provider":"email","providers":["email"]}',
+    '{"name":"Dr. Rajesh Kumar","role":"Ophthalmologist / Clinician"}',
+    NOW(),
+    NOW()
+);
+
+-- 4. Sync Profiles into public.profiles
+INSERT INTO public.profiles (id, email, name, role, facility_id, phone)
+SELECT 
+    id, 
+    email, 
+    CASE WHEN email LIKE '%healthworker%' THEN 'Sunita Sharma' ELSE 'Dr. Rajesh Kumar' END,
+    CASE WHEN email LIKE '%healthworker%' THEN 'Health Worker' ELSE 'Ophthalmologist / Clinician' END,
+    CASE WHEN email LIKE '%healthworker%' THEN 'PHC-RAMGARH-01' ELSE 'DISTRICT-EYE-HOSPITAL' END,
+    CASE WHEN email LIKE '%healthworker%' THEN '+91 98765 43210' ELSE '+91 91234 56789' END
+FROM auth.users
+WHERE email IN ('healthworker.demo@drishti.org', 'clinician.demo@drishti.org');
+```
+
 ---
 
 ## 8. Client-Side Applications & State Management
