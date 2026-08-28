@@ -3,12 +3,15 @@ import '../models/user_model.dart';
 import '../api/api_client.dart';
 import '../api/api_endpoints.dart';
 import '../../core/security/secure_storage.dart';
-import 'mock_data_service.dart';
+import 'supabase_service.dart';
 
 class AuthService {
   final ApiClient _apiClient;
+  final SupabaseService _supabaseService;
 
-  AuthService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  AuthService({ApiClient? apiClient, SupabaseService? supabaseService})
+      : _apiClient = apiClient ?? ApiClient(),
+        _supabaseService = supabaseService ?? SupabaseService();
 
   Future<UserModel> login({
     required String username,
@@ -16,6 +19,7 @@ class AuthService {
     required UserRole roleRequested,
     bool isDemo = true,
   }) async {
+    // 1. If explicit demo account requested
     if (isDemo || username.contains('demo')) {
       final UserModel user = roleRequested == UserRole.clinician
           ? UserModel.demoClinician
@@ -25,6 +29,26 @@ class AuthService {
       return user;
     }
 
+    // 2. Real Supabase Auth attempt
+    if (SupabaseService.isInitialized) {
+      try {
+        final supaUser = await _supabaseService.signIn(
+          email: username,
+          password: password,
+        );
+        if (supaUser != null) {
+          if (supaUser.token != null) {
+            await SecureStorage.saveToken(supaUser.token!);
+          }
+          await SecureStorage.saveUserData(jsonEncode(supaUser.toJson()));
+          return supaUser;
+        }
+      } catch (_) {
+        // Fall back to REST API
+      }
+    }
+
+    // 3. Fallback to API Backend
     final response = await _apiClient.post(
       ApiEndpoints.login,
       body: {
@@ -56,6 +80,7 @@ class AuthService {
   }
 
   Future<void> logout() async {
+    await _supabaseService.signOut();
     await SecureStorage.clearSession();
   }
 }
