@@ -3,7 +3,6 @@ import '../api/api_endpoints.dart';
 import '../models/clinician_review_model.dart';
 import '../models/screening_case_model.dart';
 import '../../core/errors/app_exceptions.dart';
-import 'mock_data_service.dart';
 import 'supabase_service.dart';
 
 class ReviewService {
