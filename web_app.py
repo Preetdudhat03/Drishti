@@ -1699,7 +1699,7 @@ def process_screening_case(pil_img, screening_id, sample_key="custom_upload", pa
         "reviewer": "Pending Review",
         "review_notes": ""
     }
-    SCREENING_STORE[screening_id] = case_record
+    store_case_record(screening_id, case_record)
 
     return jsonify({
         "screeningId": screening_id,
