@@ -264,8 +264,9 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       );
 
       // Automatically register to clinician review queue and sync to Supabase
-      var newCase = state.toScreeningCase();
-      if (newCase != null) {
+      ScreeningCaseModel? baseCase = state.toScreeningCase();
+      if (baseCase != null) {
+        ScreeningCaseModel finalCase = baseCase;
         if (SupabaseService.isInitialized && state.imagePath != null) {
           try {
             final rawBytes = await _loadBytesFromPath(state.imagePath!);
@@ -277,7 +278,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
                 filename: 'fundus_photo.jpg',
               );
               if (publicUrl != null && publicUrl.isNotEmpty) {
-                newCase = newCase.copyWith(
+                finalCase = finalCase.copyWith(
                   image: FundusImageData(
                     imageId: 'IMG-${state.screeningId!.replaceAll("EX-", "")}',
                     imageUrl: publicUrl,
@@ -290,9 +291,9 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
           } catch (e) {
             // Log notice and continue with local case
           }
-          await _supabaseService.saveScreeningCase(newCase);
+          await _supabaseService.saveScreeningCase(finalCase);
         }
-        _ref.read(reviewQueueProvider.notifier).addCase(newCase);
+        _ref.read(reviewQueueProvider.notifier).addCase(finalCase);
       }
     } catch (e) {
       state = state.copyWith(
