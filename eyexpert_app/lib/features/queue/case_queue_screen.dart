@@ -229,7 +229,7 @@ class CaseQueueScreen extends ConsumerWidget {
                   },
                 ),
           ),
-        ),  ),
+        ),
       ],
     );
   }
