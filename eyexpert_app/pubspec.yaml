@@ -1,5 +1,5 @@
 name: eyexpert_app
-description: "EyeXpert - Explainable AI for Diabetic Retinopathy Screening in Rural India (SIH 2026 Problem Statement 26038)"
+description: "Drishti - Explainable AI for Diabetic Retinopathy Screening in Rural India (SIH 2026 Problem Statement 26038)"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.5.1
+  supabase_flutter: ^2.8.0
+  image_picker: ^1.1.2
   http: ^1.2.1
   intl: ^0.19.0
   uuid: ^4.4.0
