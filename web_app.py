@@ -1948,10 +1948,10 @@ def api_v1_upload_image(id):
     if file.filename == '':
         return jsonify({"error": "No file selected"}), 400
     
-    img = Image.open(file.stream).convert('RGB')
+    img = load_and_downsample_image(file.stream, max_dim=512)
     orig_b64 = pil_to_b64(img)
     q_result = assess_image_quality(img)
-    enhanced_img = apply_clahe_enhancement(img) if q_result.get('status') == 'BORDERLINE' else img
+    enhanced_img = enhance_fundus_image(img) if q_result.get('status') == 'BORDERLINE' else img
     
     quality_payload = {
         "screening_id": id,
