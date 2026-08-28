@@ -57,7 +57,7 @@ void main() {
 
       // Restore network
       syncService.setOnlineStatus(true);
-      await syncService.syncPendingQueue();
+      await Future.delayed(const Duration(milliseconds: 800));
 
       expect(syncService.isOnline, isTrue);
       expect(syncService.pendingCount, 0);
