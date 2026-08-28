@@ -657,21 +657,33 @@ HTML_PAGE = """
                         <option value="sample_borderline_illum">Borderline Low Contrast (CLAHE Target)</option>
                         <option value="sample_ungradable_blur">Ungradable Motion Blur (Safety Gate)</option>
                         <option value="sample_ungradable_dark">Ungradable Underexposure (Safety Gate)</option>
-                    </select>
-
-                    <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; background: #f8fafc; cursor: pointer; margin-bottom: 12px;" onclick="document.getElementById('fileInput').click()">
+                    <div id="dropZone" style="border: 2px dashed #94a3b8; border-radius: 8px; padding: 18px 14px; text-align: center; background: #f8fafc; cursor: pointer; margin-bottom: 12px; transition: all 0.2s;" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
                         <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleFileUpload(event)">
-                        <p style="font-size: 12px; font-weight: 700; color: var(--primary-accent);">📁 Upload Fundus Photograph</p>
-                        <p style="font-size: 10px; color: var(--text-muted);">PNG, JPG, TIFF (DICOM compatible)</p>
+                        <div style="font-size: 24px; margin-bottom: 4px;">📁</div>
+                        <p style="font-size: 13px; font-weight: 700; color: var(--primary-accent); margin-bottom: 2px;">Drag & Drop or Click to Upload</p>
+                        <p style="font-size: 10.5px; color: var(--text-muted);">Compatible with Smartphone Fundus, Topcon, Zeiss, Remidio DICOM/PNG/JPG</p>
                     </div>
 
                     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                        <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="openCameraModal()">📷 Device Camera</button>
+                        <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="openCameraModal()">📷 Device Camera Stream</button>
                     </div>
 
-                    <div class="img-box">
+                    <!-- MULTI-VIEW SELECTOR STRIP -->
+                    <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+                        <button id="viewBtnOrig" class="btn btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('orig')">Original</button>
+                        <button id="viewBtnEnh" class="btn btn-outline btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('enh')">CLAHE</button>
+                        <button id="viewBtnCam" class="btn btn-outline btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('cam')">Heatmap</button>
+                        <button id="viewBtnOver" class="btn btn-outline btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('overlay')">Overlay</button>
+                    </div>
+
+                    <div class="img-box" id="mainImgBox" style="position: relative;">
                         <img id="origImg" src="" style="display: none;">
+                        <img id="mainDynamicImg" src="" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
                         <span id="origPlaceholder" style="color: #64748b; font-size: 12px;">No image loaded</span>
+                        <div id="loadingOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); flex-direction:column; align-items:center; justify-content:center; color:white; border-radius:8px;">
+                            <div style="width:28px; height:28px; border:3px solid #38bdf8; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                            <span style="font-size:11px; margin-top:8px; font-weight:600;">Running PyTorch ResNet-18...</span>
+                        </div>
                     </div>
 
                     <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);">
