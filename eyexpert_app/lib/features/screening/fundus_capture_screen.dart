@@ -225,54 +225,6 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-
-              // Verified Scenarios Selector for Validation/Demonstration
-              ClinicalCard(
-                title: 'Or Select Verified Reference Scenario (Held-out Evaluation)',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Choose a verified benchmark fundus photograph to test the full quality & AI screening pipeline:',
-                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _scenarios.map((s) {
-                        final bool isSelected = _selectedScenario?['id'] == s['id'];
-                        final bool isUngradable = s['expectedLevel'] == -1;
-                        final bool isReferable = (s['expectedLevel'] ?? 0) >= 2;
-
-                        return ChoiceChip(
-                          avatar: Icon(
-                            isUngradable
-                                ? Icons.warning_amber_rounded
-                                : isReferable
-                                    ? Icons.notification_important_rounded
-                                    : Icons.check_circle_outline,
-                            size: 16,
-                            color: isSelected ? Colors.white : AppColors.textSecondary,
-                          ),
-                          label: Text(
-                            s['title'],
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                            ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: AppColors.primary,
-                          labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary),
-                          onSelected: (_) => _selectScenario(s),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 18),
 
               // Bottom Actions
