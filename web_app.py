@@ -592,9 +592,10 @@ HTML_PAGE = """
         table.data-table th { background: #f1f5f9; font-weight: 700; color: var(--primary); }
         table.data-table tr:hover { background: #f8fafc; }
 
-        /* TAB VIEWS */
-        .tab-view { display: none; }
-        .tab-view.active { display: block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .drop-active { border-color: var(--primary-accent) !important; background: #e0f2fe !important; }
+        .chip { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; background: #e2e8f0; color: #334155; cursor: pointer; margin-right: 4px; margin-bottom: 4px; transition: 0.15s; }
+        .chip:hover { background: #cbd5e1; }
     </style>
 </head>
 <body>
