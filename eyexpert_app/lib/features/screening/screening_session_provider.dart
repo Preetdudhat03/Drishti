@@ -270,10 +270,13 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
         isProcessing: false,
       );
 
-      // Automatically register to clinician review queue
+      // Automatically register to clinician review queue and sync to Supabase
       final newCase = state.toScreeningCase();
       if (newCase != null) {
         _ref.read(reviewQueueProvider.notifier).addCase(newCase);
+        if (SupabaseService.isInitialized) {
+          await _supabaseService.saveScreeningCase(newCase);
+        }
       }
     } catch (e) {
       state = state.copyWith(
