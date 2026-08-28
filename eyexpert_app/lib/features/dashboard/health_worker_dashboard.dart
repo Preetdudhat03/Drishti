@@ -29,7 +29,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
-    final totalCases = reviewState.allCases.length;
+    final totalCases = reviewState.totalScreenedCount;
     final referableCases = reviewState.referableCount;
     final pendingCases = reviewState.totalPendingCount;
 
@@ -90,7 +90,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'AI Retinal Screening Workstation • ${authState.user?.facilityId ?? "PHC-RAMGARH-01"}',
+                                        'AI Retinal Screening Workstation • ${authState.user?.organization ?? "PHC-RAMGARH-01"}',
                                         style: const TextStyle(
                                           fontSize: 12.5,
                                           color: AppColors.darkTextSecondary,
@@ -100,6 +100,224 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                     ],
                                   ),
                                 ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.obsidian,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: AppColors.hudCyan.withValues(alpha: 0.5)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.memory_rounded, size: 14, color: AppColors.hudCyan),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'ResNet-18 DR Engine',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.hudCyan,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+
+                            // Workstation System Status Strip
+                            Wrap(
+                              spacing: 16,
+                              runSpacing: 8,
+                              children: [
+                                _statusIndicator(Icons.cloud_done_rounded, 'Cloud Sync Active', AppColors.statusGood),
+                                _statusIndicator(Icons.security_rounded, 'Edge Inference Online', AppColors.electricBlue),
+                                _statusIndicator(Icons.verified_user_outlined, 'ISO 13485 Calibrated', AppColors.hudCyan),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 2. PRIMARY SCREENING INITIATION ACTION (Hero CTA)
+                      InkWell(
+                        onTap: onStartScreening,
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                                blurRadius: 14,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.add_a_photo_rounded,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 18),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'START NEW RETINAL SCREENING',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    SizedBox(height: 3),
+                                    Text(
+                                      '5-step clinical intake, capture, optical QC, AI diagnosis & clinician sign-off',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 18),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 3. CLINICAL TRIAGE DISTRIBUTION BAR
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.lightBorder),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'PATIENT TRIAGE STATUS',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textSecondary,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: onViewCases,
+                                  child: const Text(
+                                    'View All Cases →',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.electricBlue,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                _triageMetric('TOTAL SCREENED', '$totalCases', AppColors.textPrimary),
+                                _triageDivider(),
+                                _triageMetric('REFERABLE CASES', '$referableCases', AppColors.referableAlert),
+                                _triageDivider(),
+                                _triageMetric('AWAITING REVIEW', '$pendingCases', AppColors.pending),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 4. RECENT ACTIVITY TIMELINE
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'RECENT SCREENINGS',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: onViewCases,
+                            child: const Text('Open Review Queue'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.lightBorder),
+                        ),
+                        child: reviewState.cases.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.all(32),
+                                child: Center(
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.visibility_outlined, size: 36, color: AppColors.textMuted),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'No recent screening sessions recorded yet.',
+                                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: reviewState.cases.take(5).length,
+                                separatorBuilder: (_, __) => const Divider(height: 1),
+                                itemBuilder: (context, index) {
+                                  final c = reviewState.cases[index];
+                                  final pred = c.prediction;
+                                  final isReferable = c.isReferable;
+                                  final isUngradable = c.quality?.isUngradable ?? false;
+
+                                  final subtitleText = isUngradable
+                                      ? 'Image Ungradable • Retake Required'
+                                      : pred != null
                                           ? 'AI: Level ${pred.drLevel} (${pred.severityLabel}) • Prob: ${AppFormatters.formatProbability(pred.modelProbability)}'
                                           : c.status == ScreeningStatus.awaitingImage
                                               ? 'Awaiting retinal image capture'
@@ -108,7 +326,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                                   : 'Screening registered';
 
                                   return ListTile(
-                                    contentPadding: EdgeInsets.zero,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     leading: Container(
                                       width: 40,
                                       height: 40,
@@ -185,23 +403,6 @@ class HealthWorkerDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _metricCard({
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x060F172A),
-            blurRadius: 4,
             offset: Offset(0, 1),
           ),
         ],
