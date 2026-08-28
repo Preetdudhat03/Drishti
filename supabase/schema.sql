@@ -200,6 +200,9 @@ CREATE POLICY "Allow public insert screenings" ON public.screenings
 CREATE POLICY "Allow public update screenings" ON public.screenings
     FOR UPDATE TO public USING (true);
 
+CREATE POLICY "Allow public delete screenings" ON public.screenings
+    FOR DELETE TO public USING (true);
+
 CREATE POLICY "Allow public read quality" ON public.quality_assessments
     FOR SELECT TO public USING (true);
 
