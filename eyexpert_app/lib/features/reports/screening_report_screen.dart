@@ -88,6 +88,7 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
   Widget build(BuildContext context) {
     final c = _getCase();
     final pred = c.prediction;
+    final quality = c.quality;
     final review = c.review;
     final isReferable = pred?.isReferable ?? false;
     final severity = pred != null ? DRSeverity.fromLevel(pred.drLevel) : null;
@@ -178,116 +179,132 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
                                 color: AppColors.primary,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const Text(
+                              'AI Retinal Screening & Tele-Ophthalmology Network',
+                              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text('REPORT #${c.screeningId}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                            Text('Generated: ${AppFormatters.formatTimestamp(DateTime.now())}', style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    const Divider(),
+                    const SizedBox(height: 10),
 
-                    // Patient Meta Table
+                    // Patient Demographic Strip
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
+                        color: AppColors.obsidian,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Wrap(
-                        spacing: 16,
+                        spacing: 24,
                         runSpacing: 8,
-                        alignment: WrapAlignment.spaceBetween,
                         children: [
-                          _infoBlock('Patient ID', c.patient.patientId),
-                          _infoBlock('Age / Gender', '${c.patient.age ?? "N/A"} / ${c.patient.gender ?? "N/A"}'),
-                          _infoBlock('Eye Examined', AppFormatters.formatEye(c.patient.eye)),
-                          _infoBlock('Screening Date', AppFormatters.formatDateTime(c.createdAt)),
+                          _docMeta('PATIENT ID', c.patient.patientId, Colors.white),
+                          _docMeta('EXAMINATION EYE', '${c.patient.eye} (${c.patient.eye == "OD" ? "Right Eye" : "Left Eye"})', AppColors.hudCyan),
+                          _docMeta('AGE / GENDER', '${c.patient.age ?? "--"}Y / ${c.patient.gender ?? "--"}', Colors.white),
+                          _docMeta('DIABETES DURATION', '${c.patient.diabetesDurationYears ?? "--"} Years', Colors.white),
+                          _docMeta('FACILITY', c.patient.facilityId ?? 'PHC-RAMGARH-01', AppColors.darkTextSecondary),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
 
-                    // Section 1: Image Quality
-                    const Text('1. Image Quality Assessment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 6,
+                    // Dual Retinal & Grad-CAM Inspection Viewports
+                    Row(
                       children: [
-                        Text(
-                          'Overall Status: ${quality?.status.label ?? "GOOD"} (${AppFormatters.formatPercentage(quality?.overallScore)})',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'OPTICAL RETINAL FUNDUS',
+                                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                              ),
+                              const SizedBox(height: 6),
+                              FundusImageViewer(
+                                originalImagePath: c.imagePath ?? '',
+                                mode: FundusViewerMode.original,
+                                height: 220,
+                                eyeTag: c.patient.eye,
+                                showReticle: false,
+                                showControls: false,
+                              ),
+                            ],
+                          ),
                         ),
-                        Text('• Focus: ${quality?.sharpness.status ?? "GOOD"}', style: const TextStyle(fontSize: 12)),
-                        Text('• Illumination: ${quality?.illumination.status ?? "GOOD"}', style: const TextStyle(fontSize: 12)),
-                        Text('• FOV: ${quality?.fieldOfView.status ?? "ADEQUATE"}', style: const TextStyle(fontSize: 12)),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'GRAD-CAM FEATURE ATTRIBUTION',
+                                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                              ),
+                              const SizedBox(height: 6),
+                              FundusImageViewer(
+                                originalImagePath: c.imagePath ?? '',
+                                gradcamImagePath: pred?.heatmapPath,
+                                mode: pred?.heatmapPath != null ? FundusViewerMode.overlay : FundusViewerMode.original,
+                                height: 220,
+                                eyeTag: '${c.patient.eye} Grad-CAM',
+                                showReticle: false,
+                                showControls: false,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
 
-                    // Section 2: AI Retinopathy Classification
-                    const Text('2. AI Retinopathy Classification', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    const SizedBox(height: 6),
+                    // Diagnostic Findings & Clinical Triage Box
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200),
+                        color: isReferable ? AppColors.referableAlertBg : AppColors.statusGoodBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: isReferable ? AppColors.referableAlert : AppColors.statusGood),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  pred != null
-                                      ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
-                                      : 'Classification Blocked (Ungradable Quality)',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                              Text(
+                                'DIAGNOSTIC CLASSIFICATION: LEVEL ${pred?.drLevel ?? 0}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                                  letterSpacing: 0.8,
                                 ),
                               ),
-                              if (pred != null) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Prob: ${AppFormatters.formatProbability(pred.modelProbability)}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+                              Text(
+                                isReferable ? 'URGENT REFERRAL REQUIRED' : 'ROUTINE ANNUAL FOLLOW-UP',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
                                 ),
-                              ],
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text('Recommendation: ${pred?.recommendation ?? "Recapture retinal image."}',
-                              style: const TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Section 3: Clinician Final Decision
-                    const Text('3. Clinician Final Decision (Human-in-the-Loop)',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: review != null ? Colors.blue.shade50 : Colors.amber.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: review != null ? Colors.blue.shade200 : Colors.amber.shade300,
-                        ),
-                      ),
-                      child: review != null
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text('Action: ${review.action.label}',
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                    ),
-                                    Text('Reviewer: ${review.clinicianName ?? "Ophthalmologist"}',
-                                        style: const TextStyle(fontSize: 12)),
-                                  ],
-                                ),
                                 const SizedBox(height: 4),
                                 Text('Clinical Notes: ${review.clinicalNotes}',
                                     style: const TextStyle(fontSize: 12)),
