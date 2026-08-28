@@ -42,9 +42,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() {
       _selectedRole = role;
       if (role == UserRole.clinician) {
-        _usernameController.text = 'clinician.demo@eyexpert';
+        _usernameController.text = 'clinician.demo@drishti.org';
       } else {
-        _usernameController.text = 'healthworker.demo@eyexpert';
+        _usernameController.text = 'healthworker.demo@drishti.org';
       }
     });
     _handleLogin();
@@ -66,9 +66,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Minimal EyeXpert Logo
+                  // Minimal Drishti Logo
                   const Center(
-                    child: EyeXpertLogo(
+                    child: DrishtiLogo(
                       size: 48,
                       showText: true,
                     ),
@@ -136,9 +136,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             setState(() {
                               _selectedRole = set.first;
                               if (_selectedRole == UserRole.clinician) {
-                                _usernameController.text = 'clinician.demo@eyexpert';
+                                _usernameController.text = 'clinician.demo@drishti.org';
                               } else {
-                                _usernameController.text = 'healthworker.demo@eyexpert';
+                                _usernameController.text = 'healthworker.demo@drishti.org';
                               }
                             });
                           },
