@@ -1925,15 +1925,15 @@ def api_v1_analyze(id):
     record = SCREENING_STORE.get(id, {})
     img_b64 = record.get("image_b64")
     
-    if img_b64:
-        img_bytes = base64.b64decode(img_b64)
-        img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
-        infer_out = run_real_inference_and_gradcam(img)
-    else:
-        # Load default sample
-        sample_path = SAMPLES["moderate"]["path"]
-        img = Image.open(sample_path).convert('RGB')
-        infer_out = run_real_inference_and_gradcam(img)
+    if not img_b64:
+        return jsonify({
+            "error": "IMAGE_NOT_FOUND",
+            "message": f"No retinal fundus image has been uploaded for screening {id}. Please upload an image first."
+        }), 400
+    
+    img_bytes = base64.b64decode(img_b64)
+    img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+    infer_out = run_real_inference_and_gradcam(img)
     
     level = infer_out['dr_level']
     triage = get_clinical_triage(level)
