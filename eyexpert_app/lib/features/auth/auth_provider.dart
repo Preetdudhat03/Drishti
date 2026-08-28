@@ -9,13 +9,11 @@ class AuthState {
   final UserModel? user;
   final bool isLoading;
   final String? errorMessage;
-  final String workflowMode; // 'DEMO' (Simulated Workflow) or 'VALIDATION' (Real APTOS Test Data)
 
   const AuthState({
     this.user,
     this.isLoading = false,
     this.errorMessage,
-    this.workflowMode = 'DEMO',
   });
 
   bool get isAuthenticated => user != null;
@@ -26,13 +24,11 @@ class AuthState {
     UserModel? user,
     bool? isLoading,
     String? errorMessage,
-    String? workflowMode,
   }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
-      workflowMode: workflowMode ?? this.workflowMode,
     );
   }
 }
@@ -45,11 +41,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _initSession() async {
-    final savedMode = await SecureStorage.getWorkflowMode();
     final user = await _authService.getCurrentUser();
     state = state.copyWith(
       user: user ?? UserModel.healthWorkerDefault,
-      workflowMode: savedMode,
     );
   }
 
@@ -83,11 +77,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       roleRequested: newRole,
       isDemo: false,
     );
-  }
-
-  Future<void> setWorkflowMode(String mode) async {
-    await SecureStorage.saveWorkflowMode(mode);
-    state = state.copyWith(workflowMode: mode);
   }
 
   Future<void> logout() async {
