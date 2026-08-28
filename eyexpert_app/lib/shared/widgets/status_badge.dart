@@ -53,6 +53,15 @@ class StatusBadge extends StatelessWidget {
     );
   }
 
+  factory StatusBadge.pending({String label = '⏳ PENDING REVIEW', bool isLarge = false}) {
+    return StatusBadge(
+      label: label,
+      color: AppColors.pending,
+      backgroundColor: const Color(0xFFEFF6FF),
+      isLarge: isLarge,
+    );
+  }
+
   factory StatusBadge.nonReferable({String label = '✓ NON-REFERABLE', bool isLarge = false}) {
     return StatusBadge(
       label: label,
