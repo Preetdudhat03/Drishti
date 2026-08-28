@@ -181,7 +181,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final q = await _repository.checkQuality(
         screeningId: state.screeningId!,
         imagePath: state.imagePath!,
-        isDemo: true,
+        isDemo: state.selectedDemoScenario != null,
         demoScenario: state.selectedDemoScenario,
       );
 
@@ -246,7 +246,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
-        isDemo: true,
+        isDemo: state.selectedDemoScenario != null,
         demoScenario: state.selectedDemoScenario,
       );
 
