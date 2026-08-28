@@ -2,7 +2,7 @@ name: Drishti
 description: "Drishti - Explainable AI for Diabetic Retinopathy Screening in Rural India (SIH 2026 Problem Statement 26038)"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
