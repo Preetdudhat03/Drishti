@@ -7,7 +7,7 @@ import '../../data/models/user_model.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
-import '../../shared/widgets/eyexpert_logo.dart';
+import '../../shared/widgets/drishti_logo.dart';
 import 'auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -18,7 +18,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _usernameController = TextEditingController(text: 'healthworker.demo@eyexpert');
+  final _usernameController = TextEditingController(text: 'healthworker.demo@drishti.org');
   final _passwordController = TextEditingController(text: '••••••••');
   UserRole _selectedRole = UserRole.healthWorker;
 

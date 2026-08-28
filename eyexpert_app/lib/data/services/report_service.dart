@@ -188,7 +188,7 @@ class ReportService {
                   style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
               pw.SizedBox(height: 2),
               pw.Text(
-                'Model: EyeXpert DR Classifier (ResNet-18) | Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
+                'Model: Drishti DR Classifier (ResNet-18) | Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
                 style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
               ),
 
