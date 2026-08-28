@@ -249,7 +249,11 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    pred != null ? 'Level ${pred.drLevel} — ${pred.severityLabel}' : 'Inference Blocked',
+                    pred != null
+                        ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
+                        : (c.quality?.isUngradable ?? false)
+                            ? 'Inference Blocked (Image Ungradable)'
+                            : 'Awaiting AI Analysis',
                     style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.primary),
                   ),
                   if (pred != null)
