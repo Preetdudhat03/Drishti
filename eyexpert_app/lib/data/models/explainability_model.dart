@@ -18,17 +18,18 @@ class ExplainabilityModel {
   });
 
   factory ExplainabilityModel.fromJson(Map<String, dynamic> json) {
+    final exp = json['explainability'] ?? json;
     return ExplainabilityModel(
-      screeningId: json['screening_id'] ?? '',
-      targetLayer: json['target_layer'] ?? 'layer4[1].conv2',
-      gradcamImageUrl: json['gradcam_image_url'] ?? '',
-      overlayImageUrl: json['overlay_image_url'] ?? '',
-      originalImageUrl: json['original_image_url'] ?? '',
-      modelAttendedRegions: (json['model_attended_regions'] as List<dynamic>?)
+      screeningId: json['screening_id'] ?? exp['screening_id'] ?? '',
+      targetLayer: exp['target_layer'] ?? 'layer4[1].conv2',
+      gradcamImageUrl: exp['gradcam_url'] ?? exp['gradcam_image_url'] ?? '',
+      overlayImageUrl: exp['overlay_url'] ?? exp['overlay_image_url'] ?? '',
+      originalImageUrl: exp['original_url'] ?? exp['original_image_url'] ?? '',
+      modelAttendedRegions: (exp['model_attended_regions'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           ['Posterior retinal pole', 'Perimacular region'],
-      disclaimer: json['disclaimer'] ??
+      disclaimer: exp['disclaimer'] ??
           'Highlighted regions represent areas contributing to the model prediction (Interpretability tool — not a definitive lesion diagnosis).',
     );
   }
