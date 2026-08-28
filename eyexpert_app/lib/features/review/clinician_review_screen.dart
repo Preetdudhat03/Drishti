@@ -416,7 +416,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                 ),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<int>(
-                  value: _overrideLevel,
+                  initialValue: _overrideLevel,
                   dropdownColor: AppColors.deepSpace,
                   decoration: const InputDecoration(
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
