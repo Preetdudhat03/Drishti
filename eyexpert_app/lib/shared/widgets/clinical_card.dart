@@ -41,14 +41,19 @@ class ClinicalCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    title!,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.1,
+                  Expanded(
+                    child: Text(
+                      title!,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.1,
+                      ),
                     ),
                   ),
-                  if (titleAction != null) titleAction!,
+                  if (titleAction != null) ...[
+                    const SizedBox(width: 8),
+                    titleAction!,
+                  ],
                 ],
               ),
               const SizedBox(height: 12),
