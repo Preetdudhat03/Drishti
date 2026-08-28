@@ -20,14 +20,35 @@ class DrishtiLogo extends StatelessWidget {
     final iconColor = color ?? AppColors.accent;
     final textStyleColor = textColor ?? AppColors.primary;
 
-    final logoIcon = Image.asset(
-      'assets/images/logo.png',
+    final logoIcon = Container(
       width: size,
       height: size,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => CustomPaint(
-        size: Size(size, size * 0.75),
-        painter: _DrishtiLogoPainter(color: iconColor),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 0.1),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.85),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          'assets/images/logo.png',
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => CustomPaint(
+            size: Size(size, size * 0.75),
+            painter: _DrishtiLogoPainter(color: iconColor),
+          ),
+        ),
       ),
     );
 
