@@ -88,7 +88,7 @@ class ResponsiveScaffold extends StatelessWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            EyeXpertLogo(
+            DrishtiLogo(
               size: 26,
               showText: false,
               color: Colors.white,
