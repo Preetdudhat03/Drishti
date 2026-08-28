@@ -2015,8 +2015,12 @@ def api_v1_explainability(id):
         "overlay_image_url": overlay_b64 if overlay_b64 else "",
         "original_image_url": orig_b64 if orig_b64 else "",
         "model_attended_regions": ["Temporal vascular arcade", "Perimacular microaneurysms", "Posterior pole"],
-        "disclaimer": "Highlighted regions represent areas contributing to the model prediction (Interpretability tool — not a definitive lesion diagnosis)."
-    })
+@app.errorhandler(Exception)
+def handle_global_exception(e):
+    return jsonify({
+        "error": "SERVER_ERROR",
+        "message": str(e)
+    }), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
