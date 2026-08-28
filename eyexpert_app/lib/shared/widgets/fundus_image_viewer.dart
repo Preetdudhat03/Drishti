@@ -124,49 +124,55 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (widget.eyeTag != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: AppColors.deepSpace.withValues(alpha: 0.90),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: AppColors.hudCyan.withValues(alpha: 0.6)),
-                        ),
-                        child: Text(
-                          widget.eyeTag!,
-                          style: const TextStyle(
-                            color: AppColors.hudCyan,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.eyeTag != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.deepSpace.withValues(alpha: 0.90),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: AppColors.hudCyan.withValues(alpha: 0.6)),
+                          ),
+                          child: Text(
+                            widget.eyeTag!,
+                            style: const TextStyle(
+                              color: AppColors.hudCyan,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
-                      ),
-                    if (widget.imageId != null) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: AppColors.deepSpace.withValues(alpha: 0.80),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          widget.imageId!,
-                          style: const TextStyle(
-                            color: AppColors.darkTextSecondary,
-                            fontSize: 10,
-                            fontFamily: 'monospace',
+                      if (widget.imageId != null) ...[
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.deepSpace.withValues(alpha: 0.80),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              widget.imageId!,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.darkTextSecondary,
+                                fontSize: 10,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
                 if (widget.qualityLabel != null)
                   Container(
+                    margin: const EdgeInsets.only(left: 6),
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.deepSpace.withValues(alpha: 0.90),
@@ -322,7 +328,7 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
 
   Widget _buildFloatingHudControls(bool hasGradcam, bool hasEnhanced) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.deepSpace.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(10),
@@ -331,66 +337,71 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
           BoxShadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Mode Switcher Buttons
-          _modeBtn(FundusViewerMode.original, 'RAW', Icons.image_outlined),
-          if (hasEnhanced) ...[
-            const SizedBox(width: 4),
-            _modeBtn(FundusViewerMode.compare, 'CLAHE', Icons.compare_rounded),
-          ],
-          if (hasGradcam) ...[
-            const SizedBox(width: 4),
-            _modeBtn(FundusViewerMode.overlay, 'OVERLAY', Icons.layers_outlined),
-            const SizedBox(width: 4),
-            _modeBtn(FundusViewerMode.xai, 'XAI MAP', Icons.grain_rounded),
-          ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Mode Switcher Buttons
+            _modeBtn(FundusViewerMode.original, 'RAW', Icons.image_outlined),
+            if (hasEnhanced) ...[
+              const SizedBox(width: 4),
+              _modeBtn(FundusViewerMode.compare, 'CLAHE', Icons.compare_rounded),
+            ],
+            if (hasGradcam) ...[
+              const SizedBox(width: 4),
+              _modeBtn(FundusViewerMode.overlay, 'OVERLAY', Icons.layers_outlined),
+              const SizedBox(width: 4),
+              _modeBtn(FundusViewerMode.xai, 'XAI MAP', Icons.grain_rounded),
+            ],
 
-          // Opacity Slider (only when Overlay mode is active)
-          if (_currentMode == FundusViewerMode.overlay && hasGradcam) ...[
-            const SizedBox(width: 8),
+            // Opacity Slider (only when Overlay mode is active)
+            if (_currentMode == FundusViewerMode.overlay && hasGradcam) ...[
+              const SizedBox(width: 6),
+              Container(height: 18, width: 1, color: AppColors.borderDark),
+              const SizedBox(width: 6),
+              const Text(
+                'BLEND',
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.darkTextMuted,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              SizedBox(
+                width: 75,
+                height: 24,
+                child: SliderTheme(
+                  data: const SliderThemeData(
+                    trackHeight: 2,
+                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+                    overlayShape: RoundSliderOverlayShape(overlayRadius: 8),
+                    activeTrackColor: AppColors.hudCyan,
+                    inactiveTrackColor: AppColors.elevatedSurface,
+                    thumbColor: AppColors.hudCyan,
+                  ),
+                  child: Slider(
+                    value: _opacity,
+                    min: 0.1,
+                    max: 1.0,
+                    onChanged: (val) {
+                      setState(() => _opacity = val);
+                      widget.onOpacityChanged?.call(val);
+                    },
+                  ),
+                ),
+              ),
+            ],
+
+            const SizedBox(width: 6),
             Container(height: 18, width: 1, color: AppColors.borderDark),
-            const SizedBox(width: 8),
-            const Text(
-              'BLEND',
-              style: TextStyle(
-                fontSize: 9.5,
-                fontWeight: FontWeight.w800,
-                color: AppColors.darkTextMuted,
-                letterSpacing: 0.5,
-              ),
-            ),
-            SizedBox(
-              width: 90,
-              height: 24,
-              child: SliderTheme(
-                data: SliderThemeData(
-                  trackHeight: 2,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
-                  activeTrackColor: AppColors.hudCyan,
-                  inactiveTrackColor: AppColors.elevatedSurface,
-                  thumbColor: AppColors.hudCyan,
-                ),
-                child: Slider(
-                  value: _opacity,
-                  min: 0.1,
-                  max: 1.0,
-                  onChanged: (val) {
-                    setState(() => _opacity = val);
-                    widget.onOpacityChanged?.call(val);
-                  },
-                ),
-              ),
-            ),
+            const SizedBox(width: 2),
+
+            // Reset Zoom
+            _iconAction(Icons.restart_alt_rounded, 'Reset Zoom', _resetZoom),
           ],
-
-          const Spacer(),
-
-          // Reset Zoom
-          _iconAction(Icons.restart_alt_rounded, 'Reset Zoom', _resetZoom),
-        ],
+        ),
       ),
     );
   }
