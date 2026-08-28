@@ -113,26 +113,46 @@ class ResponsiveScaffold extends StatelessWidget {
                         onTap: onModeSwitchPressed,
                         borderRadius: BorderRadius.circular(4),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                           decoration: BoxDecoration(
-                            color: workflowMode == 'VALIDATION'
-                                ? Colors.tealAccent.withOpacity(0.15)
-                                : Colors.white.withOpacity(0.12),
+                            color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
+                                ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                                : Colors.white.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(4),
                             border: Border.all(
-                              color: workflowMode == 'VALIDATION' ? Colors.tealAccent : Colors.white60,
+                              color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
+                                  ? const Color(0xFF34D399)
+                                  : Colors.white60,
                               width: 0.8,
                             ),
                           ),
-                          child: Text(
-                            workflowMode == 'VALIDATION'
-                                ? 'VALIDATION MODE: REAL APTOS'
-                                : 'DEMO MODE: SIMULATED WORKFLOW',
-                            style: TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.bold,
-                              color: workflowMode == 'VALIDATION' ? Colors.tealAccent : Colors.white,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
+                                      ? const Color(0xFF34D399)
+                                      : Colors.amberAccent,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                workflowMode == 'VALIDATION' || workflowMode == 'REAL'
+                                    ? 'REAL MODEL INFERENCE'
+                                    : 'BENCHMARK SIMULATION',
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: workflowMode == 'VALIDATION' || workflowMode == 'REAL'
+                                      ? const Color(0xFF34D399)
+                                      : Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
