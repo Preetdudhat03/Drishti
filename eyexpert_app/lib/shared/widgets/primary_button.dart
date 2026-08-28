@@ -9,6 +9,7 @@ class PrimaryButton extends StatelessWidget {
   final bool isSecondary;
   final bool isDestructive;
   final double? width;
+  final double height;
 
   const PrimaryButton({
     super.key,
@@ -19,21 +20,28 @@ class PrimaryButton extends StatelessWidget {
     this.isSecondary = false,
     this.isDestructive = false,
     this.width,
+    this.height = 48,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final Color bgColor = isDestructive
         ? AppColors.statusUngradable
         : isSecondary
-            ? theme.colorScheme.surface
-            : AppColors.primary;
+            ? Colors.white
+            : AppColors.accent; // Medical Teal
+
     final Color fgColor = isDestructive
         ? Colors.white
         : isSecondary
-            ? AppColors.primary
+            ? AppColors.accent
             : Colors.white;
+
+    final Color borderColor = isDestructive
+        ? AppColors.statusUngradable
+        : isSecondary
+            ? AppColors.accent
+            : AppColors.accent;
 
     Widget child = isLoading
         ? SizedBox(
@@ -60,7 +68,8 @@ class PrimaryButton extends StatelessWidget {
                   style: TextStyle(
                     color: fgColor,
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    fontSize: 14,
+                    letterSpacing: 0.1,
                   ),
                 ),
               ),
@@ -70,12 +79,16 @@ class PrimaryButton extends StatelessWidget {
     if (isSecondary) {
       return SizedBox(
         width: width,
-        height: 48,
+        height: height,
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: isDestructive ? AppColors.statusUngradable : AppColors.primary, width: 1.5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            foregroundColor: fgColor,
+            side: BorderSide(color: borderColor, width: 1.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
           ),
           child: child,
         ),
@@ -84,14 +97,17 @@ class PrimaryButton extends StatelessWidget {
 
     return SizedBox(
       width: width,
-      height: 48,
+      height: height,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: bgColor,
           foregroundColor: fgColor,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         child: child,
       ),
