@@ -4,12 +4,16 @@ import '../models/clinician_review_model.dart';
 import '../models/screening_case_model.dart';
 import '../../core/errors/app_exceptions.dart';
 import 'mock_data_service.dart';
+import 'supabase_service.dart';
 
 class ReviewService {
   final ApiClient _apiClient;
+  final SupabaseService _supabaseService;
   List<ScreeningCaseModel> _cachedCases = [];
 
-  ReviewService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient() {
+  ReviewService({ApiClient? apiClient, SupabaseService? supabaseService})
+      : _apiClient = apiClient ?? ApiClient(),
+        _supabaseService = supabaseService ?? SupabaseService() {
     _cachedCases = MockDataService.getInitialCases();
   }
 
@@ -60,6 +64,17 @@ class ReviewService {
       recommendedFollowupDays: recommendedFollowupDays ?? 90,
       reviewedAt: DateTime.now(),
     );
+
+    // Save review to Supabase
+    if (SupabaseService.isInitialized) {
+      await _supabaseService.recordClinicianReview(
+        screeningId: screeningId,
+        action: action,
+        finalDrLevel: finalDrLevel,
+        clinicalNotes: clinicalNotes,
+        clinicianName: review.clinicianName,
+      );
+    }
 
     if (isDemo) {
       final index = _cachedCases.indexWhere((c) => c.screeningId == screeningId);
