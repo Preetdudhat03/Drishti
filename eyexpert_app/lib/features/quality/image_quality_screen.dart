@@ -74,31 +74,74 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
               const SizedBox(height: 14),
 
               if (isEvaluating || quality == null) ...[
-                // Loading / Evaluation state
-                Container(
-                  height: 280,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(strokeWidth: 3),
-                        SizedBox(height: 16),
-                        Text(
-                          'Evaluating focus, illumination, and retinal field of view...',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                // Loading / Multi-Step Pipeline Evaluation State
+                ClinicalCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    children: [
+                      // Thumbnail of the image being evaluated
+                      if (session.imagePath != null)
+                        SizedBox(
+                          height: 160,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: FundusImageViewer(
+                              originalImagePath: session.imagePath!,
+                              eyeTag: session.patient?.eye,
+                              imageId: 'IMG-${session.screeningId?.replaceAll("EX-", "")}',
+                            ),
+                          ),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Running Laplacian sharpness filter & mask segmentation',
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
-                        ),
-                      ],
-                    ),
+                      const SizedBox(height: 16),
+
+                      const LinearProgressIndicator(
+                        backgroundColor: Color(0xFFE2E8F0),
+                        color: AppColors.primary,
+                        minHeight: 6,
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Automated Optical Quality & Pre-Screening Pipeline',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Evaluating mathematical metrics before running deep neural inference...',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Step-by-step Pipeline Stepper Items
+                      _pipelineStep(
+                        stepNumber: '1',
+                        title: 'Retinal Mask & Field of View (FOV)',
+                        description: 'Segmenting circular boundary and optic disc centering...',
+                        isDone: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _pipelineStep(
+                        stepNumber: '2',
+                        title: 'Laplacian Focus & Sharpness Filter',
+                        description: 'Computing second-derivative high-frequency edge variance...',
+                        isDone: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _pipelineStep(
+                        stepNumber: '3',
+                        title: 'Illumination & Exposure Distribution',
+                        description: 'Analyzing histogram saturation, underexposure, and glare...',
+                        isDone: false,
+                        isActive: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _pipelineStep(
+                        stepNumber: '4',
+                        title: 'Adaptive CLAHE Preprocessing',
+                        description: 'Local contrast enhancement on green vascular channels...',
+                        isDone: false,
+                      ),
+                    ],
                   ),
                 ),
               ] else ...[
