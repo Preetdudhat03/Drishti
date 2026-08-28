@@ -75,12 +75,6 @@ class _RootScreenState extends ConsumerState<RootScreen> {
     ref.read(screeningSessionProvider.notifier).resetSession();
   }
 
-  void _onModeSwitch() {
-    final currentMode = ref.read(authProvider).workflowMode;
-    final nextMode = currentMode == 'DEMO' ? 'VALIDATION' : 'DEMO';
-    ref.read(authProvider.notifier).setWorkflowMode(nextMode);
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -121,8 +115,6 @@ class _RootScreenState extends ConsumerState<RootScreen> {
         onNavigationIndexChanged: (idx) => setState(() => _navIndex = idx),
         title: title,
         currentUser: user,
-        workflowMode: authState.workflowMode,
-        onModeSwitchPressed: _onModeSwitch,
         body: body,
       );
     }
