@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/clinical_card.dart';
+import '../../shared/widgets/status_badge.dart';
 import '../screening/screening_session_provider.dart';
 
 class ClinicalProcessingScreen extends ConsumerStatefulWidget {
@@ -34,82 +35,101 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 540),
+          constraints: const BoxConstraints(maxWidth: 520),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Central Pulsing Icon
+              // AI Badge Header
+              Center(child: StatusBadge.aiBadge(label: 'AI PROCESSING PIPELINE')),
+              const SizedBox(height: 16),
+              
+              // Pulsing Teal Icon
               Center(
                 child: Container(
-                  width: 72,
-                  height: 72,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.accentLight,
                     shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.accent.withOpacity(0.2), width: 1.5),
                   ),
                   child: const Center(
                     child: SizedBox(
-                      width: 40,
-                      height: 40,
+                      width: 32,
+                      height: 32,
                       child: CircularProgressIndicator(
-                        strokeWidth: 3.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               const Text(
                 'Analyzing Retinal Photograph',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                  letterSpacing: -0.2,
+                ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 'Screening ID: ${session.screeningId ?? "Pending"} • Eye: ${session.patient?.eye ?? "OD"}',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
 
-              // 4-Stage Progressive Pipeline Steps
+              // Trustworthy Clinical Step Sequence
               ClinicalCard(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 child: Column(
                   children: [
                     _stepRow(
                       stepNum: 1,
-                      title: 'Image Quality Assessment',
-                      subtitle: 'Laplacian focus & exposure verified',
+                      title: 'Image received & verified',
+                      subtitle: 'Laplacian focus & exposure threshold passed',
                       isDone: currentStep > 1,
                       isInProgress: currentStep == 1,
                     ),
-                    const Divider(height: 18),
+                    const Divider(height: 20),
                     _stepRow(
                       stepNum: 2,
-                      title: 'Retinal Preprocessing & Normalization',
+                      title: 'Image quality assessed',
                       subtitle: session.quality?.isBorderline ?? false
                           ? 'Adaptive CLAHE contrast enhancement active'
-                          : 'Standardized 224x224 circular mask crop',
+                          : 'Retinal field of view & illumination verified',
                       isDone: currentStep > 2,
                       isInProgress: currentStep == 2,
                     ),
-                    const Divider(height: 18),
+                    const Divider(height: 20),
                     _stepRow(
                       stepNum: 3,
-                      title: 'Deep AI Retinopathy Classification',
-                      subtitle: 'ResNet-18 transfer learning backbone inference',
+                      title: 'Analyzing retinal image...',
+                      subtitle: 'ResNet-18 diabetic retinopathy inference',
                       isDone: currentStep > 3,
                       isInProgress: currentStep == 3,
                     ),
-                    const Divider(height: 18),
+                    const Divider(height: 20),
                     _stepRow(
                       stepNum: 4,
-                      title: 'Grad-CAM Explainability Generation',
-                      subtitle: 'Extracting layer4[1].conv2 activation heatmap',
+                      title: 'Generating explainability',
+                      subtitle: 'Layer-4 Grad-CAM activation heatmap',
                       isDone: currentStep > 4,
                       isInProgress: currentStep == 4,
+                    ),
+                    const Divider(height: 20),
+                    _stepRow(
+                      stepNum: 5,
+                      title: 'Preparing clinical summary',
+                      subtitle: 'Ready for clinician validation',
+                      isDone: currentStep > 4,
+                      isInProgress: false,
                     ),
                   ],
                 ),
@@ -117,9 +137,13 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
               const SizedBox(height: 16),
 
               Text(
-                session.processingStepLabel ?? 'Initializing inference pipeline...',
+                session.processingStepLabel ?? 'Executing medical AI inference...',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.secondary),
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.accent,
+                ),
               ),
             ],
           ),
@@ -135,34 +159,54 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
     required bool isDone,
     required bool isInProgress,
   }) {
+    Color iconBg = isDone
+        ? AppColors.statusGoodBg
+        : isInProgress
+            ? AppColors.accentLight
+            : AppColors.background;
+    Color iconFg = isDone
+        ? AppColors.statusGood
+        : isInProgress
+            ? AppColors.accent
+            : AppColors.textMuted;
+    BorderSide border = BorderSide(
+      color: isDone
+          ? AppColors.statusGood
+          : isInProgress
+              ? AppColors.accent
+              : AppColors.border,
+      width: 1,
+    );
+
     return Row(
       children: [
         Container(
-          width: 28,
-          height: 28,
+          width: 26,
+          height: 26,
           decoration: BoxDecoration(
-            color: isDone
-                ? AppColors.statusGood
-                : isInProgress
-                    ? AppColors.primary
-                    : Colors.grey.shade300,
+            color: iconBg,
             shape: BoxShape.circle,
+            border: Border.fromBorderSide(border),
           ),
           child: Center(
             child: isDone
-                ? const Icon(Icons.check, size: 16, color: Colors.white)
+                ? const Icon(Icons.check, size: 15, color: AppColors.statusGood)
                 : isInProgress
                     ? const SizedBox(
-                        width: 14,
-                        height: 14,
+                        width: 13,
+                        height: 13,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
                         ),
                       )
                     : Text(
                         '$stepNum',
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: iconFg,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
           ),
         ),
@@ -174,14 +218,18 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
               Text(
                 title,
                 style: TextStyle(
-                  fontWeight: isInProgress || isDone ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: isInProgress || isDone ? FontWeight.w600 : FontWeight.w400,
                   fontSize: 13,
-                  color: isDone || isInProgress ? Colors.black87 : Colors.grey.shade500,
+                  color: isDone
+                      ? AppColors.textPrimary
+                      : isInProgress
+                          ? AppColors.accent
+                          : AppColors.textSecondary,
                 ),
               ),
               Text(
                 subtitle,
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
               ),
             ],
           ),
