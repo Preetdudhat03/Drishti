@@ -1208,14 +1208,23 @@ function processUploadedFile(file) {
     formData.append('hba1c', document.getElementById('patHba1c').value);
 
     fetch('/api/screenings/upload', { method: 'POST', body: formData })
-        .then(r => r.json())
+        .then(async r => {
+            if (!r.ok) {
+                const text = await r.text();
+                if (r.status === 502 || r.status === 503) {
+                    throw new Error("Cloud backend is currently starting or waking up from idle. Please wait 15 seconds and retry.");
+                }
+                throw new Error("HTTP " + r.status + ": " + text.slice(0, 150));
+            }
+            return r.json();
+        })
         .then(data => {
             showLoading(false);
             updateScreeningUI(data);
         })
         .catch(err => {
             showLoading(false);
-            alert("Error running inference: " + err);
+            alert("Inference Notice: " + err.message);
         });
 }
 
@@ -1246,14 +1255,20 @@ function loadBenchmarkSample() {
     if (!s) return;
     showLoading(true);
     fetch('/api/screenings/sample_run?sample=' + s)
-        .then(r => r.json())
+        .then(async r => {
+            if (!r.ok) {
+                const text = await r.text();
+                throw new Error("HTTP " + r.status + ": " + text.slice(0, 150));
+            }
+            return r.json();
+        })
         .then(data => {
             showLoading(false);
             updateScreeningUI(data);
         })
         .catch(err => {
             showLoading(false);
-            alert("Error loading sample: " + err);
+            alert("Error loading sample: " + err.message);
         });
 }
 
