@@ -6,9 +6,6 @@ import '../../core/utils/formatters.dart';
 import '../../core/utils/responsive_layout.dart';
 import '../../data/models/screening_case_model.dart';
 import '../../data/models/clinician_review_model.dart';
-import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/status_badge.dart';
-import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/fundus_image_viewer.dart';
 import '../../shared/widgets/probability_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
@@ -143,7 +140,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Case marked ungradable. Clinical recapture notification sent.')),
+          const SnackBar(content: Text('Case marked as UNGRADABLE. Notification sent for recapture.')),
         );
         widget.onReviewSubmitted();
       }
@@ -162,15 +159,10 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
   Widget build(BuildContext context) {
     final c = widget.screeningCase;
     final pred = c.prediction;
-    final exp = c.explainability;
-    final review = c.review;
+    final quality = c.quality;
+    final patient = c.patient;
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
-    Widget imageComparisonWidget = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
