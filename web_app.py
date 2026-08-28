@@ -386,19 +386,23 @@ def execute_model_inference(pil_img):
     if np.max(cam) > 0:
         cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
 
-    # Resize CAM to image dimensions
+    # Resize CAM to image dimensions using OpenCV
     w_orig, h_orig = pil_img.size
-    cam_pil = Image.fromarray(cam).resize((w_orig, h_orig), Image.Resampling.BILINEAR)
-    cam_resized = np.array(cam_pil)
+    cam_resized = cv2.resize(cam, (w_orig, h_orig), interpolation=cv2.INTER_LINEAR)
+    cam_resized = np.clip(cam_resized, 0.0, 1.0)
 
-    # Colorize with turbo colormap
-    cmap = cm.get_cmap('turbo')
-    cam_colored = (cmap(cam_resized)[:, :, :3] * 255).astype(np.uint8)
+    # Colorize with turbo colormap using OpenCV (C++ accelerated, zero extra RAM)
+    cam_uint8 = (cam_resized * 255).astype(np.uint8)
+    cam_colored_bgr = cv2.applyColorMap(cam_uint8, cv2.COLORMAP_TURBO)
+    cam_colored = cv2.cvtColor(cam_colored_bgr, cv2.COLOR_BGR2RGB)
 
     # Overlay on original image
     orig_np = np.array(pil_img.convert('RGB'))
     alpha = (cam_resized[:, :, np.newaxis] * 0.45)
     overlay_np = np.clip((1.0 - alpha) * orig_np + alpha * cam_colored, 0, 255).astype(np.uint8)
+
+    del features, grads, tensor_img, logits, f, g
+    gc.collect()
 
     return {
         "pred_level": pred_level,
