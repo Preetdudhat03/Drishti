@@ -4,6 +4,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/screening_case_model.dart';
+import '../../data/models/patient_model.dart';
 import '../../data/services/report_service.dart';
 import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/status_badge.dart';
