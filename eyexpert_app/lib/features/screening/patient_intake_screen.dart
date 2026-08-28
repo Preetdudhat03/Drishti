@@ -16,11 +16,19 @@ class PatientIntakeScreen extends ConsumerStatefulWidget {
 }
 
 class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
-  final _patientIdController = TextEditingController(text: 'PT-2026-8819');
-  final _ageController = TextEditingController(text: '54');
-  final _diabetesDurationController = TextEditingController(text: '8');
+  late final TextEditingController _patientIdController;
+  final _ageController = TextEditingController();
+  final _diabetesDurationController = TextEditingController();
   String _selectedGender = 'FEMALE';
   String _selectedEye = 'OD'; // 'OD' (Right Eye) or 'OS' (Left Eye)
+
+  @override
+  void initState() {
+    super.initState();
+    _patientIdController = TextEditingController(
+      text: 'PT-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+    );
+  }
 
   @override
   void dispose() {
@@ -28,16 +36,6 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
     _ageController.dispose();
     _diabetesDurationController.dispose();
     super.dispose();
-  }
-
-  void _autofillDemoPatient(String id, String age, String gender, String duration, String eye) {
-    setState(() {
-      _patientIdController.text = id;
-      _ageController.text = age;
-      _selectedGender = gender;
-      _diabetesDurationController.text = duration;
-      _selectedEye = eye;
-    });
   }
 
   void _handleSubmit() {
