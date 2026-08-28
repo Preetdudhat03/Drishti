@@ -14,7 +14,7 @@ class ReviewService {
   ReviewService({ApiClient? apiClient, SupabaseService? supabaseService})
       : _apiClient = apiClient ?? ApiClient(),
         _supabaseService = supabaseService ?? SupabaseService() {
-    _cachedCases = MockDataService.getInitialCases();
+    _cachedCases = [];
   }
 
   List<ScreeningCaseModel> get cachedCases => List.unmodifiable(_cachedCases);
@@ -23,28 +23,15 @@ class ReviewService {
     // 1. Fetch real-time cases from Supabase cloud database
     if (SupabaseService.isInitialized) {
       final supaCases = await _supabaseService.fetchScreeningCases();
-      if (supaCases.isNotEmpty) {
-        final existingIds = supaCases.map((c) => c.screeningId).toSet();
-        final combined = [
-          ...supaCases,
-          ..._cachedCases.where((c) => !existingIds.contains(c.screeningId)),
-        ];
-        combined.sort((a, b) {
-          if (a.isReferable && !b.isReferable) return -1;
-          if (!a.isReferable && b.isReferable) return 1;
-          return b.createdAt.compareTo(a.createdAt);
-        });
-        _cachedCases = combined;
-        return combined;
-      }
+      supaCases.sort((a, b) {
+        if (a.isReferable && !b.isReferable) return -1;
+        if (!a.isReferable && b.isReferable) return 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+      _cachedCases = supaCases;
+      return supaCases;
     }
 
-    // 2. Fallback to cached cases with clinical triage priority sorting
-    _cachedCases.sort((a, b) {
-      if (a.isReferable && !b.isReferable) return -1;
-      if (!a.isReferable && b.isReferable) return 1;
-      return b.createdAt.compareTo(a.createdAt);
-    });
     return _cachedCases;
   }
 
