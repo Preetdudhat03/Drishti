@@ -353,16 +353,26 @@ def get_clinical_triage(level):
 def execute_model_inference(pil_img):
     """
     Executes PyTorch ResNet-18 forward pass and Grad-CAM backpropagation on layer4[1].conv2.
+    Memory-optimized for cloud 512MB RAM environments.
     """
     if REAL_MODEL is None or MODEL_STATUS != "ACTIVE":
         raise RuntimeError("Real PyTorch model is unavailable. Mock inference is strictly disabled.")
+
+    # Downsample high-res inputs for memory safety (<512px)
+    max_d = 512
+    w_orig, h_orig = pil_img.size
+    if max(w_orig, h_orig) > max_d:
+        scale = max_d / float(max(w_orig, h_orig))
+        pil_img_proc = pil_img.resize((int(w_orig * scale), int(h_orig * scale)), Image.Resampling.BILINEAR)
+    else:
+        pil_img_proc = pil_img
 
     eval_tfm = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    tensor_img = eval_tfm(pil_img).unsqueeze(0).to(DEVICE)
+    tensor_img = eval_tfm(pil_img_proc).unsqueeze(0).to(DEVICE)
 
     # Register Grad-CAM hooks
     features = []
@@ -394,30 +404,30 @@ def execute_model_inference(pil_img):
     # Generate Grad-CAM activation map
     f = features[0][0].detach().cpu().numpy()
     g = grads[0][0].detach().cpu().numpy()
-    weights = np.mean(g, axis=(1, 2))
+    weights = np.mean(g, axis=(1, 2), dtype=np.float32)
     cam = np.zeros(f.shape[1:], dtype=np.float32)
     for idx, w in enumerate(weights):
         cam += w * f[idx]
     cam = np.maximum(0, cam)
     if np.max(cam) > 0:
-        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
+        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam) + 1e-8)
 
-    # Resize CAM to image dimensions using OpenCV
-    w_orig, h_orig = pil_img.size
-    cam_resized = cv2.resize(cam, (w_orig, h_orig), interpolation=cv2.INTER_LINEAR)
-    cam_resized = np.clip(cam_resized, 0.0, 1.0)
+    # Resize CAM to safe display dimension using OpenCV
+    w_disp, h_disp = pil_img_proc.size
+    cam_resized = cv2.resize(cam, (w_disp, h_disp), interpolation=cv2.INTER_LINEAR)
+    cam_resized = np.clip(cam_resized, 0.0, 1.0).astype(np.float32)
 
-    # Colorize with turbo colormap using OpenCV (C++ accelerated, zero extra RAM)
+    # Colorize with turbo colormap using OpenCV
     cam_uint8 = (cam_resized * 255).astype(np.uint8)
     cam_colored_bgr = cv2.applyColorMap(cam_uint8, cv2.COLORMAP_TURBO)
     cam_colored = cv2.cvtColor(cam_colored_bgr, cv2.COLOR_BGR2RGB)
 
-    # Overlay on original image
-    orig_np = np.array(pil_img.convert('RGB'))
+    # Fast float32 alpha blend
+    orig_np = np.array(pil_img_proc.convert('RGB'), dtype=np.float32)
     alpha = (cam_resized[:, :, np.newaxis] * 0.45)
-    overlay_np = np.clip((1.0 - alpha) * orig_np + alpha * cam_colored, 0, 255).astype(np.uint8)
+    overlay_np = np.clip((1.0 - alpha) * orig_np + alpha * cam_colored.astype(np.float32), 0, 255).astype(np.uint8)
 
-    del features, grads, tensor_img, logits, f, g
+    del features, grads, tensor_img, logits, f, g, orig_np, cam_resized, cam_colored_bgr
     gc.collect()
 
     return {
@@ -426,7 +436,6 @@ def execute_model_inference(pil_img):
         "model_probability": round(float(soft_probs[pred_level]), 4),
         "cam_colored": Image.fromarray(cam_colored),
         "overlay_img": Image.fromarray(overlay_np),
-        "cam_raw": cam_resized
     }
 
 # ----------------- COMPLETE HTML/CSS/JS INTERFACE (DRISHTI) -----------------
