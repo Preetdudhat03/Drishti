@@ -3,7 +3,6 @@ import '../../data/models/screening_case_model.dart';
 import '../../data/models/clinician_review_model.dart';
 import '../../data/services/review_service.dart';
 import '../../data/repositories/review_repository.dart';
-import '../auth/auth_provider.dart';
 
 final reviewServiceProvider = Provider<ReviewService>((ref) => ReviewService());
 
