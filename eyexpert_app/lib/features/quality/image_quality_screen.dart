@@ -421,6 +421,13 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(AppFormatters.formatPercentage(score), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
+            Text(status, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _pipelineStep({
     required String stepNumber,
     required String title,
