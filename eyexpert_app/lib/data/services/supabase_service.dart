@@ -4,6 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/app_constants.dart';
 import '../models/user_model.dart';
+import '../models/patient_model.dart';
+import '../models/quality_assessment_model.dart';
+import '../models/dr_prediction_model.dart';
+import '../models/explainability_model.dart';
 import '../models/screening_case_model.dart';
 import '../models/clinician_review_model.dart';
 
