@@ -113,18 +113,18 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                     children: [
                       IconButton(
                         onPressed: widget.onBack,
-                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                        icon: const Icon(Icons.arrow_back_rounded, size: 20, color: Colors.white),
                         tooltip: 'Back',
                       ),
                       const SizedBox(width: 4),
                       const Expanded(
                         child: Text(
-                          'Screening Summary Report',
+                          'Clinical Screening Report',
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 16.5,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
+                            color: Colors.white,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -133,12 +133,12 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                       if (isCompact) ...[
                         IconButton(
                           onPressed: _isExporting ? null : _handlePrint,
-                          icon: const Icon(Icons.print_outlined, size: 20),
+                          icon: const Icon(Icons.print_outlined, size: 20, color: Colors.white),
                           tooltip: 'Print Report',
                         ),
                         IconButton(
                           onPressed: _isExporting ? null : _handleShare,
-                          icon: const Icon(Icons.download_rounded, size: 20, color: AppColors.electricBlue),
+                          icon: const Icon(Icons.download_rounded, size: 20, color: AppColors.hudCyan),
                           tooltip: 'Export PDF',
                         ),
                       ] else ...[
