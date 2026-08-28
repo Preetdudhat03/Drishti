@@ -2025,7 +2025,9 @@ def api_v1_analyze(id):
     clean_b64 = img_b64.split(',', 1)[1] if ',' in img_b64 else img_b64
     img_bytes = base64.b64decode(clean_b64)
     img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+    del img_bytes
     infer_out = execute_model_inference(img)
+    del img
     
     level = infer_out['pred_level']
     triage = get_clinical_triage(level)
@@ -2038,9 +2040,9 @@ def api_v1_analyze(id):
     record["dr_level"] = level
     record["cam_b64"] = cam_b64
     record["overlay_b64"] = overlay_b64
-    record["infer_out"] = infer_out
     record["status"] = "READY_FOR_REVIEW"
     store_case_record(id, record)
+    trim_memory()
     
     return jsonify({
         "screening_id": id,
