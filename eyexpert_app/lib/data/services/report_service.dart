@@ -32,7 +32,7 @@ class ReportService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        'EyeXpert Screening Report',
+                        'Drishti Screening Report (दृष्टि)',
                         style: pw.TextStyle(
                           fontSize: 20,
                           fontWeight: pw.FontWeight.bold,
@@ -40,7 +40,7 @@ class ReportService {
                         ),
                       ),
                       pw.Text(
-                        'Explainable AI Diabetic Retinopathy Screening',
+                        'Explainable AI Diabetic Retinopathy Screening • SIH 2026',
                         style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
                       ),
                     ],
