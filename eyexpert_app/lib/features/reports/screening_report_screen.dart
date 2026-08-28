@@ -302,7 +302,7 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     const SizedBox(height: 4),
                     const Text(
-                      'Model: EyeXpert DR Classifier (ResNet-18) | Training Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
+                      'Model: Drishti DR Classifier (ResNet-18) | Training Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
                       style: TextStyle(fontSize: 10, color: Colors.grey),
                     ),
                     const SizedBox(height: 16),
