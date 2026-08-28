@@ -139,4 +139,14 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _facilityRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w500)),
+        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.black87)),
+      ],
+    );
+  }
 }
