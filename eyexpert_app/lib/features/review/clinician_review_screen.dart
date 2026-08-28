@@ -167,7 +167,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
     final isReferable = pred?.isReferable ?? false;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 20 : 12, vertical: isDesktop ? 20 : 14),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1280),
@@ -176,35 +176,36 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
             children: [
               // 1. WORKSTATION TOP BAR
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: widget.onBack,
-                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                        tooltip: 'Back to Review Queue',
-                      ),
-                      const SizedBox(width: 6),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Clinician Tele-Ophthalmology Workstation',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
-                          ),
-                          Text(
-                            'Case: ${c.screeningId} • Patient: ${patient.patientId} • ${patient.eye} • Quality: ${quality?.overallScore != null ? AppFormatters.formatPercent(quality!.overallScore) : "N/A"}',
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    ],
+                  IconButton(
+                    onPressed: widget.onBack,
+                    icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                    tooltip: 'Back to Review Queue',
                   ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Clinician Review Workstation',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                        ),
+                        Text(
+                          'Case: ${c.screeningId} | ${patient.patientId} | ${patient.eye}',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   _statusTag(c.status.label),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // 2. MAIN 3-PANE WORKSTATION (Desktop: 3 Panes, Mobile: Stacked)
               if (isDesktop)
