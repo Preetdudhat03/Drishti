@@ -4,23 +4,36 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 
 class ProbabilityDistributionWidget extends StatelessWidget {
-  final Map<int, double> classProbabilities;
+  final Map<int, double>? classProbabilities;
+  final List<double>? probabilities;
   final int predictedLevel;
-  final bool isDark;
+  final bool isDarkMode;
 
   const ProbabilityDistributionWidget({
     super.key,
-    required this.classProbabilities,
+    this.classProbabilities,
+    this.probabilities,
     required this.predictedLevel,
-    this.isDark = false,
+    this.isDarkMode = false,
+    bool isDark = false,
   });
+
+  double _getProb(int level) {
+    if (classProbabilities != null && classProbabilities!.containsKey(level)) {
+      return classProbabilities![level]!;
+    }
+    if (probabilities != null && level < probabilities!.length) {
+      return probabilities![level];
+    }
+    return 0.0;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (int i = 0; i <= 4; i++) _buildClassBar(i, classProbabilities[i] ?? 0.0),
+        for (int i = 0; i <= 4; i++) _buildClassBar(i, _getProb(i)),
       ],
     );
   }
@@ -62,8 +75,8 @@ class ProbabilityDistributionWidget extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: isPredicted ? FontWeight.w800 : FontWeight.w500,
                       color: isPredicted
-                          ? (isDark ? Colors.white : AppColors.textPrimary)
-                          : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                          ? (isDarkMode ? Colors.white : AppColors.textPrimary)
+                          : (isDarkMode ? AppColors.darkTextSecondary : AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -75,7 +88,7 @@ class ProbabilityDistributionWidget extends StatelessWidget {
                   fontWeight: isPredicted ? FontWeight.w800 : FontWeight.w600,
                   color: isPredicted
                       ? severity.color
-                      : (isDark ? AppColors.darkTextMuted : AppColors.textMuted),
+                      : (isDarkMode ? AppColors.darkTextMuted : AppColors.textMuted),
                 ),
               ),
             ],
@@ -86,7 +99,7 @@ class ProbabilityDistributionWidget extends StatelessWidget {
             child: LinearProgressIndicator(
               value: prob,
               minHeight: isPredicted ? 7 : 5,
-              backgroundColor: isDark ? AppColors.elevatedSurface : Colors.grey.shade200,
+              backgroundColor: isDarkMode ? AppColors.elevatedSurface : Colors.grey.shade200,
               valueColor: AlwaysStoppedAnimation<Color>(
                 isPredicted ? severity.color : severity.color.withValues(alpha: 0.40),
               ),
@@ -97,3 +110,4 @@ class ProbabilityDistributionWidget extends StatelessWidget {
     );
   }
 }
+
