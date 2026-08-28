@@ -163,317 +163,309 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
     final patient = c.patient;
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('ORIGINAL RETINAL FUNDUS', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 11, color: AppColors.textSecondary)),
-                  const SizedBox(height: 6),
-                  Container(
-                    height: isDesktop ? 280 : 200,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: FundusImageViewer(
-                        originalImagePath: (c.image?.imageUrl.isNotEmpty == true)
-                            ? c.image!.imageUrl
-                            : (exp?.originalImageUrl.isNotEmpty == true)
-                                ? exp!.originalImageUrl
-                                : '',
-                        eyeTag: c.patient.eye,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('GRAD-CAM NEURAL ATTENTION', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 11, color: AppColors.textSecondary)),
-                  const SizedBox(height: 6),
-                  Container(
-                    height: isDesktop ? 280 : 200,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: FundusImageViewer(
-                        originalImagePath: (exp?.gradcamImageUrl.isNotEmpty == true)
-                            ? exp!.gradcamImageUrl
-                            : (exp?.overlayImageUrl.isNotEmpty == true)
-                                ? exp!.overlayImageUrl
-                                : (c.image?.imageUrl.isNotEmpty == true)
-                                    ? c.image!.imageUrl
-                                    : '',
-                        eyeTag: 'Grad-CAM XAI',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+    final severity = pred != null ? DRSeverity.fromLevel(pred.drLevel) : null;
+    final isReferable = pred?.isReferable ?? false;
 
-    Widget decisionControlWidget = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // AI Screening Card
-        ClinicalCard(
-          title: 'AI SCREENING (DECISION SUPPORT)',
-          titleAction: StatusBadge.aiBadge(label: 'AI FINDING'),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1280),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // 1. WORKSTATION TOP BAR
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    pred != null
-                        ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
-                        : (c.quality?.isUngradable ?? false)
-                            ? 'Inference Blocked (Image Ungradable)'
-                            : 'Awaiting AI Analysis',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.primary),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: widget.onBack,
+                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                        tooltip: 'Back to Review Queue',
+                      ),
+                      const SizedBox(width: 6),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Clinician Tele-Ophthalmology Workstation',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                          ),
+                          Text(
+                            'Case: ${c.screeningId} • Patient: ${patient.patientId} • ${patient.eye} • Quality: ${quality?.overallScore != null ? AppFormatters.formatPercent(quality!.overallScore) : "N/A"}',
+                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  if (pred != null)
-                    pred.referable ? StatusBadge.referable() : StatusBadge.nonReferable(),
+                  _statusTag(c.status.label),
                 ],
               ),
-              const SizedBox(height: 8),
-              if (pred != null) ...[
-                Text('Model Probability: ${AppFormatters.formatProbability(pred.modelProbability)}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent)),
-                const SizedBox(height: 8),
-                ProbabilityDistributionWidget(
-                  classProbabilities: pred.classProbabilities,
-                  predictedLevel: pred.drLevel,
+              const SizedBox(height: 16),
+
+              // 2. MAIN 3-PANE WORKSTATION (Desktop: 3 Panes, Mobile: Stacked)
+              if (isDesktop)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Pane 1: Original Retinal Image (35% width)
+                    Expanded(
+                      flex: 36,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _paneHeader('01. OPTICAL RETINAL VIEWPORT'),
+                          const SizedBox(height: 8),
+                          FundusImageViewer(
+                            originalImagePath: c.imagePath ?? '',
+                            mode: FundusViewerMode.original,
+                            height: 440,
+                            eyeTag: patient.eye,
+                            imageId: c.screeningId,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Pane 2: Grad-CAM Explainability Heatmap (34% width)
+                    Expanded(
+                      flex: 34,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _paneHeader('02. GRAD-CAM ATTRIBUTION MAP'),
+                          const SizedBox(height: 8),
+                          FundusImageViewer(
+                            originalImagePath: c.imagePath ?? '',
+                            gradcamImagePath: pred?.heatmapPath,
+                            mode: pred?.heatmapPath != null ? FundusViewerMode.overlay : FundusViewerMode.original,
+                            height: 440,
+                            eyeTag: '${patient.eye} Grad-CAM',
+                            imageId: c.screeningId,
+                            showControls: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Pane 3: AI Diagnosis & Clinician Actions (30% width)
+                    Expanded(
+                      flex: 30,
+                      child: _buildDecisionPane(pred, severity, isReferable),
+                    ),
+                  ],
+                )
+              else ...[
+                // Mobile Stacked Workstation
+                FundusImageViewer(
+                  originalImagePath: c.imagePath ?? '',
+                  gradcamImagePath: pred?.heatmapPath,
+                  mode: FundusViewerMode.overlay,
+                  height: 360,
+                  eyeTag: patient.eye,
+                  imageId: c.screeningId,
+                  showControls: true,
                 ),
+                const SizedBox(height: 16),
+                _buildDecisionPane(pred, severity, isReferable),
               ],
+              const SizedBox(height: 20),
+
+              const MedicalDisclaimerBanner(isCompact: true),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+      ),
+    );
+  }
 
-        // Clinician Final Decision Card
-        ClinicalCard(
-          title: 'FINAL CLINICIAN DECISION',
-          titleAction: StatusBadge.clinicianBadge(),
-          backgroundColor: review != null ? AppColors.accentLight.withOpacity(0.5) : Colors.white,
-          borderColor: review != null ? AppColors.accent : AppColors.border,
+  Widget _paneHeader(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.deepSpace,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.hudCyan, letterSpacing: 0.8),
+      ),
+    );
+  }
+
+  Widget _buildDecisionPane(dynamic pred, DRSeverity? severity, bool isReferable) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1. AI PREDICTION SUMMARY
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.lightBorder),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (review != null) ...[
+              const Text(
+                'AI SCREENING SUMMARY',
+                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+              ),
+              const SizedBox(height: 10),
+              if (severity != null) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'STATUS: ${review.action.label.toUpperCase()}',
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.accent),
+                      'Level ${pred.drLevel}: ${severity.shortName}',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isReferable ? AppColors.referableAlert : AppColors.statusGood),
                     ),
                     Text(
-                      review.finalDrLevel != null ? 'Validated Level ${review.finalDrLevel}' : 'Ungradable',
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.primary),
+                      AppFormatters.formatProbability(pred.modelProbability),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text('Reviewing Ophthalmologist: ${review.clinicianName ?? "Dr. Rajesh Kumar"}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text('Clinical Notes: "${review.clinicalNotes}"',
-                    style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: AppColors.textSecondary)),
-                const SizedBox(height: 4),
-                Text('Timestamp: ${AppFormatters.formatDateTime(review.reviewedAt)}',
-                    style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
-              ] else ...[
-                const Row(
-                  children: [
-                    Icon(Icons.verified_user_outlined, color: AppColors.accent, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'AI assists. Doctor decides.',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.accent),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Review the fundus photograph and Grad-CAM neural attention map. Validate the AI finding or formulate an override with clinical notes.',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                ),
-              ],
+                const SizedBox(height: 12),
+                if (pred.probabilities != null && pred.probabilities!.isNotEmpty)
+                  ProbabilityDistributionWidget(
+                    probabilities: pred.probabilities!,
+                    predictedLevel: pred.drLevel,
+                    isDarkMode: false,
+                  ),
+              ] else
+                const Text('No AI classification available', style: TextStyle(color: AppColors.textMuted)),
             ],
           ),
         ),
         const SizedBox(height: 12),
 
-        // Override Expansion Drawer
-        if (_showOverrideModal) ...[
-          ClinicalCard(
-            title: 'Formulate Clinician Override',
-            borderColor: AppColors.primary,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Select Final Clinical DR Level:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: List.generate(5, (lvl) {
-                    final sev = DRSeverity.fromLevel(lvl);
-                    final isSel = _overrideLevel == lvl;
-                    return ChoiceChip(
-                      label: Text('Level $lvl (${sev.shortName})'),
-                      selected: isSel,
-                      selectedColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                        color: isSel ? Colors.white : AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 11.5,
-                      ),
-                      onSelected: (val) {
-                        if (val) setState(() => _overrideLevel = lvl);
-                      },
-                    );
-                  }),
+        // 2. CLINICAL DECISION ACTION BUTTONS (NO PLACEHOLDERS)
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.lightBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'CLINICIAN DECISION',
+                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+              ),
+              const SizedBox(height: 12),
+
+              // Validate AI Button
+              ElevatedButton.icon(
+                onPressed: _isSubmitting ? null : _handleValidateAi,
+                icon: const Icon(Icons.verified_rounded, size: 18),
+                label: const Text('VALIDATE AI RESULT'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.statusGood,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                const SizedBox(height: 12),
+              ),
+              const SizedBox(height: 10),
+
+              // Override Button
+              OutlinedButton.icon(
+                onPressed: _isSubmitting ? null : () => setState(() => _showOverrideModal = !_showOverrideModal),
+                icon: const Icon(Icons.edit_note_rounded, size: 18),
+                label: const Text('OVERRIDE DR LEVEL'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.electricBlue,
+                  side: const BorderSide(color: AppColors.electricBlue),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Mark Ungradable Button
+              OutlinedButton.icon(
+                onPressed: _isSubmitting ? null : _handleMarkUngradable,
+                icon: const Icon(Icons.replay_rounded, size: 18),
+                label: const Text('MARK UNGRADABLE (RETAKE)'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.statusUngradable,
+                  side: const BorderSide(color: AppColors.statusUngradable),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+
+              // Override Form Sub-Panel
+              if (_showOverrideModal) ...[
+                const SizedBox(height: 14),
+                const Divider(),
+                const SizedBox(height: 8),
+                const Text(
+                  'SELECT CLINICIAN DR LEVEL:',
+                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<int>(
+                  value: _overrideLevel,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 0, child: Text('Level 0: No DR')),
+                    DropdownMenuItem(value: 1, child: Text('Level 1: Mild NPDR')),
+                    DropdownMenuItem(value: 2, child: Text('Level 2: Moderate NPDR (Referable)')),
+                    DropdownMenuItem(value: 3, child: Text('Level 3: Severe NPDR (Referable)')),
+                    DropdownMenuItem(value: 4, child: Text('Level 4: Proliferative DR (Urgent)')),
+                  ],
+                  onChanged: (val) => setState(() => _overrideLevel = val),
+                ),
+                const SizedBox(height: 10),
                 TextField(
                   controller: _notesController,
-                  maxLines: 3,
+                  maxLines: 2,
                   decoration: const InputDecoration(
-                    labelText: 'Mandatory Clinical Notes / Diagnostic Rationale *',
-                    hintText: 'Enter clinical observations (e.g., localized microaneurysms, hemorrhages, macular edema)...',
+                    labelText: 'Mandatory Clinical Rationale *',
+                    hintText: 'Enter clinical justification for override...',
                   ),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => setState(() => _showOverrideModal = false),
-                      child: const Text('Cancel'),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: _handleOverrideSubmit,
-                      icon: const Icon(Icons.check_rounded, size: 16),
-                      label: const Text('Submit Final Override'),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                    ),
-                  ],
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _isSubmitting ? null : _handleOverrideSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.electricBlue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('CONFIRM CLINICIAN OVERRIDE'),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
-
-        // Decision Action Buttons
-        if (!_showOverrideModal)
-          Row(
-            children: [
-              Expanded(
-                flex: 4,
-                child: PrimaryButton(
-                  text: '✓ Validate AI Result',
-                  icon: Icons.check_circle_outline_rounded,
-                  isLoading: _isSubmitting,
-                  onPressed: _handleValidateAi,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 3,
-                child: PrimaryButton(
-                  text: 'Override',
-                  icon: Icons.edit_note_rounded,
-                  isSecondary: true,
-                  onPressed: () => setState(() => _showOverrideModal = true),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 3,
-                child: PrimaryButton(
-                  text: 'Ungradable',
-                  icon: Icons.highlight_off_rounded,
-                  isDestructive: true,
-                  isLoading: _isSubmitting,
-                  onPressed: _handleMarkUngradable,
-                ),
-              ),
             ],
           ),
+        ),
       ],
     );
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: widget.onBack,
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Clinician Review • ${c.patient.patientId} (${c.patient.eye})',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            Text('Screening ID: ${c.screeningId}',
-                style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
-          ],
-        ),
-        actions: [
-          if (c.isReferable)
-            Container(
-              margin: const EdgeInsets.only(right: 16),
-              child: StatusBadge.referable(label: 'PRIORITY: REFERABLE'),
-            ),
-        ],
+  Widget _statusTag(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.accentLight,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.electricBlue.withValues(alpha: 0.4)),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (isDesktop) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 6, child: imageComparisonWidget),
-                      const SizedBox(width: 16),
-                      Expanded(flex: 5, child: decisionControlWidget),
-                    ],
-                  ),
-                ] else ...[
-                  imageComparisonWidget,
-                  const SizedBox(height: 14),
-                  decisionControlWidget,
-                ],
-                const SizedBox(height: 16),
-                const MedicalDisclaimerBanner(isCompact: true),
-              ],
-            ),
-          ),
-        ),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.electricBlue),
       ),
     );
   }
