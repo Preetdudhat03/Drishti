@@ -150,12 +150,10 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
 
   void setImage({
     required String path,
-    Map<String, dynamic>? demoScenario,
   }) {
     state = state.copyWith(
       imagePath: path,
       status: ScreeningStatus.imageReceived,
-      selectedDemoScenario: demoScenario,
       quality: null,
       prediction: null,
       explainability: null,
@@ -169,18 +167,15 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       isProcessing: true,
       status: ScreeningStatus.qualityAssessment,
       processingStep: 1,
-      processingStepLabel: 'Step 1/4: Image Quality & Focus Assessment...',
+      processingStepLabel: 'Step 1/4: Automated Image Quality & Focus Assessment...',
       errorMessage: null,
     );
 
     try {
-      await Future.delayed(const Duration(milliseconds: 600));
-
       final q = await _repository.checkQuality(
         screeningId: state.screeningId!,
         imagePath: state.imagePath!,
-        isDemo: state.selectedDemoScenario != null,
-        demoScenario: state.selectedDemoScenario,
+        isDemo: false,
       );
 
       final nextStatus = q.isUngradable
@@ -218,13 +213,11 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
     );
 
     try {
-      final isDemo = state.selectedDemoScenario != null;
-
       // Step 2: Preprocessing & CLAHE
       state = state.copyWith(
         processingStep: 2,
         processingStepLabel: state.quality!.isBorderline
-            ? 'Step 2/5: Applying Adaptive CLAHE Contrast Enhancement...'
+            ? 'Step 2/5: Applying Green-Channel CLAHE Contrast Enhancement...'
             : 'Step 2/5: Retinal FOV Cropping & 224x224 Tensor Normalization...',
       );
       await Future.delayed(const Duration(milliseconds: 350));
@@ -232,16 +225,13 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       // Step 3: ResNet-18 Inference
       state = state.copyWith(
         processingStep: 3,
-        processingStepLabel: isDemo
-            ? 'Step 3/5: Loading Benchmark Model Reference Data...'
-            : 'Step 3/5: Running PyTorch ResNet-18 Inference on Cloud Backend...',
+        processingStepLabel: 'Step 3/5: Running PyTorch ResNet-18 Neural Inference...',
       );
 
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
-        isDemo: isDemo,
-        demoScenario: state.selectedDemoScenario,
+        isDemo: false,
       );
 
       // Step 4: Grad-CAM Explainability Generation
