@@ -179,7 +179,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                 children: [
                   IconButton(
                     onPressed: widget.onBack,
-                    icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                    icon: const Icon(Icons.arrow_back_rounded, size: 20, color: Colors.white),
                     tooltip: 'Back to Review Queue',
                   ),
                   const SizedBox(width: 4),
@@ -188,14 +188,14 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Clinician Review Workstation',
+                          'Clinician Tele-Ophthalmology Workstation',
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                          style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
                         ),
                         Text(
-                          'Case: ${c.screeningId} | ${patient.patientId} | ${patient.eye}',
+                          'Case: ${c.screeningId} | Patient: ${patient.patientId} | Eye: ${patient.eye}',
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                          style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary),
                         ),
                       ],
                     ),
@@ -290,6 +290,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
       decoration: BoxDecoration(
         color: AppColors.deepSpace,
         borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.borderDark),
       ),
       child: Text(
         title,
@@ -306,16 +307,16 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.deepSpace,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.lightBorder),
+            border: Border.all(color: AppColors.borderDark),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'AI SCREENING SUMMARY',
-                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                'AI SCREENING EVIDENCE',
+                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
               ),
               const SizedBox(height: 10),
               if (severity != null) ...[
@@ -324,11 +325,11 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                   children: [
                     Text(
                       'Level ${pred.drLevel}: ${severity.shortName}',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isReferable ? AppColors.referableAlert : AppColors.statusGood),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isReferable ? AppColors.referableAlert : AppColors.statusGood),
                     ),
                     Text(
                       AppFormatters.formatProbability(pred.modelProbability),
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white),
                     ),
                   ],
                 ),
@@ -337,10 +338,10 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                   ProbabilityDistributionWidget(
                     probabilities: pred.probabilities!,
                     predictedLevel: pred.drLevel,
-                    isDarkMode: false,
+                    isDarkMode: true,
                   ),
               ] else
-                const Text('No AI classification available', style: TextStyle(color: AppColors.textMuted)),
+                const Text('No AI classification available', style: TextStyle(color: AppColors.darkTextMuted)),
             ],
           ),
         ),
@@ -350,16 +351,16 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.deepSpace,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.lightBorder),
+            border: Border.all(color: AppColors.borderDark),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'CLINICIAN DECISION',
-                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                'CLINICIAN DECISION DESK',
+                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
               ),
               const SizedBox(height: 12),
 
@@ -367,7 +368,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
               ElevatedButton.icon(
                 onPressed: _isSubmitting ? null : _handleValidateAi,
                 icon: const Icon(Icons.verified_rounded, size: 18),
-                label: const Text('VALIDATE AI RESULT'),
+                label: const Text('VALIDATE AI RESULT', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.statusGood,
                   foregroundColor: Colors.white,
@@ -381,7 +382,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
               OutlinedButton.icon(
                 onPressed: _isSubmitting ? null : () => setState(() => _showOverrideModal = !_showOverrideModal),
                 icon: const Icon(Icons.edit_note_rounded, size: 18),
-                label: const Text('OVERRIDE DR LEVEL'),
+                label: const Text('OVERRIDE DR LEVEL', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.electricBlue,
                   side: const BorderSide(color: AppColors.electricBlue),
@@ -395,7 +396,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
               OutlinedButton.icon(
                 onPressed: _isSubmitting ? null : _handleMarkUngradable,
                 icon: const Icon(Icons.replay_rounded, size: 18),
-                label: const Text('MARK UNGRADABLE (RETAKE)'),
+                label: const Text('MARK UNGRADABLE (RETAKE)', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.statusUngradable,
                   side: const BorderSide(color: AppColors.statusUngradable),
@@ -407,24 +408,25 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
               // Override Form Sub-Panel
               if (_showOverrideModal) ...[
                 const SizedBox(height: 14),
-                const Divider(),
+                const Divider(color: AppColors.borderDark),
                 const SizedBox(height: 8),
                 const Text(
                   'SELECT CLINICIAN DR LEVEL:',
-                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary),
+                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary),
                 ),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<int>(
                   value: _overrideLevel,
+                  dropdownColor: AppColors.deepSpace,
                   decoration: const InputDecoration(
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 0, child: Text('Level 0: No DR')),
-                    DropdownMenuItem(value: 1, child: Text('Level 1: Mild NPDR')),
-                    DropdownMenuItem(value: 2, child: Text('Level 2: Moderate NPDR (Referable)')),
-                    DropdownMenuItem(value: 3, child: Text('Level 3: Severe NPDR (Referable)')),
-                    DropdownMenuItem(value: 4, child: Text('Level 4: Proliferative DR (Urgent)')),
+                    DropdownMenuItem(value: 0, child: Text('Level 0: No DR', style: TextStyle(color: Colors.white))),
+                    DropdownMenuItem(value: 1, child: Text('Level 1: Mild NPDR', style: TextStyle(color: Colors.white))),
+                    DropdownMenuItem(value: 2, child: Text('Level 2: Moderate NPDR (Referable)', style: TextStyle(color: AppColors.statusBorderline))),
+                    DropdownMenuItem(value: 3, child: Text('Level 3: Severe NPDR (Referable)', style: TextStyle(color: AppColors.referableAlert))),
+                    DropdownMenuItem(value: 4, child: Text('Level 4: Proliferative DR (Urgent)', style: TextStyle(color: AppColors.referableAlert))),
                   ],
                   onChanged: (val) => setState(() => _overrideLevel = val),
                 ),
@@ -432,6 +434,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                 TextField(
                   controller: _notesController,
                   maxLines: 2,
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                   decoration: const InputDecoration(
                     labelText: 'Mandatory Clinical Rationale *',
                     hintText: 'Enter clinical justification for override...',
@@ -445,7 +448,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('CONFIRM CLINICIAN OVERRIDE'),
+                  child: const Text('CONFIRM CLINICIAN OVERRIDE', style: TextStyle(fontWeight: FontWeight.w800)),
                 ),
               ],
             ],
@@ -459,13 +462,13 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.accentLight,
+        color: AppColors.deepSpace,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.electricBlue.withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.hudCyan.withValues(alpha: 0.6)),
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.electricBlue),
+        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.hudCyan),
       ),
     );
   }
