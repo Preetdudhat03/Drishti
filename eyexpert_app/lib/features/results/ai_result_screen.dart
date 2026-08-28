@@ -91,7 +91,7 @@ class AiResultScreen extends ConsumerWidget {
                   originalImagePath: session.imagePath!,
                   gradcamImagePath: pred.heatmapPath,
                   mode: pred.heatmapPath != null ? FundusViewerMode.overlay : FundusViewerMode.original,
-                  height: 400,
+                  height: 380,
                   eyeTag: patient?.eye,
                   imageId: session.screeningId,
                   qualityLabel: quality?.status.name.toUpperCase(),
@@ -111,165 +111,139 @@ class AiResultScreen extends ConsumerWidget {
                   ),
                 ),
                 child: Column(
-                          quality?.status.label ?? 'GOOD',
-                          AppColors.statusGood,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'AI PREDICTION: LEVEL ${pred.drLevel}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                severity.fullName,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isReferable
+                                    ? 'CLINICAL ACTION: Refer to Ophthalmologist within 2-4 weeks for confirmatory examination.'
+                                    : 'CLINICAL ACTION: Annual routine screening recommended. No urgent specialist referral required.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isReferable ? const Color(0xFF991B1B) : const Color(0xFF166534),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              const Text('MODEL PROBABILITY', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                              Text(
+                                AppFormatters.formatProbability(pred.modelProbability),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
-              // Responsive 2-Column Section on Desktop/Tablet
-              if (isDesktop) ...[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Left Column: Probabilities
-                    Expanded(
-                      flex: 5,
-                      child: ClinicalCard(
-                        title: 'CLASS PROBABILITY (SOFTMAX OUTPUT)',
-                        child: ProbabilityDistributionWidget(
-                          classProbabilities: pred.classProbabilities,
-                          predictedLevel: pred.drLevel,
-                        ),
+              // 5. PROBABILITY SPECTRUM (WORKSTATION VIEW)
+              if (pred.probabilities != null && pred.probabilities!.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.lightBorder),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'DIABETIC RETINOPATHY PROBABILITY SPECTRUM',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Right Column: Decision Support & Image Quality
-                    Expanded(
-                      flex: 5,
-                      child: Column(
-                        children: [
-                          ClinicalCard(
-                            title: 'DECISION SUPPORT RECOMMENDATION',
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isReferable ? AppColors.referableAlertBg : AppColors.statusGoodBg,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: isReferable
-                                      ? AppColors.referableAlert.withOpacity(0.3)
-                                      : AppColors.statusGood.withOpacity(0.3),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    isReferable ? Icons.assignment_late_outlined : Icons.calendar_today_outlined,
-                                    color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
-                                    size: 22,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      pred.recommendation,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ModelProvenanceCard(provenance: pred.provenance),
-                        ],
+                      const SizedBox(height: 14),
+                      ProbabilityDistributionWidget(
+                        probabilities: pred.probabilities!,
+                        predictedLevel: pred.drLevel,
+                        isDarkMode: false,
                       ),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                // Mobile stacked layout
-                ClinicalCard(
-                  title: 'CLASS PROBABILITY (SOFTMAX OUTPUT)',
-                  child: ProbabilityDistributionWidget(
-                    classProbabilities: pred.classProbabilities,
-                    predictedLevel: pred.drLevel,
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                ClinicalCard(
-                  title: 'DECISION SUPPORT RECOMMENDATION',
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isReferable ? AppColors.referableAlertBg : AppColors.statusGoodBg,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isReferable
-                            ? AppColors.referableAlert.withOpacity(0.3)
-                            : AppColors.statusGood.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          isReferable ? Icons.assignment_late_outlined : Icons.calendar_today_outlined,
-                          color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
-                          size: 22,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            pred.recommendation,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ModelProvenanceCard(provenance: pred.provenance),
-              ],
               const SizedBox(height: 16),
 
-              // Action Buttons
+              // 6. WORKFLOW ACTIONS
               Row(
                 children: [
                   Expanded(
-                    child: PrimaryButton(
-                      text: 'View Grad-CAM & Evidence',
-                      icon: Icons.biotech_outlined,
-                      onPressed: onViewExplainability,
+                    child: ElevatedButton.icon(
+                      onPressed: onViewReport,
+                      icon: const Icon(Icons.description_outlined, size: 18),
+                      label: const Text('GENERATE CLINICAL REPORT', style: TextStyle(letterSpacing: 0.5)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.electricBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: PrimaryButton(
-                      text: 'View Screening Report',
-                      icon: Icons.description_outlined,
-                      isSecondary: true,
-                      onPressed: onViewReport,
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed: onNewScreening,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Next Screening'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textPrimary,
+                      side: const BorderSide(color: AppColors.borderDark),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              OutlinedButton.icon(
-                onPressed: onNewScreening,
-                icon: const Icon(Icons.add_circle_outline_rounded),
-                label: const Text('Complete & Start Next Patient Screening'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.border),
-                ),
-              ),
               const SizedBox(height: 16),
 
-              const MedicalDisclaimerBanner(),
+              const MedicalDisclaimerBanner(isCompact: true),
             ],
           ),
         ),
@@ -277,19 +251,17 @@ class AiResultScreen extends ConsumerWidget {
     );
   }
 
-  Widget _metricCol(String label, String value, Color valueColor) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.2),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: valueColor),
-        ),
-      ],
+  Widget _severityHeaderPill(DRSeverity severity, bool isReferable) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        isReferable ? 'REFERABLE DR ALERT' : 'NON-REFERABLE',
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5),
+      ),
     );
   }
 }
