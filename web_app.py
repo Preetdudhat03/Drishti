@@ -1163,17 +1163,39 @@ function switchTab(tabId) {
     }
 }
 
-function loadBenchmarkSample() {
-    const s = document.getElementById('sampleSelect').value;
-    if (!s) return;
-    fetch('/api/screenings/sample_run?sample=' + s)
-        .then(r => r.json())
-        .then(updateScreeningUI);
+function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.add('drop-active');
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.remove('drop-active');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.remove('drop-active');
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        processUploadedFile(e.dataTransfer.files[0]);
+    }
 }
 
 function handleFileUpload(e) {
     const file = e.target.files[0];
-    if (!file) return;
+    if (file) processUploadedFile(file);
+}
+
+function showLoading(active) {
+    const el = document.getElementById('loadingOverlay');
+    if (el) el.style.display = active ? 'flex' : 'none';
+}
+
+function processUploadedFile(file) {
+    showLoading(true);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('patient_id', document.getElementById('patId').value);
@@ -1185,7 +1207,52 @@ function handleFileUpload(e) {
 
     fetch('/api/screenings/upload', { method: 'POST', body: formData })
         .then(r => r.json())
-        .then(updateScreeningUI);
+        .then(data => {
+            showLoading(false);
+            updateScreeningUI(data);
+        })
+        .catch(err => {
+            showLoading(false);
+            alert("Error running inference: " + err);
+        });
+}
+
+function setMainView(view) {
+    ['orig', 'enh', 'cam', 'overlay'].forEach(v => {
+        const btn = document.getElementById('viewBtn' + v.charAt(0).toUpperCase() + v.slice(1));
+        if (btn) btn.className = (v === view) ? 'btn btn-sm' : 'btn btn-outline btn-sm';
+    });
+    if (!currentCase) return;
+    const img = document.getElementById('origImg');
+    if (view === 'orig') img.src = currentCase.originalImgB64 || '';
+    else if (view === 'enh') img.src = currentCase.enhancedImgB64 || currentCase.originalImgB64 || '';
+    else if (view === 'cam') img.src = currentCase.camImgB64 || '';
+    else if (view === 'overlay') img.src = currentCase.overlayImgB64 || '';
+}
+
+function addFinding(text) {
+    const input = document.getElementById('clinicianRationale');
+    if (!input.value || input.value === 'Verified. Findings consistent with clinical grade.') {
+        input.value = text;
+    } else {
+        input.value += '; ' + text;
+    }
+}
+
+function loadBenchmarkSample() {
+    const s = document.getElementById('sampleSelect').value;
+    if (!s) return;
+    showLoading(true);
+    fetch('/api/screenings/sample_run?sample=' + s)
+        .then(r => r.json())
+        .then(data => {
+            showLoading(false);
+            updateScreeningUI(data);
+        })
+        .catch(err => {
+            showLoading(false);
+            alert("Error loading sample: " + err);
+        });
 }
 
 function updateScreeningUI(data) {
