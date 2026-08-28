@@ -509,10 +509,15 @@ HTML_PAGE = """
             flex-direction: column;
             flex-shrink: 0;
             border-right: 1px solid #334155;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
         }
         .sidebar-brand {
             padding: 20px 18px;
             border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .sidebar-brand h1 {
             font-size: 20px;
@@ -527,6 +532,16 @@ HTML_PAGE = """
             font-size: 11px;
             color: #94a3b8;
             margin-top: 4px;
+        }
+        .sidebar-close-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px 8px;
+            line-height: 1;
         }
         .nav-list {
             list-style: none;
@@ -579,12 +594,29 @@ HTML_PAGE = """
         .status-active { background: #064e3b; color: #34d399; }
         .status-unavail { background: #7f1d1d; color: #fca5a5; }
 
+        /* BACKDROP FOR MOBILE SIDEBAR */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+
         /* MAIN CONTENT AREA */
         #main-container {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            width: 100%;
         }
         header {
             background: #ffffff;
@@ -594,25 +626,44 @@ HTML_PAGE = """
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
+            gap: 12px;
         }
-        .header-left h2 { font-size: 17px; font-weight: 700; color: var(--primary); }
-        .header-left p { font-size: 12px; color: var(--text-muted); }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .menu-toggle-btn {
+            display: none;
+            background: #f1f5f9;
+            border: 1px solid var(--border-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            padding: 6px 10px;
+            font-size: 16px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-title-box h2 { font-size: 17px; font-weight: 700; color: var(--primary); }
+        .header-title-box p { font-size: 12px; color: var(--text-muted); }
         .header-actions { display: flex; align-items: center; gap: 12px; }
         
         .content-body {
             flex-grow: 1;
             overflow-y: auto;
             padding: 24px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* CARDS & GRIDS */
-        .grid-3 { display: grid; grid-template-columns: 320px 360px 1fr; gap: 20px; }
+        /* CARDS & RESPONSIVE GRIDS */
+        .grid-3 { display: grid; grid-template-columns: minmax(280px, 320px) minmax(300px, 360px) 1fr; gap: 20px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-        .card-header { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .card { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); max-width: 100%; }
+        .card-header { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
 
         /* BUTTONS */
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--primary-accent); color: white; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: 0.15s; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--primary-accent); color: white; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: 0.15s; text-decoration: none; }
         .btn:hover { opacity: 0.9; }
         .btn-success { background: var(--success); }
         .btn-warning { background: var(--warning); }
@@ -626,7 +677,7 @@ HTML_PAGE = """
         select, input[type="text"], input[type="number"] { width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-dark); font-size: 12px; margin-bottom: 10px; }
 
         /* BADGES */
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .badge-good { background: #dcfce7; color: #166534; }
         .badge-borderline { background: #fef3c7; color: #92400e; }
         .badge-ungradable { background: #fee2e2; color: #991b1b; }
@@ -642,38 +693,139 @@ HTML_PAGE = """
 
         /* PROVENANCE PANEL */
         .provenance-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 11px; line-height: 1.6; }
-        .provenance-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding: 3px 0; }
-        .provenance-key { color: var(--text-muted); font-weight: 600; }
-        .provenance-val { font-weight: 700; color: var(--primary); }
+        .provenance-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding: 3px 0; gap: 8px; }
+        .provenance-key { color: var(--text-muted); font-weight: 600; flex-shrink: 0; }
+        .provenance-val { font-weight: 700; color: var(--primary); text-align: right; word-break: break-all; }
 
-        /* TABLES */
-        table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        /* TABLES & OVERFLOW PROTECTION */
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 500px; }
         table.data-table th, table.data-table td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; }
-        table.data-table th { background: #f1f5f9; font-weight: 700; color: var(--primary); }
+        table.data-table th { background: #f1f5f9; font-weight: 700; color: var(--primary); position: sticky; top: 0; }
         table.data-table tr:hover { background: #f8fafc; }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .drop-active { border-color: var(--primary-accent) !important; background: #e0f2fe !important; }
         .chip { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; background: #e2e8f0; color: #334155; cursor: pointer; margin-right: 4px; margin-bottom: 4px; transition: 0.15s; }
         .chip:hover { background: #cbd5e1; }
+
+        /* =========================================================================
+           RESPONSIVE BREAKPOINTS (TABLET, MOBILE, WIDE MONITORS)
+           ========================================================================= */
+        
+        /* 1. Large Laptops / Desktop Narrowing (<= 1200px) */
+        @media (max-width: 1200px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+            .grid-3 > div:nth-child(3) {
+                grid-column: span 2;
+            }
+        }
+
+        /* 2. Tablets / Medium Screens (<= 992px) */
+        @media (max-width: 992px) {
+            body {
+                height: 100vh;
+                position: relative;
+            }
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 270px;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.25);
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-close-btn {
+                display: block;
+            }
+            .menu-toggle-btn {
+                display: inline-flex;
+            }
+            .content-body {
+                padding: 16px;
+            }
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .grid-3 > div:nth-child(3) {
+                grid-column: auto;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 3. Small Mobile Phones (<= 640px) */
+        @media (max-width: 640px) {
+            header {
+                padding: 10px 14px;
+                flex-wrap: wrap;
+            }
+            .header-title-box h2 {
+                font-size: 15px;
+            }
+            .header-title-box p {
+                font-size: 11px;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 4px;
+            }
+            #roleSelector {
+                flex-grow: 1;
+            }
+            .content-body {
+                padding: 12px 8px;
+            }
+            .card {
+                padding: 14px 12px;
+                border-radius: 8px;
+            }
+            .cam-grid {
+                grid-template-columns: 1fr;
+            }
+            .cam-box {
+                height: 180px;
+            }
+            .img-box {
+                height: 180px;
+            }
+            .btn {
+                font-size: 11.5px;
+                padding: 7px 12px;
+            }
+        }
     </style>
 </head>
 <body>
 
+<!-- SIDEBAR BACKDROP ON MOBILE -->
+<div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
 <!-- SIDEBAR -->
 <div id="sidebar">
     <div class="sidebar-brand">
-        <h1>👁 DRISHTI</h1>
-        <p>Explainable AI Retinal Screening (SIH 2026)</p>
+        <div>
+            <h1>👁 DRISHTI</h1>
+            <p>Explainable AI Retinal Screening (SIH 2026)</p>
+        </div>
+        <button class="sidebar-close-btn" onclick="toggleSidebar(false)">✕</button>
     </div>
     <ul class="nav-list">
-        <li class="nav-item active" onclick="switchTab('tab-screening')">🏥 1. New Screening</li>
-        <li class="nav-item" onclick="switchTab('tab-queue')">📋 2. Clinician Review Queue</li>
-        <li class="nav-item" onclick="switchTab('tab-validation')">🧪 3. Model Validation Suite</li>
-        <li class="nav-item" onclick="switchTab('tab-sim')">📊 4. District Telemed Sim</li>
-        <li class="nav-item" onclick="switchTab('tab-reports')">📄 5. Screening Reports</li>
+        <li class="nav-item active" onclick="switchTab('tab-screening'); toggleSidebar(false)">🏥 1. New Screening</li>
+        <li class="nav-item" onclick="switchTab('tab-queue'); toggleSidebar(false)">📋 2. Clinician Review Queue</li>
+        <li class="nav-item" onclick="switchTab('tab-validation'); toggleSidebar(false)">🧪 3. Model Validation Suite</li>
+        <li class="nav-item" onclick="switchTab('tab-sim'); toggleSidebar(false)">📊 4. District Telemed Sim</li>
+        <li class="nav-item" onclick="switchTab('tab-reports'); toggleSidebar(false)">📄 5. Screening Reports</li>
         <div class="nav-divider"></div>
-        <li class="nav-item" onclick="switchTab('tab-developer')">⚙ System & API Inspector</li>
+        <li class="nav-item" onclick="switchTab('tab-developer'); toggleSidebar(false)">⚙ System & API Inspector</li>
     </ul>
     <div class="sidebar-footer">
         <div><b>Model Engine:</b> PyTorch ResNet-18</div>
@@ -685,8 +837,11 @@ HTML_PAGE = """
 <div id="main-container">
     <header>
         <div class="header-left">
-            <h2 id="viewTitle">New Retinal Screening Workflow</h2>
-            <p id="viewSubtitle">Patient intake, optical quality gating, AI inference, Grad-CAM XAI & human clinician triage.</p>
+            <button class="menu-toggle-btn" onclick="toggleSidebar(true)" title="Open Navigation Menu">☰</button>
+            <div class="header-title-box">
+                <h2 id="viewTitle">New Retinal Screening Workflow</h2>
+                <p id="viewSubtitle">Patient intake, optical quality gating, AI inference, Grad-CAM XAI & human clinician triage.</p>
+            </div>
         </div>
         <div class="header-actions">
             <span style="font-size: 11px; color: var(--text-muted);">Role:</span>
