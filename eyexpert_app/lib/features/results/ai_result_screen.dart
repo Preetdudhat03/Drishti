@@ -66,19 +66,21 @@ class AiResultScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'AI Retinal Diagnostic Screening',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Patient ${patient?.patientId ?? "N/A"} • ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'AI Retinal Analysis & Classification',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
+                          style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary),
+                        ),
+                      ],
+                    ),
                   ),
                   _severityHeaderPill(severity, isReferable),
                 ],
@@ -101,9 +103,9 @@ class AiResultScreen extends ConsumerWidget {
 
               // 4. DIAGNOSTIC CLASSIFICATION & TRIAGE BANNER
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: isReferable ? AppColors.referableAlertBg : AppColors.statusGoodBg,
+                  color: isReferable ? AppColors.referableDarkBg : AppColors.statusGoodDarkBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
@@ -122,9 +124,9 @@ class AiResultScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'AI PREDICTION: LEVEL ${pred.drLevel}',
+                                'AI INFERENCE: LEVEL ${pred.drLevel}',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                   fontWeight: FontWeight.w800,
                                   color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
                                   letterSpacing: 0.8,
@@ -133,31 +135,31 @@ class AiResultScreen extends ConsumerWidget {
                               const SizedBox(height: 4),
                               Text(
                                 severity.fullName,
-                                style: TextStyle(
-                                  fontSize: 22,
+                                style: const TextStyle(
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w800,
-                                  color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                                  color: Colors.white,
                                   letterSpacing: -0.3,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Text(
                                 isReferable
-                                    ? 'CLINICAL ACTION: Refer to Ophthalmologist within 2-4 weeks for confirmatory examination.'
-                                    : 'CLINICAL ACTION: Annual routine screening recommended. No urgent specialist referral required.',
+                                    ? 'CLINICAL ACTION: Refer to Ophthalmologist within 2-4 weeks for confirmatory evaluation.'
+                                    : 'CLINICAL ACTION: Annual routine screening protocol. No urgent specialist referral required.',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11.5,
                                   fontWeight: FontWeight.w600,
-                                  color: isReferable ? const Color(0xFF991B1B) : const Color(0xFF166534),
+                                  color: isReferable ? const Color(0xFFFCA5A5) : const Color(0xFF86EFAC),
                                 ),
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.deepSpace,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
@@ -165,11 +167,11 @@ class AiResultScreen extends ConsumerWidget {
                           ),
                           child: Column(
                             children: [
-                              const Text('MODEL PROBABILITY', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                              const Text('CONFIDENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted)),
                               Text(
                                 AppFormatters.formatProbability(pred.modelProbability),
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.w900,
                                   color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
                                 ),
@@ -189,54 +191,98 @@ class AiResultScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.deepSpace,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.lightBorder),
+                    border: Border.all(color: AppColors.borderDark),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'DIABETIC RETINOPATHY PROBABILITY SPECTRUM',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '5-CLASS NEURAL PROBABILITY SPECTRUM',
+                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
+                          ),
+                          Text(
+                            'Softmax Output',
+                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.hudCyan),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 14),
                       ProbabilityDistributionWidget(
                         probabilities: pred.probabilities,
                         predictedLevel: pred.drLevel,
-                        isDarkMode: false,
+                        isDarkMode: true,
                       ),
                     ],
                   ),
                 ),
+              const SizedBox(height: 14),
+
+              // 6. MODEL PROVENANCE CARD
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.deepSpace,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.borderDark),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: AppColors.hudCyan, size: 18),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ResNet-18 Transfer Learning • APTOS 2019 Benchmark',
+                            style: TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Layer 4 Activation • QWK 0.870 • Referable AUC 0.980',
+                            style: TextStyle(color: AppColors.darkTextMuted, fontSize: 10.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
 
-              // 6. WORKFLOW ACTIONS
+              // 7. WORKFLOW ACTIONS
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: onViewReport,
-                      icon: const Icon(Icons.description_outlined, size: 18),
-                      label: const Text('GENERATE CLINICAL REPORT', style: TextStyle(letterSpacing: 0.5)),
+                      onPressed: onViewExplainability,
+                      icon: const Icon(Icons.hub_outlined, size: 18),
+                      label: const Text('OPEN GRAD-CAM WORKSTATION', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.electricBlue,
+                        backgroundColor: AppColors.aiViolet,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: onNewScreening,
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Next Screening'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textPrimary,
-                      side: const BorderSide(color: AppColors.borderDark),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onViewReport,
+                      icon: const Icon(Icons.description_outlined, size: 18),
+                      label: const Text('VIEW CLINICAL REPORT', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.electricBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
                     ),
                   ),
                 ],
@@ -253,14 +299,14 @@ class AiResultScreen extends ConsumerWidget {
 
   Widget _severityHeaderPill(DRSeverity severity, bool isReferable) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        isReferable ? 'REFERABLE DR ALERT' : 'NON-REFERABLE',
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5),
+        isReferable ? 'REFERABLE DR' : 'NON-REFERABLE',
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 10.5, letterSpacing: 0.5),
       ),
     );
   }
