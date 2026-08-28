@@ -111,7 +111,7 @@ class ReviewQueueNotifier extends StateNotifier<ReviewQueueState> {
         clinicalNotes: clinicalNotes,
         recommendedFollowupDays: recommendedFollowupDays,
         clinicianName: clinicianName,
-        isDemo: true,
+        isDemo: false,
       );
 
       final updatedList = state.cases.map((c) {
