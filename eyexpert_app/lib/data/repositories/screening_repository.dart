@@ -17,7 +17,7 @@ class ScreeningRepository {
   Future<ScreeningCaseModel> createScreening({
     required PatientModel patient,
     required String clientRequestId,
-    bool isDemo = true,
+    bool isDemo = false,
   }) async {
     return _screeningService.createScreening(
       patient: patient,
@@ -29,28 +29,24 @@ class ScreeningRepository {
   Future<QualityAssessmentModel> checkQuality({
     required String screeningId,
     required String imagePath,
-    bool isDemo = true,
-    Map<String, dynamic>? demoScenario,
+    bool isDemo = false,
   }) async {
     return _screeningService.assessImageQuality(
       screeningId: screeningId,
       imagePath: imagePath,
       isDemo: isDemo,
-      demoScenario: demoScenario,
     );
   }
 
   Future<Map<String, dynamic>> analyze({
     required String screeningId,
     required QualityAssessmentModel quality,
-    bool isDemo = true,
-    Map<String, dynamic>? demoScenario,
+    bool isDemo = false,
   }) async {
     return _screeningService.analyzeScreening(
       screeningId: screeningId,
       quality: quality,
       isDemo: isDemo,
-      demoScenario: demoScenario,
     );
   }
 }
