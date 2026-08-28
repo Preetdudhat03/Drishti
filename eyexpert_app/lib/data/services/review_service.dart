@@ -1,5 +1,6 @@
 import '../api/api_client.dart';
 import '../api/api_endpoints.dart';
+import '../models/patient_model.dart';
 import '../models/clinician_review_model.dart';
 import '../models/screening_case_model.dart';
 import '../../core/errors/app_exceptions.dart';
