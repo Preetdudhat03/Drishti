@@ -183,7 +183,16 @@ def assess_image_quality(img_rgb):
     Evaluates retinal image focus, illumination, and field-of-view.
     Returns status: 'GOOD', 'BORDERLINE', or 'UNGRADABLE'.
     """
-    img_gray = np.array(img_rgb.convert('L'), dtype=np.float32)
+    # Downsample giant camera photos for memory safety (<512px)
+    max_d = 512
+    w_orig, h_orig = img_rgb.size
+    if max(w_orig, h_orig) > max_d:
+        scale = max_d / float(max(w_orig, h_orig))
+        img_eval = img_rgb.resize((int(w_orig * scale), int(h_orig * scale)), Image.Resampling.BILINEAR)
+    else:
+        img_eval = img_rgb
+
+    img_gray = np.array(img_eval.convert('L'), dtype=np.float32)
     h, w = img_gray.shape
     total_pixels = h * w
 
@@ -208,6 +217,9 @@ def assess_image_quality(img_rgb):
     mean_illum = float(np.mean(valid_pixels)) if len(valid_pixels) > 0 else 0.0
     under_ratio = float(np.sum(valid_pixels < 25) / max(1, len(valid_pixels)))
     over_ratio = float(np.sum(valid_pixels > 240) / max(1, len(valid_pixels)))
+
+    del img_gray, lap, valid_lap, valid_pixels, mask
+    gc.collect()
 
     if mean_illum < 45 or mean_illum > 225:
         score_mean = 0.1
