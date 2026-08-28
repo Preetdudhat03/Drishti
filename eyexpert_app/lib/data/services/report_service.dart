@@ -232,7 +232,7 @@ class ReportService {
     final pdfData = await generatePdfReport(screeningCase);
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdfData,
-      name: 'EyeXpert_Report_${screeningCase.screeningId}.pdf',
+      name: 'Drishti_Report_${screeningCase.screeningId}.pdf',
     );
   }
 
@@ -240,7 +240,7 @@ class ReportService {
     final pdfData = await generatePdfReport(screeningCase);
     await Printing.sharePdf(
       bytes: pdfData,
-      filename: 'EyeXpert_Report_${screeningCase.screeningId}.pdf',
+      filename: 'Drishti_Report_${screeningCase.screeningId}.pdf',
     );
   }
 }
