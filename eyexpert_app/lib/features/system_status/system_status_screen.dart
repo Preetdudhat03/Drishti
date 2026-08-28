@@ -30,7 +30,7 @@ class SystemStatusScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'EyeXpert System & Service Health',
+                        'Drishti System & Microservices Health',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Text(
