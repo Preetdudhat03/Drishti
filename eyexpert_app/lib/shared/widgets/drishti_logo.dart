@@ -17,6 +17,9 @@ class DrishtiLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = color ?? AppColors.accent;
+    final textStyleColor = textColor ?? AppColors.primary;
+
     final logoIcon = Image.asset(
       'assets/images/logo.png',
       width: size,
