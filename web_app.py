@@ -1261,6 +1261,9 @@ function updateScreeningUI(data) {
     currentCase = data;
     logApiInspector(data);
 
+    // Reset view toggle
+    setMainView('orig');
+
     // Original image
     document.getElementById('origImg').src = data.originalImgB64;
     document.getElementById('origImg').style.display = 'block';
