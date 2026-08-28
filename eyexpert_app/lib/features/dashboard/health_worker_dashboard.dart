@@ -10,6 +10,7 @@ import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/offline_status_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
+import '../../data/models/screening_case_model.dart';
 import '../review/review_queue_provider.dart';
 import '../offline/sync_queue_provider.dart';
 import '../auth/auth_provider.dart';
