@@ -106,7 +106,7 @@ class DRPredictionModel {
       });
     }
 
-    final int level = pred['dr_level'] ?? pred['level'] ?? 0;
+    final int level = (pred['dr_level'] as num?)?.toInt() ?? (pred['level'] as num?)?.toInt() ?? 0;
 
     return DRPredictionModel(
       screeningId: screeningId ?? json['screening_id'] ?? '',
