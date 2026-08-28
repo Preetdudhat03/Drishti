@@ -219,13 +219,15 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.spaceAround,
                       children: [
-                        _guidanceItem(Icons.crop_free_rounded, 'Center retinal field'),
-                        _guidanceItem(Icons.auto_fix_high_rounded, 'Maintain sharp focus'),
-                        _guidanceItem(Icons.wb_sunny_outlined, 'Ensure illumination'),
-                        _guidanceItem(Icons.vibration_rounded, 'Hold camera steady'),
+                        _guidanceItem(Icons.crop_free_rounded, 'Center field'),
+                        _guidanceItem(Icons.auto_fix_high_rounded, 'Sharp focus'),
+                        _guidanceItem(Icons.wb_sunny_outlined, 'Illumination'),
+                        _guidanceItem(Icons.vibration_rounded, 'Hold steady'),
                       ],
                     ),
                     const SizedBox(height: 8),
