@@ -124,7 +124,6 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
       );
     }
 
-    final isDemo = session.selectedDemoScenario != null;
     final double progressPct = (currentStep / 5.0).clamp(0.1, 1.0);
 
     return Center(
@@ -136,36 +135,34 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Real Backend vs Demo Badge
+              // Real Backend Badge
               Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
-                    color: isDemo ? const Color(0xFFF1F5F9) : const Color(0xFFF0FDF4),
+                    color: const Color(0xFFF0FDF4),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isDemo ? const Color(0xFFCBD5E1) : const Color(0xFF86EFAC),
+                      color: const Color(0xFF86EFAC),
                       width: 1,
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        isDemo ? Icons.science_outlined : Icons.cloud_done_rounded,
+                        Icons.cloud_done_rounded,
                         size: 15,
-                        color: isDemo ? AppColors.textSecondary : const Color(0xFF15803D),
+                        color: Color(0xFF15803D),
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       Text(
-                        isDemo
-                            ? 'BENCHMARK SIMULATION'
-                            : 'LIVE BACKEND: PYTORCH RESNET-18',
+                        'LIVE BACKEND: PYTORCH RESNET-18',
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.3,
-                          color: isDemo ? AppColors.textSecondary : const Color(0xFF166534),
+                          color: Color(0xFF166534),
                         ),
                       ),
                     ],
