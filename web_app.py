@@ -658,6 +658,8 @@ HTML_PAGE = """
                         <option value="sample_borderline_illum">Borderline Low Contrast (CLAHE Target)</option>
                         <option value="sample_ungradable_blur">Ungradable Motion Blur (Safety Gate)</option>
                         <option value="sample_ungradable_dark">Ungradable Underexposure (Safety Gate)</option>
+                    </select>
+
                     <div id="dropZone" style="border: 2px dashed #94a3b8; border-radius: 8px; padding: 18px 14px; text-align: center; background: #f8fafc; cursor: pointer; margin-bottom: 12px; transition: all 0.2s;" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
                         <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleFileUpload(event)">
                         <div style="font-size: 24px; margin-bottom: 4px;">📁</div>
