@@ -96,7 +96,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                   mainAxisSpacing: 10,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  childAspectRatio: isTabletOrDesktop ? 1.6 : 1.35,
+                  childAspectRatio: isTabletOrDesktop ? 1.25 : 1.2,
                   children: [
                     _metricCard(
                       title: "Today's Screenings",
