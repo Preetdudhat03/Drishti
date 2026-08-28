@@ -87,7 +87,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                 ),
               const SizedBox(height: 14),
 
-              // 4. LOADING STATE
+              // 4. LOADING / EVALUATING STATE
               if (isEvaluating)
                 Container(
                   padding: const EdgeInsets.all(24),
@@ -103,11 +103,6 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       Text(
                         'EVALUATING OPTICAL FOCUS & ANATOMICAL CHROMINANCE...',
                         style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Running OpenCV Laplacian variance & retinal FOV coverage checks',
-                        style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -129,146 +124,6 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                         children: [
                           const Icon(Icons.dangerous_rounded, color: AppColors.statusUngradable, size: 24),
                           const SizedBox(width: 10),
-                      ),
-                    ],
-                  ),
-                ),
-              ] else if (isEvaluating || quality == null) ...[
-                // Loading / Multi-Step Pipeline Evaluation State
-                ClinicalCard(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    children: [
-                      // Thumbnail of the image being evaluated
-                      if (session.imagePath != null)
-                        SizedBox(
-                          height: 160,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: FundusImageViewer(
-                              originalImagePath: session.imagePath!,
-                              eyeTag: session.patient?.eye,
-                              imageId: 'IMG-${session.screeningId?.replaceAll("EX-", "")}',
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-
-                      const LinearProgressIndicator(
-                        backgroundColor: Color(0xFFE2E8F0),
-                        color: AppColors.primary,
-                        minHeight: 6,
-                      ),
-                      const SizedBox(height: 16),
-
-                      const Text(
-                        'Automated Optical Quality & Pre-Screening Pipeline',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Evaluating mathematical metrics before running deep neural inference...',
-                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Step-by-step Pipeline Stepper Items
-                      _pipelineStep(
-                        stepNumber: '1',
-                        title: 'Retinal Mask & Field of View (FOV)',
-                        description: 'Segmenting circular boundary and optic disc centering...',
-                        isDone: true,
-                      ),
-                      const SizedBox(height: 8),
-                      _pipelineStep(
-                        stepNumber: '2',
-                        title: 'Laplacian Focus & Sharpness Filter',
-                        description: 'Computing second-derivative high-frequency edge variance...',
-                        isDone: true,
-                      ),
-                      const SizedBox(height: 8),
-                      _pipelineStep(
-                        stepNumber: '3',
-                        title: 'Illumination & Exposure Distribution',
-                        description: 'Analyzing histogram saturation, underexposure, and glare...',
-                        isDone: false,
-                        isActive: true,
-                      ),
-                      const SizedBox(height: 8),
-                      _pipelineStep(
-                        stepNumber: '4',
-                        title: 'Adaptive CLAHE Preprocessing',
-                        description: 'Local contrast enhancement on green vascular channels...',
-                        isDone: false,
-                      ),
-                    ],
-                  ),
-                ),
-              ] else ...[
-                // Two-Column Layout (Image preview & Quality score breakdown)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Thumbnail Fundus Image
-                    Expanded(
-                      flex: 4,
-                      child: SizedBox(
-                        height: 220,
-                        child: FundusImageViewer(
-                          originalImagePath: session.imagePath ?? '',
-                          eyeTag: session.patient?.eye,
-                          imageId: 'IMG-${session.screeningId?.replaceAll("EX-", "")}',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-
-                    // Overall Score Card
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: quality.isUngradable
-                              ? AppColors.statusUngradableBg.withOpacity(0.5)
-                              : quality.isBorderline
-                                  ? AppColors.statusBorderlineBg.withOpacity(0.5)
-                                  : AppColors.statusGoodBg.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: quality.isUngradable
-                                ? AppColors.statusUngradable.withOpacity(0.4)
-                                : quality.isBorderline
-                                    ? AppColors.statusBorderline.withOpacity(0.4)
-                                    : AppColors.statusGood.withOpacity(0.4),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'OVERALL QUALITY SCORE',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              AppFormatters.formatPercentage(quality.overallScore),
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                color: quality.isUngradable
-                                    ? AppColors.statusUngradable
-                                    : quality.isBorderline
-                                        ? AppColors.statusBorderline
-                                        : AppColors.statusGood,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              quality.isUngradable
-                                  ? 'STATUS: UNGRADABLE'
-                                  : quality.isBorderline
-                                      ? 'STATUS: BORDERLINE (Enhancement Applied)'
                                       : 'STATUS: OPTIMAL FOR SCREENING',
                               style: TextStyle(
                                 fontSize: 12,
