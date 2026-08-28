@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
 class ClinicalCard extends StatelessWidget {
   final Widget child;
   final String? title;
   final Widget? titleAction;
   final EdgeInsetsGeometry? padding;
-  final Color? borderColor;
+  final EdgeInsetsGeometry? margin;
   final Color? backgroundColor;
+  final Color? borderColor;
+  final double borderRadius;
+  final VoidCallback? onTap;
 
   const ClinicalCard({
     super.key,
@@ -14,22 +18,33 @@ class ClinicalCard extends StatelessWidget {
     this.title,
     this.titleAction,
     this.padding,
-    this.borderColor,
+    this.margin,
     this.backgroundColor,
+    this.borderColor,
+    this.borderRadius = 14,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
+
+    Widget content = Container(
+      margin: margin ?? const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: backgroundColor ?? theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(12),
+        color: backgroundColor ?? AppColors.surface,
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: borderColor ?? theme.dividerTheme.color ?? Colors.grey.shade300,
+          color: borderColor ?? AppColors.border,
           width: 1,
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x080F172A),
+            blurRadius: 4,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(16),
@@ -45,8 +60,10 @@ class ClinicalCard extends StatelessWidget {
                     child: Text(
                       title!,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.1,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.1,
                       ),
                     ),
                   ),
@@ -63,5 +80,15 @@ class ClinicalCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: content,
+      );
+    }
+
+    return content;
   }
 }
