@@ -305,30 +305,23 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                             ],
                           ),
                           const SizedBox(height: 4),
-                                const SizedBox(height: 4),
-                                Text('Clinical Notes: ${review.clinicalNotes}',
-                                    style: const TextStyle(fontSize: 12)),
-                                const SizedBox(height: 4),
-                                Text('Reviewed At: ${AppFormatters.formatDateTime(review.reviewedAt)}',
-                                    style: TextStyle(fontSize: 10, color: Colors.grey.shade700)),
-                              ],
-                            )
-                          : Row(
-                              children: [
-                                const Icon(Icons.hourglass_top_rounded, color: Colors.amber, size: 18),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Human Validation State: PENDING OPHTHALMOLOGIST REVIEW',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.amber.shade900,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            severity?.fullName ?? 'No Diabetic Retinopathy Detected',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isReferable
+                                ? 'Automated screening detected high-attention microvascular anomalies indicative of diabetic retinopathy. Confirmatory dilated biomicroscopy by an ophthalmologist is recommended within 2 to 4 weeks.'
+                                : 'Automated screening detected no sight-threatening microvascular anomalies. Patient should maintain regular glycemic control and return for annual retinal photography screening.',
+                            style: const TextStyle(fontSize: 12, height: 1.4),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
 
