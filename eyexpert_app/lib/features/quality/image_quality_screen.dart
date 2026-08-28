@@ -421,10 +421,73 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(AppFormatters.formatPercentage(score), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
-            Text(status, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
-          ],
+  Widget _pipelineStep({
+    required String stepNumber,
+    required String title,
+    required String description,
+    bool isDone = false,
+    bool isActive = false,
+  }) {
+    final Color indicatorColor = isDone
+        ? AppColors.statusGood
+        : isActive
+            ? AppColors.primary
+            : Colors.grey.shade400;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: indicatorColor.withOpacity(0.15),
+            shape: BoxShape.circle,
+            border: Border.all(color: indicatorColor, width: 1.5),
+          ),
+          child: Center(
+            child: isDone
+                ? const Icon(Icons.check, size: 13, color: AppColors.statusGood)
+                : isActive
+                    ? const SizedBox(
+                        width: 10,
+                        height: 10,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                      )
+                    : Text(
+                        stepNumber,
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: indicatorColor),
+                      ),
+          ),
         ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDone || isActive ? AppColors.textPrimary : AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                description,
+                style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+              ),
+            ],
+          ),
+        ),
+        if (isDone)
+          const Text(
+            'DONE',
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.statusGood),
+          ),
       ],
     );
   }
 }
+
