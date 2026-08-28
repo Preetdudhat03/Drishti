@@ -252,7 +252,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -265,20 +265,27 @@ class HealthWorkerDashboard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+                ),
               ),
-              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 4),
+              Icon(icon, size: 16, color: color),
             ],
           ),
           Text(
             value,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color),
           ),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 9.5, color: Colors.grey.shade500),
           ),
         ],
       ),
