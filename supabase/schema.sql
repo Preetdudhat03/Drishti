@@ -266,7 +266,10 @@ USING (bucket_id = 'fundus-images');
 -- ----------------------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 1. Insert Health Worker into auth.users (ID: a1111111-1111-1111-1111-111111111111)
+-- Clean up any existing demo records
+DELETE FROM auth.users WHERE email IN ('healthworker.demo@drishti.org', 'clinician.demo@drishti.org');
+
+-- 1. Insert Health Worker into auth.users
 INSERT INTO auth.users (
     instance_id,
     id,
@@ -278,13 +281,11 @@ INSERT INTO auth.users (
     raw_app_meta_data,
     raw_user_meta_data,
     created_at,
-    updated_at,
-    confirmation_token,
-    recovery_token
+    updated_at
 )
 VALUES (
     '00000000-0000-0000-0000-000000000000',
-    'a1111111-1111-1111-1111-111111111111',
+    gen_random_uuid(),
     'authenticated',
     'authenticated',
     'healthworker.demo@drishti.org',
@@ -293,15 +294,10 @@ VALUES (
     '{"provider":"email","providers":["email"]}',
     '{"name":"Sunita Sharma","role":"Health Worker"}',
     NOW(),
-    NOW(),
-    '',
-    ''
-)
-ON CONFLICT (id) DO UPDATE SET
-    encrypted_password = crypt('demo1234', gen_salt('bf')),
-    email_confirmed_at = NOW();
+    NOW()
+);
 
--- 2. Insert Clinician into auth.users (ID: b2222222-2222-2222-2222-222222222222)
+-- 2. Insert Clinician into auth.users
 INSERT INTO auth.users (
     instance_id,
     id,
@@ -313,13 +309,11 @@ INSERT INTO auth.users (
     raw_app_meta_data,
     raw_user_meta_data,
     created_at,
-    updated_at,
-    confirmation_token,
-    recovery_token
+    updated_at
 )
 VALUES (
     '00000000-0000-0000-0000-000000000000',
-    'b2222222-2222-2222-2222-222222222222',
+    gen_random_uuid(),
     'authenticated',
     'authenticated',
     'clinician.demo@drishti.org',
@@ -328,62 +322,17 @@ VALUES (
     '{"provider":"email","providers":["email"]}',
     '{"name":"Dr. Rajesh Kumar","role":"Ophthalmologist / Clinician"}',
     NOW(),
-    NOW(),
-    '',
-    ''
-)
-ON CONFLICT (id) DO UPDATE SET
-    encrypted_password = crypt('demo1234', gen_salt('bf')),
-    email_confirmed_at = NOW();
-
--- 3. Insert Health Worker Identity
-INSERT INTO auth.identities (
-    id,
-    user_id,
-    identity_data,
-    provider,
-    last_sign_in_at,
-    created_at,
-    updated_at
-)
-VALUES (
-    'a1111111-1111-1111-1111-111111111111',
-    'a1111111-1111-1111-1111-111111111111',
-    format('{"sub":"%s","email":"%s"}', 'a1111111-1111-1111-1111-111111111111', 'healthworker.demo@drishti.org')::jsonb,
-    'email',
-    NOW(),
-    NOW(),
     NOW()
-)
-ON CONFLICT (provider, id) DO NOTHING;
+);
 
--- 4. Insert Clinician Identity
-INSERT INTO auth.identities (
-    id,
-    user_id,
-    identity_data,
-    provider,
-    last_sign_in_at,
-    created_at,
-    updated_at
-)
-VALUES (
-    'b2222222-2222-2222-2222-222222222222',
-    'b2222222-2222-2222-2222-222222222222',
-    format('{"sub":"%s","email":"%s"}', 'b2222222-2222-2222-2222-222222222222', 'clinician.demo@drishti.org')::jsonb,
-    'email',
-    NOW(),
-    NOW(),
-    NOW()
-)
-ON CONFLICT (provider, id) DO NOTHING;
-
--- 5. Insert Profiles into public.profiles
+-- 3. Populate matching profiles into public.profiles
 INSERT INTO public.profiles (id, email, name, role, facility_id, phone)
-VALUES 
-    ('a1111111-1111-1111-1111-111111111111', 'healthworker.demo@drishti.org', 'Sunita Sharma', 'Health Worker', 'PHC-RAMGARH-01', '+91 98765 43210'),
-    ('b2222222-2222-2222-2222-222222222222', 'clinician.demo@drishti.org', 'Dr. Rajesh Kumar', 'Ophthalmologist / Clinician', 'DISTRICT-EYE-HOSPITAL', '+91 91234 56789')
-ON CONFLICT (id) DO UPDATE SET
-    name = EXCLUDED.name,
-    role = EXCLUDED.role,
-    facility_id = EXCLUDED.facility_id;
+SELECT 
+    id, 
+    email, 
+    CASE WHEN email LIKE '%healthworker%' THEN 'Sunita Sharma' ELSE 'Dr. Rajesh Kumar' END,
+    CASE WHEN email LIKE '%healthworker%' THEN 'Health Worker' ELSE 'Ophthalmologist / Clinician' END,
+    CASE WHEN email LIKE '%healthworker%' THEN 'PHC-RAMGARH-01' ELSE 'DISTRICT-EYE-HOSPITAL' END,
+    CASE WHEN email LIKE '%healthworker%' THEN '+91 98765 43210' ELSE '+91 91234 56789' END
+FROM auth.users
+WHERE email IN ('healthworker.demo@drishti.org', 'clinician.demo@drishti.org');
