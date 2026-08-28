@@ -1958,7 +1958,7 @@ def api_v1_upload_image(id):
     record["enhanced_b64"] = pil_to_b64(enhanced_img)
     record["quality"] = quality_payload
     record["status"] = "IMAGE_RECEIVED"
-    SCREENING_STORE[id] = record
+    store_case_record(id, record)
     
     return jsonify({
         "screening_id": id,
