@@ -40,7 +40,7 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
 
-  AuthNotifier(this._authService) : super(const AuthState(user: UserModel.demoHealthWorker)) {
+  AuthNotifier(this._authService) : super(const AuthState(user: UserModel.healthWorkerDefault)) {
     _initSession();
   }
 
@@ -48,7 +48,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final savedMode = await SecureStorage.getWorkflowMode();
     final user = await _authService.getCurrentUser();
     state = state.copyWith(
-      user: user ?? UserModel.demoHealthWorker,
+      user: user ?? UserModel.healthWorkerDefault,
       workflowMode: savedMode,
     );
   }
@@ -57,7 +57,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String username,
     required String password,
     required UserRole roleRequested,
-    bool isDemo = true,
+    bool isDemo = false,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
@@ -75,13 +75,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> switchRole(UserRole newRole) async {
     final user = newRole == UserRole.clinician
-        ? UserModel.demoClinician
-        : UserModel.demoHealthWorker;
+        ? UserModel.clinicianDefault
+        : UserModel.healthWorkerDefault;
     await login(
       username: user.name,
       password: '',
       roleRequested: newRole,
-      isDemo: true,
+      isDemo: false,
     );
   }
 
