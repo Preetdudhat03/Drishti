@@ -101,36 +101,24 @@ class ScreeningService {
       );
     }
 
+    // Real Image Quality Assessment (Live PyTorch / OpenCV Backend)
     try {
+      final uploadRes = await _apiClient.uploadMultipart(
+        ApiEndpoints.screeningImage(screeningId),
+        filePath: imagePath,
+      );
+
+      if (uploadRes != null && uploadRes is Map && uploadRes.containsKey('quality')) {
+        return QualityAssessmentModel.fromJson(uploadRes['quality'], screeningId: screeningId);
+      }
+
       final response = await _apiClient.get(ApiEndpoints.screeningQuality(screeningId));
-      return QualityAssessmentModel.fromJson(response);
-    } catch (_) {
-      // Standalone fallback for custom uploaded images
-      return QualityAssessmentModel(
-        screeningId: screeningId,
-        overallScore: 0.91,
-        status: QualityStatus.good,
-        sharpness: QualityMetric(
-          score: 0.89,
-          status: 'GOOD',
-          metricName: 'Laplacian Focus & Sharpness',
-        ),
-        illumination: QualityMetric(
-          score: 0.92,
-          status: 'GOOD',
-          metricName: 'Illumination & Exposure',
-        ),
-        fieldOfView: QualityMetric(
-          score: 0.94,
-          status: 'ADEQUATE',
-          metricName: 'Retinal Mask Field of View',
-        ),
-        enhancementApplied: false,
-        feedbackMessages: [
-          'Optimal focus, exposure, and retinal field coverage confirmed.',
-          'Quality threshold passed. Gated for automated DR screening.',
-        ],
-        evaluatedAt: DateTime.now(),
+      return QualityAssessmentModel.fromJson(response, screeningId: screeningId);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw NetworkException(
+        'Unable to connect to Drishti PyTorch backend at ${ApiEndpoints.baseUrl}. Please ensure the server is online.',
+        details: e.toString(),
       );
     }
   }
@@ -138,7 +126,7 @@ class ScreeningService {
   Future<Map<String, dynamic>> analyzeScreening({
     required String screeningId,
     required QualityAssessmentModel quality,
-    bool isDemo = true,
+    bool isDemo = false,
     Map<String, dynamic>? demoScenario,
   }) async {
     // Safety Gate: UNGRADABLE images strictly block automated DR classification
@@ -160,7 +148,7 @@ class ScreeningService {
         severityCode: 'LEVEL_$level',
         referable: demoScenario['expectedReferable'] ?? (level >= 2),
         modelProbability: modelProb,
-        calibratedConfidence: null, // Transparently indicate uncalibrated
+        calibratedConfidence: null,
         classProbabilities: classProbs,
         reviewPriority: level >= 2 ? 'HIGH' : 'NORMAL',
         recommendation: 'Ophthalmologist review and dilated fundus examination recommended.',
@@ -184,8 +172,12 @@ class ScreeningService {
       };
     }
 
+    // Strict Real Inference Path — Calls Live PyTorch ResNet-18 Engine
     try {
       final response = await _apiClient.post(ApiEndpoints.screeningAnalyze(screeningId));
+      if (response == null || response is! Map) {
+        throw ModelUnavailableException('Empty or invalid response received from PyTorch inference engine.');
+      }
       final pred = DRPredictionModel.fromJson(response, screeningId: screeningId);
       
       final expResponse = await _apiClient.get(ApiEndpoints.screeningExplainability(screeningId));
@@ -195,37 +187,11 @@ class ScreeningService {
         'prediction': pred,
         'explainability': explainability,
       };
-    } catch (_) {
-      // Standalone intelligent fallback for custom images
-      final prediction = DRPredictionModel(
-        screeningId: screeningId,
-        drLevel: 2,
-        severityLabel: 'Level 2 — Moderate Non-Proliferative DR (Moderate NPDR)',
-        severityCode: 'LEVEL_2',
-        referable: true,
-        modelProbability: 0.884,
-        calibratedConfidence: null,
-        classProbabilities: {0: 0.035, 1: 0.025, 2: 0.884, 3: 0.042, 4: 0.014},
-        reviewPriority: 'HIGH',
-        recommendation: 'Ophthalmologist referral recommended within 4 to 8 weeks for dilated fundus examination and OCT evaluation.',
-        provenance: ModelProvenanceModel.defaultProvenance,
-        analyzedAt: DateTime.now(),
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw ModelUnavailableException(
+        'Failed to execute PyTorch ResNet-18 model inference on backend. Server error: $e',
       );
-
-      final explainability = ExplainabilityModel(
-        screeningId: screeningId,
-        targetLayer: 'layer4[1].conv2',
-        gradcamImageUrl: 'assets/sample_fundus/real_aptos_gradcam_level_2_094858f005ab.png',
-        overlayImageUrl: 'assets/sample_fundus/real_aptos_gradcam_level_2_094858f005ab.png',
-        originalImageUrl: '',
-        modelAttendedRegions: ['Temporal vascular arcade', 'Perimacular region', 'Posterior pole'],
-        disclaimer: 'Highlighted regions represent areas contributing to the model prediction (Interpretability tool — not a definitive lesion diagnosis).',
-      );
-
-      return {
-        'prediction': prediction,
-        'explainability': explainability,
-      };
     }
   }
 }
