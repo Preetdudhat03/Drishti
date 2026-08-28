@@ -6,6 +6,7 @@ import '../models/explainability_model.dart';
 import '../models/clinician_review_model.dart';
 import '../models/screening_case_model.dart';
 import '../models/system_status_model.dart';
+import '../../core/constants/dr_severity.dart';
 
 class MockDataService {
   static List<ScreeningCaseModel> getInitialCases() {
