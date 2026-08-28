@@ -80,7 +80,7 @@ class ReviewQueueNotifier extends StateNotifier<ReviewQueueState> {
   Future<void> loadPendingReviews() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final cases = await _repository.getPendingReviews(isDemo: true);
+      final cases = await _repository.getPendingReviews(isDemo: false);
       state = state.copyWith(cases: cases, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
