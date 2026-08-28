@@ -227,6 +227,37 @@ def assess_image_quality(img_rgb):
     else:
         img_eval = img_rgb
 
+    # 1. OPTICAL RETINAL DOMAIN VERIFICATION (Hemoglobin & Chromatic Signature)
+    # Human retinal fundus photography is strictly characterized by red-orange tissue reflection (Red >> Blue).
+    # Non-retinal objects (computer screens, icons, logos, room photos, faces) fail this test.
+    rgb_arr = np.array(img_eval.convert('RGB'), dtype=np.float32)
+    r_mean = float(np.mean(rgb_arr[:, :, 0]))
+    g_mean = float(np.mean(rgb_arr[:, :, 1]))
+    b_mean = float(np.mean(rgb_arr[:, :, 2]))
+    total_pix = rgb_arr.shape[0] * rgb_arr.shape[1]
+    
+    blue_dominant = np.sum((rgb_arr[:, :, 2] > rgb_arr[:, :, 0] + 15) & (rgb_arr[:, :, 2] > 50))
+    blue_fraction = float(blue_dominant) / float(max(1, total_pix))
+
+    if blue_fraction > 0.08 or (b_mean > r_mean * 0.85 and b_mean > 40) or r_mean < 25:
+        del rgb_arr
+        gc.collect()
+        return {
+            'sharpness': 0.15,
+            'illumination': 0.20,
+            'fov': 0.20,
+            'overallScore': 0.18,
+            'status': 'UNGRADABLE',
+            'recaptureFeedback': [
+                'Non-retinal image detected (invalid optical color spectrum / non-fundus subject).',
+                'Drishti AI operates exclusively on retinal fundus photographs.',
+                'Please use an optical smartphone fundus adapter or upload a valid fundus photo.'
+            ]
+        }
+
+    del rgb_arr
+    gc.collect()
+
     img_gray = np.array(img_eval.convert('L'), dtype=np.float32)
     h, w = img_gray.shape
     total_pixels = h * w
