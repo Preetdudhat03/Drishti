@@ -100,8 +100,18 @@ else:
     MODEL_ERROR = f"Weights file not found at: {LOAD_MODEL_PATH}"
     print(f"[Drishti Engine] Notice: Model weights not found at {LOAD_MODEL_PATH}")
 
-# ----------------- IN-MEMORY SCREENING CASE STORE -----------------
+# ----------------- IN-MEMORY SCREENING CASE STORE (MEMORY BOUNDED) -----------------
 SCREENING_STORE = {}
+
+def store_case_record(sid, record):
+    global SCREENING_STORE
+    # Keep store bounded to last 10 cases to prevent RAM growth
+    if len(SCREENING_STORE) > 10:
+        non_demo_keys = [k for k in SCREENING_STORE.keys() if not k.startswith("EX-2026-0001")]
+        if non_demo_keys:
+            del SCREENING_STORE[non_demo_keys[0]]
+            gc.collect()
+    SCREENING_STORE[sid] = record
 
 def init_demo_cases():
     cases = [
