@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
+import '../../core/utils/responsive_layout.dart';
+import '../../core/utils/formatters.dart';
+import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/status_badge.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/offline_status_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../../data/models/screening_case_model.dart';
@@ -24,10 +29,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
     final reviewState = ref.watch(reviewQueueProvider);
     final syncState = ref.watch(syncQueueProvider);
     final authState = ref.watch(authProvider);
-
-    final totalCases = reviewState.totalScreenedCount;
-    final referableCases = reviewState.referableCount;
-    final pendingCases = reviewState.totalPendingCount;
+    final isTabletOrDesktop = !ResponsiveLayout.isMobile(context);
 
     return Column(
       children: [
@@ -39,287 +41,134 @@ class HealthWorkerDashboard extends ConsumerWidget {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
-            color: AppColors.electricBlue,
+            color: AppColors.primary,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: const EdgeInsets.all(16),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1100),
+                  constraints: const BoxConstraints(maxWidth: 1080),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 1. HERO WORKSTATION HEADER
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppColors.deepSpace,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.borderDark, width: 1.2),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black45,
-                              blurRadius: 12,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // Greeting & Workstation Header
+                      ClinicalCard(
+                        backgroundColor: Colors.white,
+                        borderColor: AppColors.border,
+                        padding: const EdgeInsets.all(18),
+                        child: Row(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Welcome, ${authState.user?.name ?? "Health Worker"}',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w800,
-                                          color: Colors.white,
-                                          letterSpacing: -0.3,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Field Screening Command Center • ${authState.user?.organization ?? "PHC-RAMGARH-01"}',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.darkTextSecondary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.obsidian,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: AppColors.hudCyan.withValues(alpha: 0.5)),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.memory_rounded, size: 13, color: AppColors.hudCyan),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        'ResNet-18 Engine',
-                                        style: TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.hudCyan,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.accentLight,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.remove_red_eye_rounded, color: AppColors.accent, size: 26),
                             ),
-                            const SizedBox(height: 16),
-
-                            // Workstation System Status Strip
-                            Wrap(
-                              spacing: 14,
-                              runSpacing: 8,
-                              children: [
-                                _statusIndicator(Icons.cloud_done_rounded, 'Cloud Sync Active', AppColors.statusGood),
-                                _statusIndicator(Icons.security_rounded, 'PyTorch Inference Online', AppColors.electricBlue),
-                                _statusIndicator(Icons.verified_user_outlined, 'ISO 13485 Verified', AppColors.hudCyan),
-                              ],
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Good morning, ${authState.user?.name ?? "Health Worker"}',
+                                    style: AppTypography.pageHeading,
+                                  ),
+                                  const SizedBox(height: 3),
+                                  const Text(
+                                    'AI-assisted retinal screening • Primary Health Centre Ramgarh',
+                                    style: AppTypography.bodySecondary,
+                                  ),
+                                ],
+                              ),
                             ),
+                            if (isTabletOrDesktop)
+                              PrimaryButton(
+                                text: '+ START NEW SCREENING',
+                                icon: Icons.add_a_photo_rounded,
+                                onPressed: onStartScreening,
+                              ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
-                      // 2. PRIMARY SCREENING INITIATION ACTION (Hero CTA)
-                      InkWell(
-                        onTap: onStartScreening,
-                        borderRadius: BorderRadius.circular(14),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF2563EB).withValues(alpha: 0.40),
-                                blurRadius: 16,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.20),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(
-                                  Icons.add_a_photo_rounded,
-                                  color: Colors.white,
-                                  size: 26,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'START NEW SCREENING',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      'Capture fundus image & begin AI-assisted optical screening',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // 3. CLINICAL TRIAGE KPI STRIP
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.deepSpace,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.borderDark),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'TODAY\'S SCREENING SUMMARY',
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.darkTextSecondary,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: onViewCases,
-                                  child: const Text(
-                                    'View All Cases →',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.hudCyan,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            LayoutBuilder(
-                              builder: (context, constraints) {
-                                if (constraints.maxWidth < 400) {
-                                  return Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          _triageMetric('SCREENED', '$totalCases', Colors.white),
-                                          _triageDivider(),
-                                          _triageMetric('REFERABLE', '$referableCases', AppColors.referableAlert),
-                                        ],
-                                      ),
-                                      const Divider(height: 20, color: AppColors.borderDark),
-                                      Row(
-                                        children: [
-                                          _triageMetric('PENDING REVIEW', '$pendingCases', AppColors.pending),
-                                          _triageDivider(),
-                                          _triageMetric('COMPLETED', '${reviewState.completedCount}', AppColors.statusGood),
-                                        ],
-                                      ),
-                                    ],
-                                  );
-                                }
-                                return Row(
-                                  children: [
-                                    _triageMetric('TOTAL SCREENED', '$totalCases', Colors.white),
-                                    _triageDivider(),
-                                    _triageMetric('REFERABLE', '$referableCases', AppColors.referableAlert),
-                                    _triageDivider(),
-                                    _triageMetric('PENDING REVIEW', '$pendingCases', AppColors.pending),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-
-                      // 4. SCREENING ACTIVITY FEED
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      // Metrics Grid (2x2 on mobile, 4x1 on tablet/desktop)
+                      GridView.count(
+                        crossAxisCount: isTabletOrDesktop ? 4 : 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: isTabletOrDesktop ? 1.4 : 1.25,
                         children: [
-                          const Text(
-                            'SCREENING ACTIVITY',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: 0.4,
-                            ),
+                          _metricCard(
+                            title: "Today's Screened",
+                            value: '${reviewState.totalScreenedCount}',
+                            subtitle: 'Active session',
+                            icon: Icons.check_circle_outline_rounded,
+                            color: AppColors.primary,
                           ),
-                          TextButton(
-                            onPressed: onViewCases,
-                            child: const Text('Open Review Queue', style: TextStyle(fontSize: 12, color: AppColors.electricBlue)),
+                          _metricCard(
+                            title: 'Pending Review',
+                            value: '${reviewState.totalPendingCount}',
+                            subtitle: 'Awaiting clinician',
+                            icon: Icons.hourglass_empty_rounded,
+                            color: AppColors.pending,
+                          ),
+                          _metricCard(
+                            title: 'Referable Cases',
+                            value: '${reviewState.referableCount}',
+                            subtitle: 'Level >= 2 (Urgent)',
+                            icon: Icons.warning_amber_rounded,
+                            color: AppColors.referableAlert,
+                          ),
+                          _metricCard(
+                            title: 'Recapture Needed',
+                            value: '${reviewState.recaptureNeededCount}',
+                            subtitle: 'Ungradable / blur',
+                            icon: Icons.replay_rounded,
+                            color: AppColors.statusUngradable,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 14),
 
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.deepSpace,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.borderDark),
+                      // Large Start Screening Button on Mobile
+                      if (!isTabletOrDesktop) ...[
+                        PrimaryButton(
+                          text: '+ START NEW SCREENING',
+                          icon: Icons.camera_alt_outlined,
+                          height: 52,
+                          onPressed: onStartScreening,
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Recent Screening Activity Table
+                      ClinicalCard(
+                        title: 'Recent Screening Sessions',
+                        titleAction: TextButton(
+                          onPressed: onViewCases,
+                          child: const Text('View All Cases', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.accent)),
                         ),
                         child: reviewState.cases.isEmpty
-                            ? const Padding(
-                                padding: EdgeInsets.all(28),
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24),
                                 child: Center(
                                   child: Column(
                                     children: [
-                                      Icon(Icons.visibility_outlined, size: 32, color: AppColors.darkTextMuted),
-                                      SizedBox(height: 8),
+                                      Icon(Icons.inbox_outlined, size: 36, color: Colors.grey.shade400),
+                                      const SizedBox(height: 8),
                                       Text(
-                                        'No recent screening sessions recorded yet.',
-                                        style: TextStyle(fontSize: 12, color: AppColors.darkTextSecondary, fontWeight: FontWeight.w500),
+                                        'No active screening sessions yet',
+                                        style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Tap "+ START NEW SCREENING" to begin',
+                                        style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
                                       ),
                                     ],
                                   ),
@@ -328,40 +177,42 @@ class HealthWorkerDashboard extends ConsumerWidget {
                             : ListView.separated(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                itemCount: reviewState.cases.take(5).length,
-                                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.borderDark),
+                                itemCount: reviewState.cases.take(4).length,
+                                separatorBuilder: (_, __) => const Divider(height: 12),
                                 itemBuilder: (context, index) {
                                   final c = reviewState.cases[index];
                                   final pred = c.prediction;
-                                  final isReferable = c.isReferable;
                                   final isUngradable = c.quality?.isUngradable ?? false;
+                                  final isReferable = pred?.referable ?? false;
 
                                   final subtitleText = isUngradable
-                                      ? 'Image Ungradable • Recapture Required'
+                                      ? 'Quality: UNGRADABLE • Recapture Required'
                                       : pred != null
-                                          ? 'Level ${pred.drLevel} (${pred.severityLabel}) • ${(pred.modelProbability * 100).toStringAsFixed(1)}%'
+                                          ? 'AI: Level ${pred.drLevel} (${pred.severityLabel}) • Prob: ${AppFormatters.formatProbability(pred.modelProbability)}'
                                           : c.status == ScreeningStatus.awaitingImage
-                                              ? 'Awaiting retinal image'
-                                              : 'Screening registered';
+                                              ? 'Awaiting retinal image capture'
+                                              : c.status == ScreeningStatus.qualityAssessment
+                                                  ? 'Quality assessment in progress'
+                                                  : 'Screening registered';
 
                                   return ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                    contentPadding: EdgeInsets.zero,
                                     leading: Container(
-                                      width: 36,
-                                      height: 36,
+                                      width: 40,
+                                      height: 40,
                                       decoration: BoxDecoration(
                                         color: isUngradable
-                                            ? AppColors.statusUngradableDarkBg
+                                            ? AppColors.statusUngradableBg
                                             : isReferable
-                                                ? AppColors.referableDarkBg
-                                                : AppColors.statusGoodDarkBg,
+                                                ? AppColors.referableAlertBg
+                                                : AppColors.statusGoodBg,
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(
                                           color: isUngradable
-                                              ? AppColors.statusUngradable.withValues(alpha: 0.5)
+                                              ? AppColors.statusUngradable.withValues(alpha: 0.3)
                                               : isReferable
-                                                  ? AppColors.referableAlert.withValues(alpha: 0.5)
-                                                  : AppColors.statusGood.withValues(alpha: 0.5),
+                                                  ? AppColors.referableAlert.withValues(alpha: 0.3)
+                                                  : AppColors.statusGood.withValues(alpha: 0.3),
                                         ),
                                       ),
                                       child: Center(
@@ -376,7 +227,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                               : isReferable
                                                   ? AppColors.referableAlert
                                                   : AppColors.statusGood,
-                                          size: 18,
+                                          size: 20,
                                         ),
                                       ),
                                     ),
@@ -384,26 +235,26 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                       children: [
                                         Text(
                                           c.patient.patientId,
-                                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white),
+                                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AppColors.textPrimary),
                                         ),
-                                        const SizedBox(width: 6),
+                                        const SizedBox(width: 8),
                                         Text(
                                           '(${c.patient.eye})',
-                                          style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary, fontWeight: FontWeight.w600),
+                                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
                                         ),
                                       ],
                                     ),
                                     subtitle: Text(
                                       subtitleText,
-                                      style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted),
+                                      style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
                                     ),
                                     trailing: isUngradable
                                         ? StatusBadge.ungradable()
                                         : isReferable
-                                            ? StatusBadge.referable(label: 'REFER')
+                                            ? StatusBadge.referable(label: 'REFERABLE')
                                             : c.hasReviewed
                                                 ? StatusBadge.good(label: 'VALIDATED')
-                                                : StatusBadge.pending(label: 'NORMAL'),
+                                                : StatusBadge.pending(label: 'PENDING'),
                                   );
                                 },
                               ),
@@ -422,49 +273,58 @@ class HealthWorkerDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _statusIndicator(IconData icon, String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _triageMetric(String label, String count, Color color) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            count,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color),
+  Widget _metricCard({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x060F172A),
+            blurRadius: 4,
+            offset: Offset(0, 1),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _triageDivider() {
-    return Container(
-      height: 32,
-      width: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 14),
-      color: AppColors.lightBorder,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(icon, size: 18, color: color),
+            ],
+          ),
+          Text(
+            value,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, letterSpacing: -0.5),
+          ),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+          ),
+        ],
+      ),
     );
   }
 }

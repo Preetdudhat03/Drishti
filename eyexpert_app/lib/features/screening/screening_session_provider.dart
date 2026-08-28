@@ -1,8 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/patient_model.dart';
@@ -236,7 +231,6 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
-        imagePath: state.imagePath,
         isDemo: false,
       );
 
@@ -265,36 +259,12 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       );
 
       // Automatically register to clinician review queue and sync to Supabase
-      ScreeningCaseModel? baseCase = state.toScreeningCase();
-      if (baseCase != null) {
-        ScreeningCaseModel finalCase = baseCase;
-        if (SupabaseService.isInitialized && state.imagePath != null) {
-          try {
-            final rawBytes = await _loadBytesFromPath(state.imagePath!);
-            if (rawBytes != null && rawBytes.isNotEmpty) {
-              final publicUrl = await _supabaseService.uploadFundusImage(
-                screeningId: state.screeningId!,
-                facilityId: state.patient?.facilityId ?? 'PHC-RAMGARH-01',
-                imageBytesOrFile: rawBytes,
-                filename: 'fundus_photo.jpg',
-              );
-              if (publicUrl != null && publicUrl.isNotEmpty) {
-                finalCase = finalCase.copyWith(
-                  image: FundusImageData(
-                    imageId: 'IMG-${state.screeningId!.replaceAll("EX-", "")}',
-                    imageUrl: publicUrl,
-                    localPath: state.imagePath,
-                    uploadedAt: DateTime.now(),
-                  ),
-                );
-              }
-            }
-          } catch (e) {
-            // Log notice and continue with local case
-          }
-          await _supabaseService.saveScreeningCase(finalCase);
+      final newCase = state.toScreeningCase();
+      if (newCase != null) {
+        _ref.read(reviewQueueProvider.notifier).addCase(newCase);
+        if (SupabaseService.isInitialized) {
+          await _supabaseService.saveScreeningCase(newCase);
         }
-        _ref.read(reviewQueueProvider.notifier).addCase(finalCase);
       }
     } catch (e) {
       state = state.copyWith(
@@ -303,29 +273,6 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
         errorMessage: e.toString(),
       );
     }
-  }
-
-  Future<Uint8List?> _loadBytesFromPath(String path) async {
-    if (path.isEmpty) return null;
-    try {
-      if (path.startsWith('assets/')) {
-        final byteData = await rootBundle.load(path);
-        return byteData.buffer.asUint8List();
-      }
-      if (path.startsWith('data:image') || (path.length > 500 && !path.contains('/') && !path.contains('\\'))) {
-        final cleanBase64 = path.contains(',') ? path.split(',').last : path;
-        return base64Decode(cleanBase64.replaceAll('\n', '').replaceAll('\r', ''));
-      }
-      if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:')) {
-        final res = await http.get(Uri.parse(path));
-        if (res.statusCode == 200) return res.bodyBytes;
-      }
-      final file = File(path);
-      if (await file.exists()) {
-        return await file.readAsBytes();
-      }
-    } catch (_) {}
-    return null;
   }
 
   void resetSession() {

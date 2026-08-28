@@ -4,8 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
+import '../../shared/widgets/clinical_card.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/fundus_image_viewer.dart';
-import '../../shared/widgets/workflow_step_bar.dart';
 import 'screening_session_provider.dart';
 
 class FundusCaptureScreen extends ConsumerStatefulWidget {
@@ -90,153 +91,95 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
     final patient = session.patient;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.all(16),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 820),
+          constraints: const BoxConstraints(maxWidth: 760),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. WORKFLOW STEP INDICATOR
-              const WorkflowStepBar(currentStep: 2),
-              const SizedBox(height: 16),
-
-              // 2. HEADER & SESSION INFO
+              // Header with Session Meta
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Retinal Image Acquisition',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
-                          style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary),
-                        ),
-                      ],
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Retinal Fundus Image Acquisition',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary),
+                      ),
+                      Text(
+                        'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • ID: ${session.screeningId ?? "Pending"}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
                   ),
                   OutlinedButton(
                     onPressed: widget.onCancel,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.darkTextSecondary,
-                      side: const BorderSide(color: AppColors.borderDark),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      foregroundColor: AppColors.textSecondary,
+                      side: const BorderSide(color: AppColors.border),
                     ),
-                    child: const Text('Cancel Session', style: TextStyle(fontSize: 11.5)),
+                    child: const Text('Cancel Session'),
                   ),
                 ],
               ),
               const SizedBox(height: 14),
 
-              // 3. RETINAL VIEWPORT (THE HERO OF THE PRODUCT)
+              // Viewfinder Framing Guide / Preview
               Container(
-                height: 380,
+                height: 320,
                 decoration: BoxDecoration(
-                  color: AppColors.obsidian,
+                  color: Colors.black,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.borderDark, width: 1.5),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black45, blurRadius: 16, offset: Offset(0, 6)),
-                  ],
+                  border: Border.all(color: AppColors.accent, width: 2),
                 ),
-                clipBehavior: Clip.antiAlias,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
+                    // Captured image or preview
                     if (_selectedImagePath != null)
                       FundusImageViewer(
                         originalImagePath: _selectedImagePath!,
                         eyeTag: patient?.eye,
-                        imageId: session.screeningId,
-                        showReticle: false,
-                        showControls: false,
-                      )
-                    else
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.deepSpace,
-                              border: Border.all(color: AppColors.borderDark),
-                            ),
-                            child: const Icon(Icons.remove_red_eye_outlined, color: AppColors.hudCyan, size: 32),
-                          ),
-                          const SizedBox(height: 14),
-                          const Text(
-                            'OPTICAL RETINAL VIEWPORT',
-                            style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.8),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Align ophthalmic lens adapter or select ground-truth sample below',
-                            style: TextStyle(color: AppColors.darkTextSecondary, fontSize: 11.5),
-                          ),
-                        ],
+                        imageId: 'IMG-2026-0912',
                       ),
 
-                    // Optical Framing Reticle Guide
+                    // Retinal Framing Reticle Guide Overlay
                     if (!_isCaptured)
-                      IgnorePointer(
-                        child: CustomPaint(
-                          size: const Size(260, 260),
-                          painter: _ReticlePainter(),
-                        ),
+                      CustomPaint(
+                        size: const Size(260, 260),
+                        painter: _FundusReticlePainter(),
                       ),
 
-                    // Live Optical Alignment Indicators
+                    // Live Guidance Prompt Banner
                     Positioned(
                       top: 12,
-                      left: 12,
-                      right: 12,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.deepSpace.withValues(alpha: 0.90),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.borderDark),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black87.withOpacity(0.85),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _isCaptured ? Icons.check_circle_outline : Icons.center_focus_strong_rounded,
+                              color: AppColors.accent,
+                              size: 16,
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _isCaptured ? Icons.check_circle : Icons.center_focus_strong_rounded,
-                                  color: _isCaptured ? AppColors.statusGood : AppColors.hudCyan,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  _isCaptured ? 'Retinal Photo Buffered' : 'Aperture: 45° Posterior Pole',
-                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
-                                ),
-                              ],
+                            const SizedBox(width: 8),
+                            Text(
+                              _isCaptured
+                                  ? 'Image Loaded • Inspect Retinal FOV'
+                                  : 'Center optic disc & macula inside reticle guide',
+                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
                             ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.deepSpace.withValues(alpha: 0.90),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: AppColors.borderDark),
-                            ),
-                            child: const Text(
-                              'RAW RGB SENSOR',
-                              style: TextStyle(color: AppColors.darkTextMuted, fontSize: 9.5, fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -244,34 +187,31 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
               ),
               const SizedBox(height: 12),
 
-              // 4. ACQUISITION ACTION STRIP (Camera & Gallery)
+              // Camera Acquisition Buttons Strip (Camera, Gallery, Retake)
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
                       icon: const Icon(Icons.camera_alt_rounded, size: 18),
-                      label: const Text('Capture with Camera', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                      label: const Text('Capture with Camera'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.electricBlue,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined, size: 18),
-                      label: const Text('Upload Image File', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                      label: const Text('Select from File'),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        foregroundColor: Colors.white,
-                        backgroundColor: AppColors.deepSpace,
-                        side: const BorderSide(color: AppColors.borderDark),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.border),
                       ),
                     ),
                   ),
@@ -279,55 +219,54 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
               ),
               const SizedBox(height: 10),
 
-              // 5. CLINICAL BENCHMARK GROUND-TRUTH SELECTOR (FOR DEMO / AUDIT)
+              // Benchmark Clinical Retinal Cases Dropdown (for Evaluator / Testing)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.deepSpace,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.borderDark),
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.science_outlined, color: AppColors.hudCyan, size: 18),
-                    const SizedBox(width: 10),
+                    const Icon(Icons.science_outlined, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
-                          dropdownColor: AppColors.deepSpace,
                           isExpanded: true,
                           hint: const Text(
-                            'Load Clinical Benchmark Sample (APTOS Dataset)...',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70),
+                            'Load Clinical Benchmark Case (APTOS)...',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
                           ),
                           items: const [
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_normal.png',
-                              child: Text('Normal Retina — Level 0 (Non-Referable)', style: TextStyle(fontSize: 12, color: Colors.white)),
+                              child: Text('Level 0: Normal Retina (Non-Referable)', style: TextStyle(fontSize: 12)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_npdr_mild.png',
-                              child: Text('Mild NPDR — Level 1 (Non-Referable)', style: TextStyle(fontSize: 12, color: Colors.white)),
+                              child: Text('Level 1: Mild NPDR (Non-Referable)', style: TextStyle(fontSize: 12)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_npdr_moderate.png',
-                              child: Text('Moderate NPDR — Level 2 (Referable Alert)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.statusBorderline)),
+                              child: Text('Level 2: Moderate NPDR (Referable)', style: TextStyle(fontSize: 12)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_pdr_severe.png',
-                              child: Text('Proliferative DR — Level 4 (Severe Referable)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.referableAlert)),
+                              child: Text('Level 4: Proliferative DR (Referable)', style: TextStyle(fontSize: 12)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_borderline_illum.png',
-                              child: Text('Borderline Illumination (CLAHE Enhancement Target)', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                              child: Text('Borderline: Low Contrast (CLAHE Target)', style: TextStyle(fontSize: 12)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_ungradable_blur.png',
-                              child: Text('Ungradable Motion Blur (Safety Gate Rejection)', style: TextStyle(fontSize: 12, color: AppColors.statusUngradable)),
+                              child: Text('Ungradable: Motion Blur (Safety Gate)', style: TextStyle(fontSize: 12)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_ungradable_dark.png',
-                              child: Text('Ungradable Underexposed (Safety Gate Rejection)', style: TextStyle(fontSize: 12, color: AppColors.statusUngradable)),
+                              child: Text('Ungradable: Underexposed (Safety Gate)', style: TextStyle(fontSize: 12)),
                             ),
                           ],
                           onChanged: (val) {
@@ -339,21 +278,62 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // 6. CONFIRM & PROCEED CTA
-              ElevatedButton.icon(
-                onPressed: _selectedImagePath != null ? _confirmImage : null,
-                icon: const Icon(Icons.verified_outlined, size: 18),
-                label: const Text('CONFIRM & EVALUATE IMAGE QUALITY', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.electricBlue,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.graphite,
-                  disabledForegroundColor: AppColors.darkTextMuted,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              // Instructions Checklist Card
+              ClinicalCard(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.spaceAround,
+                      children: [
+                        _guidanceItem(Icons.crop_free_rounded, 'Center field'),
+                        _guidanceItem(Icons.auto_fix_high_rounded, 'Sharp focus'),
+                        _guidanceItem(Icons.wb_sunny_outlined, 'Illumination'),
+                        _guidanceItem(Icons.vibration_rounded, 'Hold steady'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Compatible with handheld fundus cameras, ophthalmic slit-lamp smartphone adapters, and direct device uploads.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 10.5, color: AppColors.textMuted, fontStyle: FontStyle.italic),
+                    ),
+                  ],
                 ),
+              ),
+              const SizedBox(height: 18),
+
+              // Bottom Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: PrimaryButton(
+                      text: 'Confirm & Evaluate Image Quality',
+                      icon: Icons.verified_outlined,
+                      onPressed: _selectedImagePath != null ? _confirmImage : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _isCaptured = false;
+                      });
+                    },
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Retake'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.border),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -361,27 +341,39 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
       ),
     );
   }
+
+  Widget _guidanceItem(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: AppColors.accent),
+        const SizedBox(width: 6),
+        Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+      ],
+    );
+  }
 }
 
-class _ReticlePainter extends CustomPainter {
+class _FundusReticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.hudCyan.withValues(alpha: 0.50)
+      ..color = Colors.tealAccent.withOpacity(0.6)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
+      ..strokeWidth = 1.5;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.44;
+    final radius = size.width / 2.2;
 
+    // Circular reticle
     canvas.drawCircle(center, radius, paint);
-    paint.color = AppColors.hudCyan.withValues(alpha: 0.25);
-    canvas.drawCircle(center, radius * 0.35, paint);
 
-    paint.color = AppColors.hudCyan.withValues(alpha: 0.80);
-    const arm = 14.0;
-    canvas.drawLine(Offset(center.dx - arm, center.dy), Offset(center.dx + arm, center.dy), paint);
-    canvas.drawLine(Offset(center.dx, center.dy - arm), Offset(center.dx, center.dy + arm), paint);
+    // Crosshair ticks
+    const tickLength = 12.0;
+    canvas.drawLine(Offset(center.dx - radius - tickLength, center.dy), Offset(center.dx - radius + tickLength, center.dy), paint);
+    canvas.drawLine(Offset(center.dx + radius - tickLength, center.dy), Offset(center.dx + radius + tickLength, center.dy), paint);
+    canvas.drawLine(Offset(center.dx, center.dy - radius - tickLength), Offset(center.dx, center.dy - radius + tickLength), paint);
+    canvas.drawLine(Offset(center.dx, center.dy + radius - tickLength), Offset(center.dx, center.dy + radius + tickLength), paint);
   }
 
   @override

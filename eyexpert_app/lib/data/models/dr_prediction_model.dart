@@ -95,11 +95,6 @@ class DRPredictionModel {
   });
 
   DRSeverity get severity => DRSeverity.fromLevel(drLevel);
-  int get predictedDrLevel => drLevel;
-  bool get isReferable => referable;
-  String? get heatmapPath => null;
-  List<double> get probabilities => classProbabilities.values.toList();
-  bool get uncertaintyFlag => false;
 
   factory DRPredictionModel.fromJson(Map<String, dynamic> json, {String? screeningId}) {
     final pred = json['prediction'] ?? json;

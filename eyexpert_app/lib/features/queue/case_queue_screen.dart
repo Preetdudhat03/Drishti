@@ -21,15 +21,14 @@ class CaseQueueScreen extends ConsumerWidget {
         // Search & Filter Header
         Container(
           padding: const EdgeInsets.all(16),
-          color: AppColors.deepSpace,
+          color: Colors.white,
           child: Column(
             children: [
               TextField(
                 onChanged: (val) => ref.read(reviewQueueProvider.notifier).setSearchQuery(val),
-                style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: const InputDecoration(
                   hintText: 'Search by Patient ID or Screening ID...',
-                  prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppColors.hudCyan),
+                  prefixIcon: Icon(Icons.search_rounded, size: 20),
                   contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
               ),
@@ -51,14 +50,13 @@ class CaseQueueScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const Divider(height: 1, color: AppColors.borderDark),
+        const Divider(height: 1),
 
         // Cases List with Pull-to-Refresh
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
-            color: AppColors.hudCyan,
-            backgroundColor: AppColors.deepSpace,
+            color: AppColors.primary,
             child: cases.isEmpty
                 ? LayoutBuilder(
                     builder: (context, constraints) => SingleChildScrollView(
@@ -69,18 +67,18 @@ class CaseQueueScreen extends ConsumerWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.folder_open_rounded, size: 54, color: AppColors.darkTextMuted),
+                              const Icon(Icons.folder_open_rounded, size: 54, color: Colors.grey),
                               const SizedBox(height: 12),
                               Text(
                                 queueState.searchQuery.isEmpty
                                     ? 'No cases currently in review queue.'
                                     : 'No cases found matching "${queueState.searchQuery}"',
-                                style: const TextStyle(color: AppColors.darkTextSecondary, fontSize: 13.5),
+                                style: TextStyle(color: Colors.grey.shade600, fontSize: 13.5),
                               ),
                               const SizedBox(height: 8),
-                              const Text(
+                              Text(
                                 'Swipe down to refresh from Supabase cloud database',
-                                style: TextStyle(color: AppColors.darkTextMuted, fontSize: 11.5),
+                                style: TextStyle(color: Colors.grey.shade400, fontSize: 11.5),
                               ),
                             ],
                           ),
@@ -101,11 +99,10 @@ class CaseQueueScreen extends ConsumerWidget {
                     final isReferable = pred?.referable ?? false;
 
                     return Card(
-                      elevation: 0,
-                      color: AppColors.deepSpace,
+                      elevation: 0.5,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: AppColors.borderDark),
+                        side: const BorderSide(color: AppColors.border),
                       ),
                       child: InkWell(
                         onTap: () => onSelectCase(c),
@@ -121,10 +118,10 @@ class CaseQueueScreen extends ConsumerWidget {
                                   CircleAvatar(
                                     radius: 18,
                                     backgroundColor: quality?.isUngradable ?? false
-                                        ? AppColors.statusUngradableDarkBg
+                                        ? AppColors.statusUngradableBg
                                         : isReferable
-                                            ? AppColors.referableDarkBg
-                                            : AppColors.statusGoodDarkBg,
+                                            ? AppColors.referableAlertBg
+                                            : AppColors.statusGoodBg,
                                     child: Icon(
                                       quality?.isUngradable ?? false
                                           ? Icons.warning_amber_rounded
@@ -147,12 +144,12 @@ class CaseQueueScreen extends ConsumerWidget {
                                         Text(
                                           '${c.patient.patientId} (${AppFormatters.formatEye(c.patient.eye)})',
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Colors.white),
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                                         ),
                                         Text(
                                           c.screeningId,
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 10.5, color: AppColors.darkTextMuted),
+                                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
                                         ),
                                       ],
                                     ),
@@ -165,20 +162,20 @@ class CaseQueueScreen extends ConsumerWidget {
                                             ? 'REFERABLE'
                                             : 'NON-REFERABLE',
                                     color: review != null
-                                        ? AppColors.electricBlue
+                                        ? AppColors.primary
                                         : isReferable
                                             ? AppColors.referableAlert
                                             : AppColors.statusGood,
                                     backgroundColor: review != null
-                                        ? AppColors.accentLight
+                                        ? AppColors.primaryLight
                                         : isReferable
-                                            ? AppColors.referableDarkBg
-                                            : AppColors.statusGoodDarkBg,
+                                            ? AppColors.referableAlertBg
+                                            : AppColors.statusGoodBg,
                                     icon: review != null ? Icons.verified : Icons.priority_high_rounded,
                                   ),
                                 ],
                               ),
-                              const Divider(height: 16, color: AppColors.borderDark),
+                              const Divider(height: 16),
 
                               // Bottom Row: Prediction/Status Info + Action Button
                               Row(
@@ -197,13 +194,13 @@ class CaseQueueScreen extends ConsumerWidget {
                                                       : 'Screening in progress',
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 2,
-                                          style: const TextStyle(fontSize: 11.5, color: Colors.white70),
+                                          style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
                                           'Recorded: ${AppFormatters.formatDateTime(c.createdAt)}',
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 10.5, color: AppColors.darkTextMuted),
+                                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
                                         ),
                                       ],
                                     ),
@@ -214,7 +211,7 @@ class CaseQueueScreen extends ConsumerWidget {
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       minimumSize: Size.zero,
-                                      backgroundColor: isReferable ? AppColors.referableAlert : AppColors.electricBlue,
+                                      backgroundColor: isReferable ? AppColors.referableAlert : AppColors.primary,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
                                     child: Text(
@@ -242,14 +239,12 @@ class CaseQueueScreen extends ConsumerWidget {
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: AppColors.electricBlue,
-      backgroundColor: AppColors.graphite,
+      selectedColor: AppColors.primary,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.darkTextSecondary,
+        color: isSelected ? Colors.white : Colors.black87,
         fontSize: 11,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
-      side: BorderSide(color: isSelected ? AppColors.electricBlue : AppColors.borderDark),
       onSelected: (_) => ref.read(reviewQueueProvider.notifier).setFilter(value),
     );
   }

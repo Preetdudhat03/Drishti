@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../shared/widgets/clinical_card.dart';
+import '../../shared/widgets/status_badge.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/fundus_image_viewer.dart';
-import '../../shared/widgets/workflow_step_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../screening/screening_session_provider.dart';
 
@@ -35,21 +37,16 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
     final session = ref.watch(screeningSessionProvider);
     final quality = session.quality;
     final isEvaluating = session.isProcessing;
-    final patient = session.patient;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.all(16),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 860),
+          constraints: const BoxConstraints(maxWidth: 750),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. WORKFLOW STEP INDICATOR
-              const WorkflowStepBar(currentStep: 3),
-              const SizedBox(height: 16),
-
-              // 2. HEADER
+              // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -57,192 +54,421 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Optical Quality Gate',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
+                        'Image Quality Assessment',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 2),
                       Text(
-                        'Session: ${session.screeningId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"}',
-                        style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary),
+                        'Screening ID: ${session.screeningId ?? "N/A"} • Eye: ${session.patient?.eye ?? "OD"}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                       ),
                     ],
                   ),
                   if (quality != null)
-                    _qualityPill(quality.status.name.toUpperCase()),
+                    quality.isUngradable
+                        ? StatusBadge.ungradable(isLarge: true)
+                        : quality.isBorderline
+                            ? StatusBadge.borderline(isLarge: true)
+                            : StatusBadge.good(isLarge: true),
                 ],
               ),
-              const SizedBox(height: 14),
-
-              // 3. RETINAL VIEWPORT (HERO CANVAS)
-              if (session.imagePath != null)
-                FundusImageViewer(
-                  originalImagePath: session.imagePath!,
-                  enhancedImagePath: session.imagePath,
-                  mode: quality?.isBorderline == true ? FundusViewerMode.compare : FundusViewerMode.original,
-                  height: 380,
-                  eyeTag: patient?.eye,
-                  imageId: session.screeningId,
-                  qualityLabel: quality?.status.name.toUpperCase(),
-                  showControls: quality?.isBorderline == true,
-                ),
-              const SizedBox(height: 14),
-
-              // 4. LOADING / EVALUATING STATE
-              if (isEvaluating)
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.deepSpace,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderDark),
-                  ),
-                  child: const Column(
-                    children: [
-                      CircularProgressIndicator(color: AppColors.hudCyan, strokeWidth: 2.5),
-                      SizedBox(height: 14),
-                      Text(
-                        'EVALUATING OPTICAL FOCUS & ANATOMICAL CHROMINANCE...',
-                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // 5. UNGRADABLE SAFETY GATE ALERT (BLOCKS INFERENCE)
-              if (quality != null && quality.isUngradable) ...[
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: AppColors.statusUngradableDarkBg,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.statusUngradable, width: 1.5),
-                  ),
+              if (session.errorMessage != null) ...[
+                // Explicit Actionable Error Card
+                ClinicalCard(
+                  padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.dangerous_rounded, color: AppColors.statusUngradable, size: 24),
-                          const SizedBox(width: 10),
-                          const Expanded(
-                            child: Text(
-                              'IMAGE NOT SUITABLE FOR AUTOMATED SCREENING',
-                              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5),
-                            ),
-                          ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppColors.statusUngradable,
-                              borderRadius: BorderRadius.circular(4),
+                            padding: const EdgeInsets.all(10),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFEE2E2),
+                              shape: BoxShape.circle,
                             ),
-                            child: const Text('SAFETY GATE ACTIVE', style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w800)),
+                            child: const Icon(Icons.error_outline_rounded, color: AppColors.statusUngradable, size: 28),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Quality Assessment Error',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'An issue occurred while evaluating the retinal fundus image.',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        quality.feedbackMessages.isNotEmpty
-                            ? quality.feedbackMessages.first
-                            : 'Severe optical blur, illumination clipping, or non-retinal subject detected.',
-                        style: const TextStyle(color: AppColors.darkTextSecondary, fontSize: 12),
                       ),
                       const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: widget.onRetake,
-                          icon: const Icon(Icons.replay_rounded, size: 18),
-                          label: const Text('RETAKE RETINAL IMAGE', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.statusUngradable,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFCA5A5)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'ERROR DETAILS & DIAGNOSTICS:',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF991B1B)),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              session.errorMessage!,
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF7F1D1D), fontWeight: FontWeight.w500),
+                            ),
+                            if (session.imagePath != null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                'File: ${session.imagePath}',
+                                style: const TextStyle(fontSize: 10, color: Color(0xFF991B1B)),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-              ],
-
-              // 6. QUALITY METRICS STRIP (NO REPETITIVE CARDS)
-              if (quality != null && !quality.isUngradable) ...[
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: AppColors.deepSpace,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderDark),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                      const SizedBox(height: 18),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'OPTICAL METRICS BREAKDOWN',
-                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
+                          Expanded(
+                            child: PrimaryButton(
+                              text: 'Retry Assessment',
+                              icon: Icons.refresh_rounded,
+                              onPressed: () {
+                                ref.read(screeningSessionProvider.notifier).runQualityAssessment();
+                              },
+                            ),
                           ),
-                          Text(
-                            'Overall Quality: ${AppFormatters.formatPercent(quality.overallScore)}',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w800,
-                              color: quality.isBorderline ? AppColors.statusBorderline : AppColors.statusGood,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: widget.onRetake,
+                              icon: const Icon(Icons.camera_alt_outlined),
+                              label: const Text('Recapture Image'),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
-                      _metricRow('Focus & Sharpness', quality.sharpness.score, quality.sharpness.status),
-                      const SizedBox(height: 10),
-                      _metricRow('Illumination & Exposure', quality.illumination.score, quality.illumination.status),
-                      const SizedBox(height: 10),
-                      _metricRow('Retinal Field of View', quality.fieldOfView.score, quality.fieldOfView.status),
-                      if (quality.isBorderline) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.statusBorderlineDarkBg,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.statusBorderline.withValues(alpha: 0.5)),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.info_outline, color: AppColors.statusBorderline, size: 16),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Borderline contrast detected: Green-channel CLAHE contrast normalization will be applied automatically prior to PyTorch inference.',
-                                  style: TextStyle(color: Color(0xFFFDE68A), fontSize: 11, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+              ] else if (isEvaluating || quality == null) ...[
+                // Loading / Multi-Step Pipeline Evaluation State
+                ClinicalCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    children: [
+                      // Thumbnail of the image being evaluated
+                      if (session.imagePath != null)
+                        SizedBox(
+                          height: 160,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: FundusImageViewer(
+                              originalImagePath: session.imagePath!,
+                              eyeTag: session.patient?.eye,
+                              imageId: 'IMG-${session.screeningId?.replaceAll("EX-", "")}',
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 16),
 
-                // 7. PROCEED TO AI INFERENCE CTA
-                ElevatedButton.icon(
-                  onPressed: widget.onProceedToProcessing,
-                  icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                  label: const Text('PROCEED TO AI INFERENCE & GRAD-CAM', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.electricBlue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      const LinearProgressIndicator(
+                        backgroundColor: Color(0xFFE2E8F0),
+                        color: AppColors.primary,
+                        minHeight: 6,
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Automated Optical Quality & Pre-Screening Pipeline',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Evaluating mathematical metrics before running deep neural inference...',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Step-by-step Pipeline Stepper Items
+                      _pipelineStep(
+                        stepNumber: '1',
+                        title: 'Retinal Mask & Field of View (FOV)',
+                        description: 'Segmenting circular boundary and optic disc centering...',
+                        isDone: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _pipelineStep(
+                        stepNumber: '2',
+                        title: 'Laplacian Focus & Sharpness Filter',
+                        description: 'Computing second-derivative high-frequency edge variance...',
+                        isDone: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _pipelineStep(
+                        stepNumber: '3',
+                        title: 'Illumination & Exposure Distribution',
+                        description: 'Analyzing histogram saturation, underexposure, and glare...',
+                        isDone: false,
+                        isActive: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _pipelineStep(
+                        stepNumber: '4',
+                        title: 'Adaptive CLAHE Preprocessing',
+                        description: 'Local contrast enhancement on green vascular channels...',
+                        isDone: false,
+                      ),
+                    ],
                   ),
                 ),
+              ] else ...[
+                // Two-Column Layout (Image preview & Quality score breakdown)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Thumbnail Fundus Image
+                    Expanded(
+                      flex: 4,
+                      child: SizedBox(
+                        height: 220,
+                        child: FundusImageViewer(
+                          originalImagePath: session.imagePath ?? '',
+                          eyeTag: session.patient?.eye,
+                          imageId: 'IMG-${session.screeningId?.replaceAll("EX-", "")}',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Overall Score Card
+                    Expanded(
+                      flex: 5,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: quality.isUngradable
+                              ? AppColors.statusUngradableBg.withOpacity(0.5)
+                              : quality.isBorderline
+                                  ? AppColors.statusBorderlineBg.withOpacity(0.5)
+                                  : AppColors.statusGoodBg.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: quality.isUngradable
+                                ? AppColors.statusUngradable.withOpacity(0.4)
+                                : quality.isBorderline
+                                    ? AppColors.statusBorderline.withOpacity(0.4)
+                                    : AppColors.statusGood.withOpacity(0.4),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'OVERALL QUALITY SCORE',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              AppFormatters.formatPercentage(quality.overallScore),
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
+                                color: quality.isUngradable
+                                    ? AppColors.statusUngradable
+                                    : quality.isBorderline
+                                        ? AppColors.statusBorderline
+                                        : AppColors.statusGood,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              quality.isUngradable
+                                  ? 'STATUS: UNGRADABLE'
+                                  : quality.isBorderline
+                                      ? 'STATUS: BORDERLINE (Enhancement Applied)'
+                                      : 'STATUS: OPTIMAL FOR SCREENING',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: quality.isUngradable
+                                    ? AppColors.statusUngradable
+                                    : quality.isBorderline
+                                        ? AppColors.statusBorderline
+                                        : AppColors.statusGood,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Breakdown Metrics Gauges Card
+                ClinicalCard(
+                  title: 'Quality Assessment Breakdown',
+                  child: Column(
+                    children: [
+                      _metricRow(
+                        label: 'Focus & Sharpness',
+                        score: quality.sharpness.score,
+                        status: quality.sharpness.status,
+                        icon: Icons.filter_center_focus_rounded,
+                        isFailed: quality.sharpness.score < 0.45,
+                      ),
+                      const Divider(height: 16),
+                      _metricRow(
+                        label: 'Illumination & Exposure',
+                        score: quality.illumination.score,
+                        status: quality.illumination.status,
+                        icon: Icons.wb_sunny_outlined,
+                        isFailed: quality.illumination.score < 0.40,
+                      ),
+                      const Divider(height: 16),
+                      _metricRow(
+                        label: 'Retinal Field of View',
+                        score: quality.fieldOfView.score,
+                        status: quality.fieldOfView.status,
+                        icon: Icons.crop_free_rounded,
+                        isFailed: quality.fieldOfView.score < 0.35,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Specific Clinical Feedback Messages Banner
+                if (quality.feedbackMessages.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: quality.isUngradable
+                          ? AppColors.statusUngradableBg
+                          : quality.isBorderline
+                              ? AppColors.statusBorderlineBg
+                              : AppColors.statusGoodBg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: quality.isUngradable
+                            ? AppColors.statusUngradable.withOpacity(0.3)
+                            : quality.isBorderline
+                                ? AppColors.statusBorderline.withOpacity(0.3)
+                                : AppColors.statusGood.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              quality.isUngradable
+                                  ? Icons.error_outline_rounded
+                                  : quality.isBorderline
+                                      ? Icons.info_outline_rounded
+                                      : Icons.check_circle_outline_rounded,
+                              size: 16,
+                              color: quality.isUngradable
+                                  ? AppColors.statusUngradable
+                                  : quality.isBorderline
+                                      ? AppColors.statusBorderline
+                                      : AppColors.statusGood,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              quality.isUngradable
+                                  ? 'CLINICAL RECAPTURE REQUIRED'
+                                  : quality.isBorderline
+                                      ? 'ADAPTIVE PREPROCESSING ACTION'
+                                      : 'IMAGE QUALITY VERIFIED',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: quality.isUngradable
+                                    ? AppColors.statusUngradable
+                                    : quality.isBorderline
+                                        ? AppColors.statusBorderline
+                                        : AppColors.statusGood,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        for (final msg in quality.feedbackMessages)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              '• $msg',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 18),
+
+                // Strict Safety-Gated Action Buttons
+                if (quality.isUngradable) ...[
+                  PrimaryButton(
+                    text: 'Recapture Retinal Image',
+                    icon: Icons.replay_rounded,
+                    isDestructive: true,
+                    onPressed: widget.onRetake,
+                  ),
+                  const SizedBox(height: 8),
+                  const Center(
+                    child: Text(
+                      'Automated DR prediction is blocked for ungradable images to maintain clinical safety.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 11, color: AppColors.statusUngradable, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ] else if (quality.isBorderline) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PrimaryButton(
+                          text: 'Apply CLAHE Enhancement & Screen',
+                          icon: Icons.auto_fix_high_rounded,
+                          onPressed: widget.onProceedToProcessing,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: widget.onRetake,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Retake Optional'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  PrimaryButton(
+                    text: 'Continue to AI Screening',
+                    icon: Icons.arrow_forward_rounded,
+                    onPressed: widget.onProceedToProcessing,
+                  ),
+                ],
               ],
               const SizedBox(height: 16),
 
@@ -254,60 +480,115 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
     );
   }
 
-  Widget _metricRow(String title, double score, String status) {
-    final isGood = score >= 0.70;
-    final isBorderline = score >= 0.45 && score < 0.70;
-    final statusColor = isGood ? AppColors.statusGood : isBorderline ? AppColors.statusBorderline : AppColors.statusUngradable;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _metricRow({
+    required String label,
+    required double score,
+    required String status,
+    required IconData icon,
+    required bool isFailed,
+  }) {
+    final color = isFailed ? AppColors.statusUngradable : AppColors.statusGood;
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Colors.white)),
-            Text('${(score * 100).toStringAsFixed(1)}% • $status', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: statusColor)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(
-            value: score,
-            minHeight: 6,
-            backgroundColor: AppColors.graphite,
-            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+              const SizedBox(height: 4),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: score,
+                  minHeight: 6,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+              ),
+            ],
           ),
+        ),
+        const SizedBox(width: 14),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(AppFormatters.formatPercentage(score), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
+            Text(status, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+          ],
         ),
       ],
     );
   }
 
-  Widget _qualityPill(String status) {
-    Color color;
-    Color bg;
-    if (status.contains('GOOD')) {
-      color = AppColors.statusGood;
-      bg = AppColors.statusGoodDarkBg;
-    } else if (status.contains('BORDER')) {
-      color = AppColors.statusBorderline;
-      bg = AppColors.statusBorderlineDarkBg;
-    } else {
-      color = AppColors.statusUngradable;
-      bg = AppColors.statusUngradableDarkBg;
-    }
+  Widget _pipelineStep({
+    required String stepNumber,
+    required String title,
+    required String description,
+    bool isDone = false,
+    bool isActive = false,
+  }) {
+    final Color indicatorColor = isDone
+        ? AppColors.statusGood
+        : isActive
+            ? AppColors.primary
+            : Colors.grey.shade400;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 10.5, letterSpacing: 0.5),
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: indicatorColor.withOpacity(0.15),
+            shape: BoxShape.circle,
+            border: Border.all(color: indicatorColor, width: 1.5),
+          ),
+          child: Center(
+            child: isDone
+                ? const Icon(Icons.check, size: 13, color: AppColors.statusGood)
+                : isActive
+                    ? const SizedBox(
+                        width: 10,
+                        height: 10,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                      )
+                    : Text(
+                        stepNumber,
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: indicatorColor),
+                      ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDone || isActive ? AppColors.textPrimary : AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                description,
+                style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+              ),
+            ],
+          ),
+        ),
+        if (isDone)
+          const Text(
+            'DONE',
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.statusGood),
+          ),
+      ],
     );
   }
 }
+
