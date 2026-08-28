@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/screening_case_model.dart';
-import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/status_badge.dart';
 import '../review/review_queue_provider.dart';
-import '../review/clinician_review_screen.dart';
 
 class CaseQueueScreen extends ConsumerWidget {
   final ValueChanged<ScreeningCaseModel> onSelectCase;
