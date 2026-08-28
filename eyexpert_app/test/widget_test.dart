@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eyexpert_app/main.dart';
+import 'package:drishti_app/main.dart';
 
 void main() {
   testWidgets('Drishti App smoke test', (WidgetTester tester) async {
