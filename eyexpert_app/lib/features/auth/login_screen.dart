@@ -19,7 +19,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController(text: 'healthworker.demo@drishti.org');
-  final _passwordController = TextEditingController(text: '••••••••');
+  final _passwordController = TextEditingController(text: 'demo1234');
   UserRole _selectedRole = UserRole.healthWorker;
 
   @override
@@ -31,23 +31,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _handleLogin() {
     ref.read(authProvider.notifier).login(
-      username: _usernameController.text,
+      username: _usernameController.text.trim(),
       password: _passwordController.text,
       roleRequested: _selectedRole,
-      isDemo: true,
+      isDemo: false,
     );
-  }
-
-  void _quickDemoLogin(UserRole role) {
-    setState(() {
-      _selectedRole = role;
-      if (role == UserRole.clinician) {
-        _usernameController.text = 'clinician.demo@drishti.org';
-      } else {
-        _usernameController.text = 'healthworker.demo@drishti.org';
-      }
-    });
-    _handleLogin();
   }
 
   @override
