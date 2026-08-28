@@ -17,12 +17,15 @@ class DrishtiLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = color ?? AppColors.accent;
-    final textStyleColor = textColor ?? AppColors.primary;
-
-    final logoIcon = CustomPaint(
-      size: Size(size, size * 0.75),
-      painter: _DrishtiLogoPainter(color: iconColor),
+    final logoIcon = Image.asset(
+      'assets/images/logo.png',
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => CustomPaint(
+        size: Size(size, size * 0.75),
+        painter: _DrishtiLogoPainter(color: iconColor),
+      ),
     );
 
     if (!showText) return logoIcon;
