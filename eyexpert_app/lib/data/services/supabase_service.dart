@@ -268,12 +268,14 @@ class SupabaseService {
 
           final patient = PatientModel(
             patientId: row['patient_id'] as String? ?? 'PT-UNKNOWN',
-            patientName: row['patient_name'] as String? ?? 'Registered Patient',
             age: (row['age'] as num?)?.toInt() ?? 50,
             gender: row['gender'] as String? ?? 'OTHER',
             diabetesDurationYears: (row['diabetes_duration_years'] as num?)?.toInt() ?? 5,
             eye: row['eye'] as String? ?? 'OD',
             facilityId: row['facility_id'] as String? ?? 'PHC-RAMGARH-01',
+            createdAt: row['created_at'] != null
+                ? DateTime.tryParse(row['created_at']) ?? DateTime.now()
+                : DateTime.now(),
           );
 
           QualityAssessmentModel? quality;
