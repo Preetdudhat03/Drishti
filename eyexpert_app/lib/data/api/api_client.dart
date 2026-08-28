@@ -89,7 +89,7 @@ class ApiClient {
       throw e;
     }
     throw NetworkException(
-      'Unable to connect to EyeXpert backend. Please check network connectivity.',
+      'Unable to connect to Drishti backend. Please check network connectivity.',
       details: e.toString(),
     );
   }
