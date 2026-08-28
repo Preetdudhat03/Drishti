@@ -3,136 +3,54 @@ import 'app_colors.dart';
 import 'app_typography.dart';
 
 class AppTheme {
-  static ThemeData get lightTheme {
+  static ThemeData get clinicalTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
+        primary: AppColors.accent, // Medical Teal
         onPrimary: Colors.white,
-        primaryContainer: AppColors.primaryLight,
-        onPrimaryContainer: AppColors.primaryDark,
-        secondary: AppColors.secondary,
+        primaryContainer: AppColors.accentLight,
+        onPrimaryContainer: AppColors.accent,
+        secondary: AppColors.primary, // Deep Navy
         onSecondary: Colors.white,
-        surface: AppColors.surfaceLight,
-        onSurface: AppColors.textPrimaryLight,
+        surface: AppColors.surface,
+        onSurface: AppColors.textPrimary,
         error: AppColors.statusUngradable,
         onError: Colors.white,
       ),
-      scaffoldBackgroundColor: AppColors.backgroundLight,
+      scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimaryLight,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: AppTypography.headlineMedium,
+        titleTextStyle: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+          letterSpacing: -0.2,
+        ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surfaceLight,
+        color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.borderLight, width: 1),
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.accent, // Medical Teal
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          textStyle: AppTypography.labelLarge,
-          minimumSize: const Size(88, 48),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          textStyle: AppTypography.labelLarge,
-          minimumSize: const Size(88, 48),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.borderLight),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.borderLight),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.statusUngradable),
-        ),
-      ),
-      dividerTheme: const DividerThemeData(
-        color: AppColors.borderLight,
-        thickness: 1,
-        space: 24,
-      ),
-    );
-  }
-
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.accent,
-        onPrimary: Colors.black,
-        primaryContainer: AppColors.primaryDark,
-        onPrimaryContainer: Colors.white,
-        secondary: AppColors.secondary,
-        onSecondary: Colors.white,
-        surface: AppColors.surfaceDark,
-        onSurface: AppColors.textPrimaryDark,
-        error: AppColors.statusUngradable,
-        onError: Colors.white,
-      ),
-      scaffoldBackgroundColor: AppColors.backgroundDark,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surfaceDark,
-        foregroundColor: AppColors.textPrimaryDark,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: AppTypography.headlineMedium,
-      ),
-      cardTheme: CardThemeData(
-        color: AppColors.surfaceDark,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.borderDark, width: 1),
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accent,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          textStyle: AppTypography.labelLarge,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
           minimumSize: const Size(88, 48),
         ),
       ),
@@ -144,32 +62,40 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          textStyle: AppTypography.labelLarge,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
           minimumSize: const Size(88, 48),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceDark,
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.borderDark),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.borderDark),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.accent, width: 2),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.statusUngradable),
+        ),
       ),
       dividerTheme: const DividerThemeData(
-        color: AppColors.borderDark,
+        color: AppColors.border,
         thickness: 1,
-        space: 24,
+        space: 20,
       ),
     );
   }
+
+  // Alias for backward compatibility
+  static ThemeData get lightTheme => clinicalTheme;
+  static ThemeData get darkTheme => clinicalTheme;
 }
