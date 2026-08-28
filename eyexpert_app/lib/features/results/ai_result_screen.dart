@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/dr_severity.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
 import '../../core/utils/formatters.dart';
-import '../../core/utils/responsive_layout.dart';
-import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/status_badge.dart';
-import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/fundus_image_viewer.dart';
 import '../../shared/widgets/probability_bar.dart';
-import '../../shared/widgets/model_provenance_card.dart';
+import '../../shared/widgets/workflow_step_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../screening/screening_session_provider.dart';
 
@@ -31,7 +27,6 @@ class AiResultScreen extends ConsumerWidget {
     final pred = session.prediction;
     final quality = session.quality;
     final patient = session.patient;
-    final isDesktop = ResponsiveLayout.isDesktop(context);
 
     if (pred == null) {
       return Center(
@@ -40,9 +35,13 @@ class AiResultScreen extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.statusUngradable),
             const SizedBox(height: 12),
-            const Text('No screening prediction available for this session.', style: AppTypography.body),
+            const Text('No screening prediction available for this session.', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
-            ElevatedButton(onPressed: onNewScreening, child: const Text('Start New Screening')),
+            ElevatedButton(
+              onPressed: onNewScreening,
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.electricBlue, foregroundColor: Colors.white),
+              child: const Text('Start New Screening'),
+            ),
           ],
         ),
       );
@@ -52,105 +51,66 @@ class AiResultScreen extends ConsumerWidget {
     final isReferable = pred.referable;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 880),
+          constraints: const BoxConstraints(maxWidth: 920),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header with AI Badge & Context
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 6,
+              // 1. WORKFLOW STEP INDICATOR
+              const WorkflowStepBar(currentStep: 4),
+              const SizedBox(height: 16),
+
+              // 2. HEADER STRIP
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      StatusBadge.aiBadge(label: 'AI SCREENING RESULT'),
-                      const SizedBox(width: 8),
+                      const Text(
+                        'AI Retinal Diagnostic Screening',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                      ),
+                      const SizedBox(height: 2),
                       Text(
-                        'ID: ${session.screeningId ?? "Pending"}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                        'Patient ${patient?.patientId ?? "N/A"} • ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],
                   ),
-                  Text(
-                    'Patient: ${patient?.patientId ?? "N/A"} (${AppFormatters.formatEye(patient?.eye)})',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                  ),
+                  _severityHeaderPill(severity, isReferable),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
-              // Dominant Result Card
-              ClinicalCard(
-                borderColor: isReferable ? AppColors.referableAlert.withOpacity(0.4) : AppColors.border,
-                backgroundColor: isReferable ? AppColors.referableAlertBg.withOpacity(0.5) : Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              // 3. RETINAL VIEWPORT (HERO CANVAS WITH GRAD-CAM & OVERLAY SWITCHER)
+              if (session.imagePath != null)
+                FundusImageViewer(
+                  originalImagePath: session.imagePath!,
+                  gradcamImagePath: pred.heatmapPath,
+                  mode: pred.heatmapPath != null ? FundusViewerMode.overlay : FundusViewerMode.original,
+                  height: 400,
+                  eyeTag: patient?.eye,
+                  imageId: session.screeningId,
+                  qualityLabel: quality?.status.name.toUpperCase(),
+                  showControls: true,
+                ),
+              const SizedBox(height: 14),
+
+              // 4. DIAGNOSTIC CLASSIFICATION & TRIAGE BANNER
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isReferable ? AppColors.referableAlertBg : AppColors.statusGoodBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                    width: 1.5,
+                  ),
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'DIABETIC RETINOPATHY CLASSIFICATION',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: isReferable ? AppColors.referableAlert : AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'LEVEL ${pred.drLevel}',
-                      style: TextStyle(
-                        fontSize: 38,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        color: isReferable ? AppColors.referableAlert : AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      severity.fullName,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: isReferable ? AppColors.referableAlert : AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Semantic Status Alert
-                    isReferable
-                        ? StatusBadge.referable(isLarge: true)
-                        : StatusBadge.nonReferable(isLarge: true),
-
-                    const SizedBox(height: 16),
-                    const Divider(height: 1),
-                    const SizedBox(height: 16),
-
-                    // Metrics Strip
-                    Wrap(
-                      alignment: WrapAlignment.spaceEvenly,
-                      spacing: 24,
-                      runSpacing: 12,
-                      children: [
-                        _metricCol(
-                          'MODEL PROBABILITY',
-                          AppFormatters.formatProbability(pred.modelProbability),
-                          AppColors.accent,
-                        ),
-                        _metricCol(
-                          'CALIBRATED CONFIDENCE',
-                          pred.calibratedConfidence != null
-                              ? AppFormatters.formatProbability(pred.calibratedConfidence)
-                              : 'Validation pending',
-                          AppColors.textPrimary,
-                        ),
-                        _metricCol(
-                          'IMAGE QUALITY',
                           quality?.status.label ?? 'GOOD',
                           AppColors.statusGood,
                         ),
