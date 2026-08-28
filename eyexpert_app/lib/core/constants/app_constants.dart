@@ -28,10 +28,12 @@ class AppConstants {
   static const String storageBucketFundus = 'fundus-images';
 
   // Medical Statutory Disclaimers
-  static const String prototypeMedicalDisclaimer =
+  static const String standardDisclaimer =
       'Drishti is an explainable AI-assisted screening and clinical decision-support prototype. '
       'It is NOT an autonomous diagnostic medical device and does NOT replace a qualified ophthalmologist. '
       'Final clinical diagnosis and management must be confirmed by a licensed clinician.';
+
+  static const String prototypeMedicalDisclaimer = standardDisclaimer;
 
   static const String xaiDisclaimer =
       'Interpretability output (Grad-CAM) highlights retinal regions contributing to model prediction. '
