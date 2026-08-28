@@ -5,25 +5,27 @@ SIH 2026 Problem Statement 26038 | Complete AI Engine, Clinician Workflow & Demo
 
 import os
 import io
+import gc
 import json
 import uuid
 import base64
 import datetime
 import numpy as np
-import pandas as pd
-from PIL import Image, ImageFilter
-from flask import Flask, request, jsonify, render_template_string, send_file
+from PIL import Image
+from flask import Flask, request, jsonify, render_template_string
 
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 import torchvision.models as models
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.cm as cm
 import cv2
-from scipy.signal import convolve2d
-from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, cohen_kappa_score, roc_auc_score
+
+# Optimize CPU memory for cloud free tier (Render 512MB RAM)
+torch.set_num_threads(1)
+try:
+    torch.set_num_interop_threads(1)
+except Exception:
+    pass
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64MB max upload
