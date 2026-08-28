@@ -187,7 +187,11 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: FundusImageViewer(
-                        originalImagePath: c.image?.imageUrl ?? '',
+                        originalImagePath: (c.image?.imageUrl.isNotEmpty == true)
+                            ? c.image!.imageUrl
+                            : (exp?.originalImageUrl.isNotEmpty == true)
+                                ? exp!.originalImageUrl
+                                : '',
                         eyeTag: c.patient.eye,
                       ),
                     ),
@@ -212,7 +216,13 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: FundusImageViewer(
-                        originalImagePath: exp?.gradcamImageUrl ?? c.image?.imageUrl ?? '',
+                        originalImagePath: (exp?.gradcamImageUrl.isNotEmpty == true)
+                            ? exp!.gradcamImageUrl
+                            : (exp?.overlayImageUrl.isNotEmpty == true)
+                                ? exp!.overlayImageUrl
+                                : (c.image?.imageUrl.isNotEmpty == true)
+                                    ? c.image!.imageUrl
+                                    : '',
                         eyeTag: 'Grad-CAM XAI',
                       ),
                     ),
