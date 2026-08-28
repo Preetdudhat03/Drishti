@@ -246,7 +246,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
-        isDemo: state.selectedDemoScenario != null,
+        isDemo: state.selectedDemoScenario != false,
         demoScenario: state.selectedDemoScenario,
       );
 
