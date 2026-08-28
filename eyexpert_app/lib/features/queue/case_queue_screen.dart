@@ -159,15 +159,15 @@ class CaseQueueScreen extends ConsumerWidget {
                                             ? 'REFERABLE (URGENT)'
                                             : 'NON-REFERABLE',
                                     color: review != null
-                                        ? AppColors.secondary
+                                        ? AppColors.primary
                                         : isReferable
                                             ? AppColors.referableAlert
-                                            : AppColors.nonReferable,
+                                            : AppColors.statusGood,
                                     backgroundColor: review != null
-                                        ? AppColors.secondary.withOpacity(0.1)
+                                        ? AppColors.primaryLight
                                         : isReferable
                                             ? AppColors.referableAlertBg
-                                            : AppColors.nonReferableBg,
+                                            : AppColors.statusGoodBg,
                                     icon: review != null ? Icons.verified : Icons.priority_high_rounded,
                                   ),
                                   const SizedBox(height: 6),
