@@ -354,35 +354,85 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                         style: TextStyle(fontSize: 10, color: Colors.black87, height: 1.3),
                       ),
                     ),
+                          Text(
+                            severity?.fullName ?? 'No Diabetic Retinopathy Detected',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: isReferable ? AppColors.referableAlert : AppColors.statusGood,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isReferable
+                                ? 'Automated screening detected high-attention microvascular anomalies indicative of diabetic retinopathy. Confirmatory dilated biomicroscopy by an ophthalmologist is recommended within 2 to 4 weeks.'
+                                : 'Automated screening detected no sight-threatening microvascular anomalies. Patient should maintain regular glycemic control and return for annual retinal photography screening.',
+                            style: const TextStyle(fontSize: 12, height: 1.4),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Clinician Sign-off Block (Clean & Professional, No Cartoon Seals)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.lightBorder),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'CLINICIAN REVIEW & AUDIT LOG',
+                                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: review != null ? AppColors.statusGoodBg : AppColors.pendingBg,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: review != null ? AppColors.statusGood : AppColors.pending,
+                                  ),
+                                ),
+                                child: Text(
+                                  review != null ? 'STATUS: VALIDATED BY CLINICIAN' : 'STATUS: AI TRIAGE (AWAITING CLINICIAN REVIEW)',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: review != null ? AppColors.statusGood : AppColors.pending,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Reviewing Practitioner: ${review?.clinicianName ?? "Authorized Ophthalmologist (Tele-Review)"}',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                          if (review != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Clinical Notes: ${review.clinicalNotes}',
+                              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Action Row
-              Row(
-                children: [
-                  Expanded(
-                    child: PrimaryButton(
-                      text: 'Print Clinical Report',
-                      icon: Icons.print_rounded,
-                      isLoading: _isExporting,
-                      onPressed: _handlePrint,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PrimaryButton(
-                      text: 'Export / Share PDF',
-                      icon: Icons.share_rounded,
-                      isSecondary: true,
-                      isLoading: _isExporting,
-                      onPressed: _handleShare,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+              const MedicalDisclaimerBanner(isCompact: true),
             ],
           ),
         ),
@@ -390,13 +440,13 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
     );
   }
 
-  Widget _infoBlock(String label, String value) {
+  Widget _docMeta(String label, String value, Color valueColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+        Text(label, style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.5)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        Text(value, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: valueColor)),
       ],
     );
   }
