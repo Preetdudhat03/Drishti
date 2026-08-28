@@ -20,7 +20,7 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(screeningSessionProvider.notifier).runDeepInference();
-      if (mounted) {
+      if (mounted && ref.read(screeningSessionProvider).errorMessage == null) {
         widget.onComplete();
       }
     });
@@ -30,6 +30,99 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
   Widget build(BuildContext context) {
     final session = ref.watch(screeningSessionProvider);
     final currentStep = session.processingStep;
+
+    if (session.errorMessage != null) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: ClinicalCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFEE2E2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.error_outline_rounded, color: AppColors.statusUngradable, size: 28),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'AI Classification Error',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'The deep neural model encountered an issue during inference.',
+                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFCA5A5)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'ERROR DETAILS & REASON:',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF991B1B)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          session.errorMessage!,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF7F1D1D), fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await ref.read(screeningSessionProvider.notifier).runDeepInference();
+                            if (mounted && ref.read(screeningSessionProvider).errorMessage == null) {
+                              widget.onComplete();
+                            }
+                          },
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: const Text('Retry Inference'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Center(
       child: SingleChildScrollView(
