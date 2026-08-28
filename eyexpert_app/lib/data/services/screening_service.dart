@@ -7,39 +7,54 @@ import '../models/explainability_model.dart';
 import '../models/screening_case_model.dart';
 import '../../core/errors/app_exceptions.dart';
 import 'mock_data_service.dart';
+import 'supabase_service.dart';
 
 class ScreeningService {
   final ApiClient _apiClient;
+  final SupabaseService _supabaseService;
 
-  ScreeningService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  ScreeningService({ApiClient? apiClient, SupabaseService? supabaseService})
+      : _apiClient = apiClient ?? ApiClient(),
+        _supabaseService = supabaseService ?? SupabaseService();
 
   Future<ScreeningCaseModel> createScreening({
     required PatientModel patient,
     required String clientRequestId,
     bool isDemo = true,
   }) async {
-    if (isDemo) {
-      final String id = 'EX-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-      return ScreeningCaseModel(
-        screeningId: id,
-        clientRequestId: clientRequestId,
-        patient: patient,
-        status: ScreeningStatus.awaitingImage,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-    }
-
-    final response = await _apiClient.post(
-      ApiEndpoints.screenings,
-      idempotencyKey: clientRequestId,
-      body: {
-        'client_request_id': clientRequestId,
-        ...patient.toJson(),
-      },
+    final String id = 'DR-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    
+    final screeningCase = ScreeningCaseModel(
+      screeningId: id,
+      clientRequestId: clientRequestId,
+      patient: patient,
+      status: ScreeningStatus.awaitingImage,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
 
-    return ScreeningCaseModel.fromJson(response);
+    // Save to Supabase
+    if (SupabaseService.isInitialized) {
+      await _supabaseService.saveScreeningCase(screeningCase);
+    }
+
+    if (isDemo) {
+      return screeningCase;
+    }
+
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.screenings,
+        idempotencyKey: clientRequestId,
+        body: {
+          'client_request_id': clientRequestId,
+          ...patient.toJson(),
+        },
+      );
+      return ScreeningCaseModel.fromJson(response);
+    } catch (_) {
+      return screeningCase;
+    }
   }
 
   Future<QualityAssessmentModel> assessImageQuality({
@@ -80,7 +95,7 @@ class ScreeningService {
                 'Recapture required: Please steady the patient and camera.',
               ]
             : isBorderline
-                ? ['Sub-optimal exposure detected.', 'Adaptive CLAHE enhancement will be applied.']
+                ? ['Sub-optimal exposure detected.', 'Adaptive CLAHE enhancement applied.']
                 : ['Optimal focus, exposure, and field coverage confirmed.'],
         evaluatedAt: DateTime.now(),
       );
@@ -96,6 +111,7 @@ class ScreeningService {
     bool isDemo = true,
     Map<String, dynamic>? demoScenario,
   }) async {
+    // Safety Gate: UNGRADABLE images strictly block automated DR classification
     if (quality.isUngradable) {
       throw UngradableImageException(
         'Automated DR screening is blocked because the retinal photograph is ungradable. A clear recapture is required for patient safety.',
@@ -114,7 +130,7 @@ class ScreeningService {
         severityCode: 'LEVEL_$level',
         referable: demoScenario['expectedReferable'] ?? (level >= 2),
         modelProbability: modelProb,
-        calibratedConfidence: 0.88,
+        calibratedConfidence: null, // Transparently indicate uncalibrated
         classProbabilities: classProbs,
         reviewPriority: level >= 2 ? 'HIGH' : 'NORMAL',
         recommendation: 'Ophthalmologist review and dilated fundus examination recommended.',
