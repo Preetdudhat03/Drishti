@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:eyexpert_app/data/services/sync_service.dart';
-import 'package:eyexpert_app/data/models/patient_model.dart';
-import 'package:eyexpert_app/data/models/sync_queue_item.dart';
+import 'package:drishti_app/data/services/sync_service.dart';
+import 'package:drishti_app/data/models/patient_model.dart';
+import 'package:drishti_app/data/models/sync_queue_item.dart';
 
 void main() {
   group('SyncService Offline & Rural Queue Tests', () {
