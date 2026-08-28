@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/constants/dr_severity.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/screening_case_model.dart';
 import '../../data/models/patient_model.dart';
 import '../../data/services/report_service.dart';
-import '../../shared/widgets/status_badge.dart';
-import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/fundus_image_viewer.dart';
+import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../screening/screening_session_provider.dart';
 
 class ScreeningReportScreen extends ConsumerStatefulWidget {
@@ -34,7 +35,6 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
     final sessionCase = ref.read(screeningSessionProvider).toScreeningCase();
     if (sessionCase != null) return sessionCase;
 
-    // Fallback template
     return ScreeningCaseModel(
       screeningId: 'EX-2026-000124',
       patient: PatientModel(
@@ -88,63 +88,81 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
   Widget build(BuildContext context) {
     final c = _getCase();
     final pred = c.prediction;
-    final quality = c.quality;
     final review = c.review;
-    final isReferable = pred?.referable ?? false;
+    final isReferable = pred?.isReferable ?? false;
+    final severity = pred != null ? DRSeverity.fromLevel(pred.drLevel) : null;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
+          constraints: const BoxConstraints(maxWidth: 860),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Screen Navigation Header
+              // 1. TOP ACTION BAR
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    onPressed: widget.onBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    tooltip: 'Back',
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: widget.onBack,
+                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                        tooltip: 'Back',
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Clinical Screening Summary Report',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                      ),
+                    ],
                   ),
-                  const Text(
-                    'Screening Summary Report',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: _handlePrint,
-                    icon: const Icon(Icons.print_outlined),
-                    tooltip: 'Print Report',
-                  ),
-                  IconButton(
-                    onPressed: _handleShare,
-                    icon: const Icon(Icons.share_outlined),
-                    tooltip: 'Export PDF',
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _isExporting ? null : _handlePrint,
+                        icon: const Icon(Icons.print_outlined, size: 16),
+                        label: const Text('Print Report'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.textPrimary,
+                          side: const BorderSide(color: AppColors.borderDark),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: _isExporting ? null : _handleShare,
+                        icon: const Icon(Icons.download_rounded, size: 16),
+                        label: const Text('Export PDF'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.electricBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
-              // Printable Document Card
+              // 2. FORMAL CLINICAL REPORT DOCUMENT
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.lightBorder),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 3)),
                   ],
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Document Header
                     Row(
@@ -154,31 +172,12 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              AppConstants.appName,
-                              style: TextStyle(
-                                fontSize: 22,
+                            Text(
+                              AppConstants.appName.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 20,
                                 fontWeight: FontWeight.w900,
                                 color: AppColors.primary,
-                              ),
-                            ),
-                            const Text(
-                              AppConstants.appTagline,
-                              style: TextStyle(fontSize: 11, color: Colors.grey),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Screening ID: ${c.screeningId}',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        isReferable
-                            ? StatusBadge.referable()
-                            : StatusBadge.nonReferable(),
-                      ],
-                    ),
-                    const Divider(height: 24),
 
                     // Patient Meta Table
                     Container(
