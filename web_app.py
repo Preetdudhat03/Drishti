@@ -1947,7 +1947,8 @@ def api_v1_analyze(id):
             "message": f"No retinal fundus image has been uploaded for screening {id}. Please upload an image first."
         }), 400
     
-    img_bytes = base64.b64decode(img_b64)
+    clean_b64 = img_b64.split(',', 1)[1] if ',' in img_b64 else img_b64
+    img_bytes = base64.b64decode(clean_b64)
     img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
     infer_out = run_real_inference_and_gradcam(img)
     
@@ -1984,13 +1985,14 @@ def api_v1_explainability(id):
     record = SCREENING_STORE.get(id, {})
     cam_b64 = record.get("cam_b64", "")
     overlay_b64 = record.get("overlay_b64", "")
+    orig_b64 = record.get("image_b64", "")
     
     return jsonify({
         "screening_id": id,
         "target_layer": "layer4[1].conv2",
-        "gradcam_image_url": f"data:image/png;base64,{cam_b64}" if cam_b64 else "",
-        "overlay_image_url": f"data:image/png;base64,{overlay_b64}" if overlay_b64 else "",
-        "original_image_url": f"data:image/png;base64,{record.get('image_b64', '')}" if record.get('image_b64') else "",
+        "gradcam_image_url": cam_b64 if cam_b64 else "",
+        "overlay_image_url": overlay_b64 if overlay_b64 else "",
+        "original_image_url": orig_b64 if orig_b64 else "",
         "model_attended_regions": ["Temporal vascular arcade", "Perimacular microaneurysms", "Posterior pole"],
         "disclaimer": "Highlighted regions represent areas contributing to the model prediction (Interpretability tool — not a definitive lesion diagnosis)."
     })
