@@ -174,12 +174,13 @@ class SupabaseService {
       await supa.from('screenings').upsert({
         'screening_id': screeningCase.screeningId,
         'patient_id': screeningCase.patient.patientId,
+        'patient_name': screeningCase.patient.patientName,
         'age': screeningCase.patient.age,
         'gender': screeningCase.patient.gender,
         'diabetes_duration_years': screeningCase.patient.diabetesDurationYears,
         'eye': screeningCase.patient.eye,
         'facility_id': screeningCase.patient.facilityId ?? 'PHC-01',
-        'status': screeningCase.status.name,
+        'status': screeningCase.status.label,
         'created_at': screeningCase.createdAt.toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       });
@@ -190,10 +191,12 @@ class SupabaseService {
         await supa.from('quality_assessments').upsert({
           'screening_id': screeningCase.screeningId,
           'quality_score': q.overallScore,
-          'status': q.status.name,
+          'status': q.status.name.toUpperCase(),
           'sharpness_score': q.sharpness.score,
           'illumination_score': q.illumination.score,
           'fov_score': q.fieldOfView.score,
+          'clahe_applied': q.enhancementApplied,
+          'feedback_messages': q.feedbackMessages,
           'evaluated_at': q.evaluatedAt.toIso8601String(),
         });
       }
@@ -208,6 +211,8 @@ class SupabaseService {
           'referable': p.referable,
           'model_probability': p.modelProbability,
           'calibrated_confidence': p.calibratedConfidence,
+          'class_probabilities': p.classProbabilities,
+          'review_priority': p.referable ? 'HIGH' : 'NORMAL',
           'recommendation': p.recommendation,
           'model_version': p.provenance.modelId,
           'analyzed_at': p.analyzedAt.toIso8601String(),
@@ -220,16 +225,110 @@ class SupabaseService {
         await supa.from('explainability_results').upsert({
           'screening_id': screeningCase.screeningId,
           'gradcam_url': exp.gradcamImageUrl,
+          'overlay_url': exp.overlayImageUrl,
+          'original_url': exp.originalImageUrl,
           'target_layer': exp.targetLayer,
           'model_attended_regions': exp.modelAttendedRegions,
+          'disclaimer': exp.disclaimer,
           'generated_at': DateTime.now().toIso8601String(),
         });
       }
 
+      debugPrint('[SupabaseService] Successfully synced screening ${screeningCase.screeningId} to Supabase');
       return true;
     } catch (e) {
       debugPrint('[SupabaseService] Save screening notice: $e');
       return false;
+    }
+  }
+
+  // Database: Fetch all screenings with joined pipeline tables
+  Future<List<ScreeningCaseModel>> fetchScreeningCases() async {
+    final supa = client;
+    if (supa == null) return [];
+
+    try {
+      final response = await supa
+          .from('screenings')
+          .select('*, quality_assessments(*), ai_predictions(*), explainability_results(*), clinician_reviews(*)')
+          .order('created_at', ascending: false);
+
+      final List<dynamic> data = response as List<dynamic>;
+      final List<ScreeningCaseModel> cases = [];
+
+      for (final item in data) {
+        try {
+          final Map<String, dynamic> row = Map<String, dynamic>.from(item);
+          final sid = row['screening_id'] as String? ?? '';
+          if (sid.isEmpty) continue;
+
+          final patient = PatientModel(
+            patientId: row['patient_id'] as String? ?? 'PT-UNKNOWN',
+            patientName: row['patient_name'] as String? ?? 'Registered Patient',
+            age: (row['age'] as num?)?.toInt() ?? 50,
+            gender: row['gender'] as String? ?? 'OTHER',
+            diabetesDurationYears: (row['diabetes_duration_years'] as num?)?.toInt() ?? 5,
+            eye: row['eye'] as String? ?? 'OD',
+            facilityId: row['facility_id'] as String? ?? 'PHC-RAMGARH-01',
+          );
+
+          QualityAssessmentModel? quality;
+          final qList = row['quality_assessments'] as List<dynamic>?;
+          if (qList != null && qList.isNotEmpty) {
+            quality = QualityAssessmentModel.fromJson(
+              Map<String, dynamic>.from(qList.first),
+              screeningId: sid,
+            );
+          }
+
+          DRPredictionModel? prediction;
+          final pList = row['ai_predictions'] as List<dynamic>?;
+          if (pList != null && pList.isNotEmpty) {
+            prediction = DRPredictionModel.fromJson(
+              Map<String, dynamic>.from(pList.first),
+            );
+          }
+
+          ExplainabilityModel? explainability;
+          final expList = row['explainability_results'] as List<dynamic>?;
+          if (expList != null && expList.isNotEmpty) {
+            explainability = ExplainabilityModel.fromJson(
+              Map<String, dynamic>.from(expList.first),
+            );
+          }
+
+          ClinicianReviewModel? review;
+          final rList = row['clinician_reviews'] as List<dynamic>?;
+          if (rList != null && rList.isNotEmpty) {
+            review = ClinicianReviewModel.fromJson(
+              Map<String, dynamic>.from(rList.first),
+            );
+          }
+
+          cases.add(ScreeningCaseModel(
+            screeningId: sid,
+            patient: patient,
+            quality: quality,
+            prediction: prediction,
+            explainability: explainability,
+            review: review,
+            status: ScreeningStatus.fromString(row['status'] as String?),
+            createdAt: row['created_at'] != null
+                ? DateTime.tryParse(row['created_at']) ?? DateTime.now()
+                : DateTime.now(),
+            updatedAt: row['updated_at'] != null
+                ? DateTime.tryParse(row['updated_at']) ?? DateTime.now()
+                : DateTime.now(),
+          ));
+        } catch (e) {
+          debugPrint('[SupabaseService] Parse error on row: $e');
+        }
+      }
+
+      return cases;
+    } catch (e) {
+      debugPrint('[SupabaseService] Error fetching cases: $e');
+      return [];
     }
   }
 
@@ -261,8 +360,8 @@ class SupabaseService {
       // Update status on parent screening record
       await supa.from('screenings').update({
         'status': action == ClinicianAction.markUngradable
-            ? ScreeningStatus.ungradable.name
-            : ScreeningStatus.completed.name,
+            ? ScreeningStatus.ungradable.label
+            : ScreeningStatus.completed.label,
         'updated_at': now,
       }).eq('screening_id', screeningId);
 
