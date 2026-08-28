@@ -70,7 +70,7 @@ class SyncManagerScreen extends ConsumerWidget {
                           const SizedBox(height: 2),
                           Text(
                             syncState.isOnline
-                                ? 'Ready to synchronize pending records with central EyeXpert AI backend.'
+                                ? 'Ready to synchronize pending records with central Drishti database & AI backend.'
                                 : 'All captured retinal fundus cases are queued in local encrypted storage.',
                             style: const TextStyle(fontSize: 11.5, color: Colors.black87),
                           ),
