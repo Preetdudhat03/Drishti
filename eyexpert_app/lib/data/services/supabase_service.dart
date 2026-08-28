@@ -311,9 +311,25 @@ class SupabaseService {
             );
           }
 
+          FundusImageData? image;
+          final imgUrl = (row['image_url'] as String?)?.isNotEmpty == true
+              ? row['image_url'] as String
+              : (explainability?.originalImageUrl.isNotEmpty == true)
+                  ? explainability!.originalImageUrl
+                  : null;
+
+          if (imgUrl != null && imgUrl.isNotEmpty) {
+            image = FundusImageData(
+              imageId: sid,
+              imageUrl: imgUrl,
+              uploadedAt: patient.createdAt,
+            );
+          }
+
           cases.add(ScreeningCaseModel(
             screeningId: sid,
             patient: patient,
+            image: image,
             quality: quality,
             prediction: prediction,
             explainability: explainability,
