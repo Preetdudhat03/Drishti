@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class FundusImageViewer extends StatefulWidget {
@@ -114,25 +117,67 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
   }
 
   Widget _buildImage(String path) {
+    if (path.isEmpty) {
+      return _errorPlaceholder();
+    }
+
+    // 1. Base64 Encoded Image Data URI
+    if (path.startsWith('data:image')) {
+      try {
+        final commaIdx = path.indexOf(',');
+        final base64Str = commaIdx != -1 ? path.substring(commaIdx + 1) : path;
+        final bytes = base64Decode(base64Str);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => _errorPlaceholder(),
+        );
+      } catch (_) {
+        return _errorPlaceholder();
+      }
+    }
+
+    // 2. Bundled Asset
     if (path.startsWith('assets/')) {
       return Image.asset(
         path,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => _errorPlaceholder(),
       );
-    } else if (path.startsWith('http')) {
+    }
+
+    // 3. Network or Web Blob URL
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:')) {
       return Image.network(
         path,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => _errorPlaceholder(),
       );
+    }
+
+    // 4. Local File System on Device/Desktop
+    if (!kIsWeb) {
+      try {
+        final file = io.File(path);
+        if (file.existsSync()) {
+          return Image.file(
+            file,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => _errorPlaceholder(),
+          );
+        }
+      } catch (_) {}
     } else {
-      return Image.asset(
-        'assets/sample_fundus/sample_good_npdr_moderate.png',
+      // On Flutter Web, local picked paths are blob URLs
+      return Image.network(
+        path,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => _errorPlaceholder(),
       );
     }
+
+    // Fallback if file not found
+    return _errorPlaceholder();
   }
 
   Widget _errorPlaceholder() {
