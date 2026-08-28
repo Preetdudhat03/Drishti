@@ -57,13 +57,13 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Optical Quality Assessment',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+                        'Optical Quality Gate',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Session: ${session.screeningId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary),
                       ),
                     ],
                   ),
@@ -92,21 +92,23 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.deepSpace,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.lightBorder),
+                    border: Border.all(color: AppColors.borderDark),
                   ),
                   child: const Column(
                     children: [
-                      CircularProgressIndicator(color: AppColors.electricBlue, strokeWidth: 2.5),
+                      CircularProgressIndicator(color: AppColors.hudCyan, strokeWidth: 2.5),
                       SizedBox(height: 14),
                       Text(
                         'EVALUATING OPTICAL FOCUS & ANATOMICAL CHROMINANCE...',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5),
                       ),
                     ],
                   ),
-                ),              // 5. UNGRADABLE SAFETY GATE ALERT (BLOCKS INFERENCE)
+                ),
+
+              // 5. UNGRADABLE SAFETY GATE ALERT (BLOCKS INFERENCE)
               if (quality != null && quality.isUngradable) ...[
                 Container(
                   padding: const EdgeInsets.all(18),
@@ -125,7 +127,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                           const Expanded(
                             child: Text(
                               'IMAGE NOT SUITABLE FOR AUTOMATED SCREENING',
-                              style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                             ),
                           ),
                           Container(
@@ -134,7 +136,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                               color: AppColors.statusUngradable,
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text('SAFETY GATE ACTIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
+                            child: const Text('SAFETY GATE ACTIVE', style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w800)),
                           ),
                         ],
                       ),
@@ -151,7 +153,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                         child: ElevatedButton.icon(
                           onPressed: widget.onRetake,
                           icon: const Icon(Icons.replay_rounded, size: 18),
-                          label: const Text('RETAKE RETINAL IMAGE', style: TextStyle(letterSpacing: 0.5)),
+                          label: const Text('RETAKE RETINAL IMAGE', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.statusUngradable,
                             foregroundColor: Colors.white,
@@ -171,9 +173,9 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.deepSpace,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.lightBorder),
+                    border: Border.all(color: AppColors.borderDark),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,12 +185,12 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                         children: [
                           const Text(
                             'OPTICAL METRICS BREAKDOWN',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkTextSecondary, letterSpacing: 0.8),
                           ),
                           Text(
-                            'Composite Quality Score: ${AppFormatters.formatPercent(quality.overallScore)}',
+                            'Overall Quality: ${AppFormatters.formatPercent(quality.overallScore)}',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.w800,
                               color: quality.isBorderline ? AppColors.statusBorderline : AppColors.statusGood,
                             ),
@@ -197,18 +199,18 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       ),
                       const SizedBox(height: 14),
                       _metricRow('Focus & Sharpness', quality.sharpness.score, quality.sharpness.status),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       _metricRow('Illumination & Exposure', quality.illumination.score, quality.illumination.status),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       _metricRow('Retinal Field of View', quality.fieldOfView.score, quality.fieldOfView.status),
                       if (quality.isBorderline) ...[
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.statusBorderlineBg,
+                            color: AppColors.statusBorderlineDarkBg,
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.statusBorderline.withValues(alpha: 0.4)),
+                            border: Border.all(color: AppColors.statusBorderline.withValues(alpha: 0.5)),
                           ),
                           child: const Row(
                             children: [
@@ -217,7 +219,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                               Expanded(
                                 child: Text(
                                   'Borderline contrast detected: Green-channel CLAHE contrast normalization will be applied automatically prior to PyTorch inference.',
-                                  style: TextStyle(color: Color(0xFF92400E), fontSize: 11, fontWeight: FontWeight.w600),
+                                  style: TextStyle(color: Color(0xFFFDE68A), fontSize: 11, fontWeight: FontWeight.w600),
                                 ),
                               ),
                             ],
@@ -233,7 +235,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                 ElevatedButton.icon(
                   onPressed: widget.onProceedToProcessing,
                   icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                  label: const Text('PROCEED TO AI SCREENING & GRAD-CAM', style: TextStyle(letterSpacing: 0.5)),
+                  label: const Text('PROCEED TO AI INFERENCE & GRAD-CAM', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.electricBlue,
                     foregroundColor: Colors.white,
@@ -263,8 +265,8 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-            Text('${(score * 100).toStringAsFixed(1)}% • $status', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: statusColor)),
+            Text(title, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Colors.white)),
+            Text('${(score * 100).toStringAsFixed(1)}% • $status', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: statusColor)),
           ],
         ),
         const SizedBox(height: 4),
@@ -273,7 +275,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
           child: LinearProgressIndicator(
             value: score,
             minHeight: 6,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: AppColors.graphite,
             valueColor: AlwaysStoppedAnimation<Color>(statusColor),
           ),
         ),
@@ -286,13 +288,13 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
     Color bg;
     if (status.contains('GOOD')) {
       color = AppColors.statusGood;
-      bg = AppColors.statusGoodBg;
+      bg = AppColors.statusGoodDarkBg;
     } else if (status.contains('BORDER')) {
       color = AppColors.statusBorderline;
-      bg = AppColors.statusBorderlineBg;
+      bg = AppColors.statusBorderlineDarkBg;
     } else {
       color = AppColors.statusUngradable;
-      bg = AppColors.statusUngradableBg;
+      bg = AppColors.statusUngradableDarkBg;
     }
 
     return Container(
@@ -304,7 +306,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
       ),
       child: Text(
         status,
-        style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5),
+        style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 10.5, letterSpacing: 0.5),
       ),
     );
   }
