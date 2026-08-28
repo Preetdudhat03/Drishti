@@ -2015,7 +2015,7 @@ def api_v1_analyze(id):
     record["overlay_b64"] = overlay_b64
     record["infer_out"] = infer_out
     record["status"] = "READY_FOR_REVIEW"
-    SCREENING_STORE[id] = record
+    store_case_record(id, record)
     
     return jsonify({
         "screening_id": id,
