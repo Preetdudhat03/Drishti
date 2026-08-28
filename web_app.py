@@ -10,6 +10,7 @@ import json
 import uuid
 import base64
 import datetime
+import ctypes
 import numpy as np
 from PIL import Image
 from flask import Flask, request, jsonify, render_template_string
@@ -27,8 +28,32 @@ try:
 except Exception:
     pass
 
+def trim_memory():
+    gc.collect()
+    try:
+        ctypes.CDLL('libc.so.6').malloc_trim(0)
+    except Exception:
+        pass
+
+def load_and_downsample_image(file_stream, max_dim=512):
+    """
+    Safely downsamples phone camera photos (12-48MP) to 512px max dimension
+    to prevent memory spikes on 512MB RAM cloud instances.
+    """
+    img = Image.open(file_stream).convert('RGB')
+    w, h = img.size
+    if max(w, h) > max_dim:
+        scale = max_dim / float(max(w, h))
+        img = img.resize((int(w * scale), int(h * scale)), Image.Resampling.BILINEAR)
+    return img
+
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32MB max upload
+
+@app.after_request
+def after_request_callback(response):
+    trim_memory()
+    return response
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_DIR = os.path.join(ROOT_DIR, "data", "sample_demo")
 MODELS_DIR = os.path.join(ROOT_DIR, "models")
