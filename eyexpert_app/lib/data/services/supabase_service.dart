@@ -88,10 +88,8 @@ class SupabaseService {
     return UserModel(
       id: user.id,
       name: fullName,
-      email: email,
       role: role,
-      facilityId: facilityId,
-      token: response.session?.accessToken,
+      organization: facilityId,
     );
   }
 
@@ -111,10 +109,8 @@ class SupabaseService {
         return UserModel(
           id: data['id'] ?? userId,
           name: data['name'] ?? 'Medical Officer',
-          email: data['email'] ?? '',
           role: UserRole.fromString(data['role']),
-          facilityId: data['facility_id'] ?? 'PHC-01',
-          token: supa.auth.currentSession?.accessToken,
+          organization: data['facility_id'] ?? 'PHC-01',
         );
       }
     } catch (e) {
@@ -126,10 +122,8 @@ class SupabaseService {
       return UserModel(
         id: user.id,
         name: user.userMetadata?['full_name'] ?? user.email ?? 'Healthcare Worker',
-        email: user.email ?? '',
         role: UserRole.fromString(user.userMetadata?['role']),
-        facilityId: user.userMetadata?['facility_id'] ?? 'PHC-01',
-        token: supa.auth.currentSession?.accessToken,
+        organization: user.userMetadata?['facility_id'] ?? 'PHC-01',
       );
     }
     return null;
