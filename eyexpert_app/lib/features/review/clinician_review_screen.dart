@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/constants/dr_severity.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
-import '../../core/utils/responsive_layout.dart';
 import '../../data/models/screening_case_model.dart';
 import '../../data/models/clinician_review_model.dart';
 import '../../shared/widgets/clinical_card.dart';
