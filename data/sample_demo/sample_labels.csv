@@ -1,0 +1,8 @@
+id_code,diagnosis,clinical_description,expected_quality
+sample_good_normal,0,No Diabetic Retinopathy,GOOD
+sample_good_npdr_mild,1,Mild NPDR,GOOD
+sample_good_npdr_moderate,2,Moderate NPDR,GOOD
+sample_good_pdr_severe,4,Proliferative DR,GOOD
+sample_borderline_illum,2,Moderate NPDR (Low Contrast),BORDERLINE
+sample_ungradable_blur,2,Moderate NPDR (Motion Blur),UNGRADABLE
+sample_ungradable_dark,2,Moderate NPDR (Severe Dark),UNGRADABLE
