@@ -13,6 +13,8 @@ import json
 import numpy as np
 from PIL import Image
 
+sys.stdout.reconfigure(encoding='utf-8')
+
 import torch
 import torchvision.models as models
 import torchvision.transforms as transforms
