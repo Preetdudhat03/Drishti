@@ -222,7 +222,7 @@ class SupabaseService {
           'gradcam_url': exp.gradcamImageUrl,
           'target_layer': exp.targetLayer,
           'model_attended_regions': exp.modelAttendedRegions,
-          'generated_at': exp.generatedAt.toIso8601String(),
+          'generated_at': DateTime.now().toIso8601String(),
         });
       }
 
