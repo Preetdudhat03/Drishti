@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/dr_severity.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
 import '../../core/utils/responsive_layout.dart';
 import '../../core/utils/formatters.dart';
-import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/status_badge.dart';
-import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/offline_status_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../../data/models/screening_case_model.dart';
@@ -29,7 +27,11 @@ class HealthWorkerDashboard extends ConsumerWidget {
     final reviewState = ref.watch(reviewQueueProvider);
     final syncState = ref.watch(syncQueueProvider);
     final authState = ref.watch(authProvider);
-    final isTabletOrDesktop = !ResponsiveLayout.isMobile(context);
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+
+    final totalCases = reviewState.allCases.length;
+    final referableCases = reviewState.referableCount;
+    final pendingCases = reviewState.totalPendingCount;
 
     return Column(
       children: [
@@ -41,153 +43,63 @@ class HealthWorkerDashboard extends ConsumerWidget {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
-            color: AppColors.primary,
+            color: AppColors.electricBlue,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1080),
+                  constraints: const BoxConstraints(maxWidth: 1100),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Greeting & Workstation Header
-                      ClinicalCard(
-                        backgroundColor: Colors.white,
-                        borderColor: AppColors.border,
-                        padding: const EdgeInsets.all(18),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.accentLight,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.remove_red_eye_rounded, color: AppColors.accent, size: 26),
+                      // 1. HERO WORKSTATION HEADER
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: AppColors.deepSpace,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.borderDark, width: 1.2),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
                             ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Good morning, ${authState.user?.name ?? "Health Worker"}',
-                                    style: AppTypography.pageHeading,
-                                  ),
-                                  const SizedBox(height: 3),
-                                  const Text(
-                                    'AI-assisted retinal screening • Primary Health Centre Ramgarh',
-                                    style: AppTypography.bodySecondary,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (isTabletOrDesktop)
-                              PrimaryButton(
-                                text: '+ START NEW SCREENING',
-                                icon: Icons.add_a_photo_rounded,
-                                onPressed: onStartScreening,
-                              ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Metrics Grid (2x2 on mobile, 4x1 on tablet/desktop)
-                      GridView.count(
-                        crossAxisCount: isTabletOrDesktop ? 4 : 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: isTabletOrDesktop ? 1.4 : 1.25,
-                        children: [
-                          _metricCard(
-                            title: "Today's Screened",
-                            value: '${reviewState.totalScreenedCount}',
-                            subtitle: 'Active session',
-                            icon: Icons.check_circle_outline_rounded,
-                            color: AppColors.primary,
-                          ),
-                          _metricCard(
-                            title: 'Pending Review',
-                            value: '${reviewState.totalPendingCount}',
-                            subtitle: 'Awaiting clinician',
-                            icon: Icons.hourglass_empty_rounded,
-                            color: AppColors.pending,
-                          ),
-                          _metricCard(
-                            title: 'Referable Cases',
-                            value: '${reviewState.referableCount}',
-                            subtitle: 'Level >= 2 (Urgent)',
-                            icon: Icons.warning_amber_rounded,
-                            color: AppColors.referableAlert,
-                          ),
-                          _metricCard(
-                            title: 'Recapture Needed',
-                            value: '${reviewState.recaptureNeededCount}',
-                            subtitle: 'Ungradable / blur',
-                            icon: Icons.replay_rounded,
-                            color: AppColors.statusUngradable,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Large Start Screening Button on Mobile
-                      if (!isTabletOrDesktop) ...[
-                        PrimaryButton(
-                          text: '+ START NEW SCREENING',
-                          icon: Icons.camera_alt_outlined,
-                          height: 52,
-                          onPressed: onStartScreening,
-                        ),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Recent Screening Activity Table
-                      ClinicalCard(
-                        title: 'Recent Screening Sessions',
-                        titleAction: TextButton(
-                          onPressed: onViewCases,
-                          child: const Text('View All Cases', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.accent)),
-                        ),
-                        child: reviewState.cases.isEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 24),
-                                child: Center(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
                                   child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Icon(Icons.inbox_outlined, size: 36, color: Colors.grey.shade400),
-                                      const SizedBox(height: 8),
                                       Text(
-                                        'No active screening sessions yet',
-                                        style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                                        'Good morning, ${authState.user?.name ?? "Health Worker"}',
+                                        style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                          letterSpacing: -0.3,
+                                        ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Tap "+ START NEW SCREENING" to begin',
-                                        style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
+                                        'AI Retinal Screening Workstation • ${authState.user?.facilityId ?? "PHC-RAMGARH-01"}',
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          color: AppColors.darkTextSecondary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              )
-                            : ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: reviewState.cases.take(4).length,
-                                separatorBuilder: (_, __) => const Divider(height: 12),
-                                itemBuilder: (context, index) {
-                                  final c = reviewState.cases[index];
-                                  final pred = c.prediction;
-                                  final isUngradable = c.quality?.isUngradable ?? false;
-                                  final isReferable = pred?.referable ?? false;
-
-                                  final subtitleText = isUngradable
-                                      ? 'Quality: UNGRADABLE • Recapture Required'
-                                      : pred != null
                                           ? 'AI: Level ${pred.drLevel} (${pred.severityLabel}) • Prob: ${AppFormatters.formatProbability(pred.modelProbability)}'
                                           : c.status == ScreeningStatus.awaitingImage
                                               ? 'Awaiting retinal image capture'

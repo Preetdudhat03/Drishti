@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
-import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/workflow_step_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import 'screening_session_provider.dart';
 
@@ -64,35 +63,50 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 680),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
-              const Text(
-                'New Retinal Screening Session',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Enter minimal patient identifiers to initialize image capture session.',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 14),
+              // 1. STEP PROGRESS INDICATOR
+              const WorkflowStepBar(currentStep: 1),
+              const SizedBox(height: 16),
 
-              // Intake Form Card
-              ClinicalCard(
-                title: 'Patient Information',
+              // 2. HEADER
+              const Text(
+                'Patient & Screening Intake',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
+              ),
+              const SizedBox(height: 3),
+              const Text(
+                'Initialize patient record and designate examination eye before retinal imaging.',
+                style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+
+              // 3. INTAKE FORM CONTAINER
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.lightBorder),
+                ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Text(
+                      'PATIENT IDENTIFIERS',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
+                    ),
+                    const SizedBox(height: 12),
                     TextField(
                       controller: _patientIdController,
                       decoration: const InputDecoration(
                         labelText: 'Patient Identifier / Screening Token *',
-                        prefixIcon: Icon(Icons.tag_rounded, size: 20),
+                        prefixIcon: Icon(Icons.tag_rounded, size: 20, color: AppColors.electricBlue),
                         hintText: 'e.g. PT-2026-8819',
                       ),
                     ),
@@ -143,93 +157,115 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Eye Selection (OD / OS) Card
-              ClinicalCard(
-                title: 'Select Eye for Examination',
-                child: Row(
+              // 4. EYE SELECTION CONTAINER
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.lightBorder),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => setState(() => _selectedEye = 'OD'),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: _selectedEye == 'OD' ? AppColors.primary.withOpacity(0.1) : Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _selectedEye == 'OD' ? AppColors.primary : Colors.grey.shade300,
-                              width: _selectedEye == 'OD' ? 2 : 1,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: _selectedEye == 'OD' ? AppColors.primary : Colors.grey,
-                                size: 28,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'RIGHT EYE (OD)',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: _selectedEye == 'OD' ? AppColors.primary : Colors.black87,
-                                ),
-                              ),
-                              const Text('Oculus Dexter', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                            ],
-                          ),
-                        ),
-                      ),
+                    const Text(
+                      'TARGET RETINAL FIELD',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 0.8),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => setState(() => _selectedEye = 'OS'),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: _selectedEye == 'OS' ? AppColors.primary.withOpacity(0.1) : Colors.white,
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () => setState(() => _selectedEye = 'OD'),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _selectedEye == 'OS' ? AppColors.primary : Colors.grey.shade300,
-                              width: _selectedEye == 'OS' ? 2 : 1,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: _selectedEye == 'OS' ? AppColors.primary : Colors.grey,
-                                size: 28,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'LEFT EYE (OS)',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: _selectedEye == 'OS' ? AppColors.primary : Colors.black87,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: _selectedEye == 'OD' ? AppColors.accentLight : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: _selectedEye == 'OD' ? AppColors.electricBlue : AppColors.lightBorder,
+                                  width: _selectedEye == 'OD' ? 2 : 1,
                                 ),
                               ),
-                              const Text('Oculus Sinister', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                            ],
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.remove_red_eye_outlined,
+                                    color: _selectedEye == 'OD' ? AppColors.electricBlue : AppColors.textMuted,
+                                    size: 28,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'RIGHT EYE (OD)',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                      color: _selectedEye == 'OD' ? AppColors.electricBlue : AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const Text('Oculus Dexter', style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () => setState(() => _selectedEye = 'OS'),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: _selectedEye == 'OS' ? AppColors.accentLight : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: _selectedEye == 'OS' ? AppColors.electricBlue : AppColors.lightBorder,
+                                  width: _selectedEye == 'OS' ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.remove_red_eye_outlined,
+                                    color: _selectedEye == 'OS' ? AppColors.electricBlue : AppColors.textMuted,
+                                    size: 28,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'LEFT EYE (OS)',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                      color: _selectedEye == 'OS' ? AppColors.electricBlue : AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const Text('Oculus Sinister', style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
 
-              PrimaryButton(
-                text: 'Proceed to Retinal Image Capture',
-                icon: Icons.camera_alt_rounded,
+              // 5. SUBMIT ACTION
+              ElevatedButton.icon(
                 onPressed: _handleSubmit,
+                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                label: const Text('PROCEED TO RETINAL IMAGE CAPTURE', style: TextStyle(letterSpacing: 0.5)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.electricBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
               ),
               const SizedBox(height: 16),
 

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/dr_severity.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 
 class ProbabilityDistributionWidget extends StatelessWidget {
   final Map<int, double> classProbabilities;
   final int predictedLevel;
+  final bool isDark;
 
   const ProbabilityDistributionWidget({
     super.key,
     required this.classProbabilities,
     required this.predictedLevel,
+    this.isDark = false,
   });
 
   @override
@@ -37,20 +40,30 @@ class ProbabilityDistributionWidget extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 7,
+                    height: 7,
                     decoration: BoxDecoration(
                       color: severity.color,
                       shape: BoxShape.circle,
+                      boxShadow: isPredicted
+                          ? [
+                              BoxShadow(
+                                color: severity.color.withValues(alpha: 0.6),
+                                blurRadius: 4,
+                              ),
+                            ]
+                          : null,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
-                    'Level $level: ${severity.shortName}',
+                    'L$level: ${severity.shortName}',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: isPredicted ? FontWeight.w700 : FontWeight.w500,
-                      color: isPredicted ? Colors.black87 : Colors.grey.shade700,
+                      fontWeight: isPredicted ? FontWeight.w800 : FontWeight.w500,
+                      color: isPredicted
+                          ? (isDark ? Colors.white : AppColors.textPrimary)
+                          : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -59,21 +72,23 @@ class ProbabilityDistributionWidget extends StatelessWidget {
                 AppFormatters.formatProbability(prob),
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: isPredicted ? FontWeight.w700 : FontWeight.w500,
-                  color: isPredicted ? severity.color : Colors.grey.shade700,
+                  fontWeight: isPredicted ? FontWeight.w800 : FontWeight.w600,
+                  color: isPredicted
+                      ? severity.color
+                      : (isDark ? AppColors.darkTextMuted : AppColors.textMuted),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
               value: prob,
-              minHeight: isPredicted ? 8 : 6,
-              backgroundColor: Colors.grey.shade200,
+              minHeight: isPredicted ? 7 : 5,
+              backgroundColor: isDark ? AppColors.elevatedSurface : Colors.grey.shade200,
               valueColor: AlwaysStoppedAnimation<Color>(
-                isPredicted ? severity.color : severity.color.withOpacity(0.5),
+                isPredicted ? severity.color : severity.color.withValues(alpha: 0.40),
               ),
             ),
           ),

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
-import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/status_badge.dart';
-import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/fundus_image_viewer.dart';
+import '../../shared/widgets/workflow_step_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../screening/screening_session_provider.dart';
 
@@ -37,16 +35,21 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
     final session = ref.watch(screeningSessionProvider);
     final quality = session.quality;
     final isEvaluating = session.isProcessing;
+    final patient = session.patient;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 750),
+          constraints: const BoxConstraints(maxWidth: 860),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
+              // 1. WORKFLOW STEP INDICATOR
+              const WorkflowStepBar(currentStep: 3),
+              const SizedBox(height: 16),
+
+              // 2. HEADER
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -54,115 +57,78 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Image Quality Assessment',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        'Optical Quality Assessment',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
                       ),
+                      const SizedBox(height: 2),
                       Text(
-                        'Screening ID: ${session.screeningId ?? "N/A"} • Eye: ${session.patient?.eye ?? "OD"}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        'Session: ${session.screeningId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],
                   ),
                   if (quality != null)
-                    quality.isUngradable
-                        ? StatusBadge.ungradable(isLarge: true)
-                        : quality.isBorderline
-                            ? StatusBadge.borderline(isLarge: true)
-                            : StatusBadge.good(isLarge: true),
+                    _qualityPill(quality.status.name.toUpperCase()),
                 ],
               ),
-              if (session.errorMessage != null) ...[
-                // Explicit Actionable Error Card
-                ClinicalCard(
-                  padding: const EdgeInsets.all(20),
+              const SizedBox(height: 14),
+
+              // 3. RETINAL VIEWPORT (HERO CANVAS)
+              if (session.imagePath != null)
+                FundusImageViewer(
+                  originalImagePath: session.imagePath!,
+                  enhancedImagePath: session.imagePath,
+                  mode: quality?.isBorderline == true ? FundusViewerMode.compare : FundusViewerMode.original,
+                  height: 380,
+                  eyeTag: patient?.eye,
+                  imageId: session.screeningId,
+                  qualityLabel: quality?.status.name.toUpperCase(),
+                  showControls: quality?.isBorderline == true,
+                ),
+              const SizedBox(height: 14),
+
+              // 4. LOADING STATE
+              if (isEvaluating)
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.lightBorder),
+                  ),
+                  child: const Column(
+                    children: [
+                      CircularProgressIndicator(color: AppColors.electricBlue, strokeWidth: 2.5),
+                      SizedBox(height: 14),
+                      Text(
+                        'EVALUATING OPTICAL FOCUS & ANATOMICAL CHROMINANCE...',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Running OpenCV Laplacian variance & retinal FOV coverage checks',
+                        style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // 5. UNGRADABLE SAFETY GATE ALERT (BLOCKS INFERENCE)
+              if (quality != null && quality.isUngradable) ...[
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.statusUngradableDarkBg,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.statusUngradable, width: 1.5),
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFEE2E2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.error_outline_rounded, color: AppColors.statusUngradable, size: 28),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Quality Assessment Error',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'An issue occurred while evaluating the retinal fundus image.',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFFCA5A5)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'ERROR DETAILS & DIAGNOSTICS:',
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF991B1B)),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              session.errorMessage!,
-                              style: const TextStyle(fontSize: 12, color: Color(0xFF7F1D1D), fontWeight: FontWeight.w500),
-                            ),
-                            if (session.imagePath != null) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                'File: ${session.imagePath}',
-                                style: const TextStyle(fontSize: 10, color: Color(0xFF991B1B)),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: PrimaryButton(
-                              text: 'Retry Assessment',
-                              icon: Icons.refresh_rounded,
-                              onPressed: () {
-                                ref.read(screeningSessionProvider.notifier).runQualityAssessment();
-                              },
-                            ),
-                          ),
+                          const Icon(Icons.dangerous_rounded, color: AppColors.statusUngradable, size: 24),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: widget.onRetake,
-                              icon: const Icon(Icons.camera_alt_outlined),
-                              label: const Text('Recapture Image'),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
