@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/utils/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/user_model.dart';
+import 'eyexpert_logo.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
   final int currentIndex;
@@ -33,12 +34,12 @@ class ResponsiveScaffold extends StatelessWidget {
         NavigationDestination(
           icon: Icon(Icons.rate_review_outlined),
           selectedIcon: Icon(Icons.rate_review_rounded),
-          label: 'Reviews',
+          label: 'Review Queue',
         ),
         NavigationDestination(
           icon: Icon(Icons.analytics_outlined),
           selectedIcon: Icon(Icons.analytics_rounded),
-          label: 'System',
+          label: 'System Status',
         ),
         NavigationDestination(
           icon: Icon(Icons.person_outline),
@@ -52,7 +53,7 @@ class ResponsiveScaffold extends StatelessWidget {
       NavigationDestination(
         icon: Icon(Icons.dashboard_outlined),
         selectedIcon: Icon(Icons.dashboard_rounded),
-        label: 'Dashboard',
+        label: 'Home',
       ),
       NavigationDestination(
         icon: Icon(Icons.camera_enhance_outlined),
@@ -85,54 +86,66 @@ class ResponsiveScaffold extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    title,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Mode Pill
-                InkWell(
-                  onTap: onModeSwitchPressed,
-                  borderRadius: BorderRadius.circular(4),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: workflowMode == 'VALIDATION'
-                          ? AppColors.secondary.withOpacity(0.15)
-                          : AppColors.primary.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: workflowMode == 'VALIDATION' ? AppColors.secondary : AppColors.primary,
-                        width: 0.8,
-                      ),
-                    ),
-                    child: Text(
-                      workflowMode == 'VALIDATION'
-                          ? 'VALIDATION: REAL APTOS'
-                          : 'DEMO: SIMULATED WORKFLOW',
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
-                        color: workflowMode == 'VALIDATION' ? AppColors.secondary : AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            EyeXpertLogo(
+              size: 26,
+              showText: false,
+              color: Colors.white,
             ),
-            if (currentUser != null)
-              Text(
-                '${currentUser!.isDemoAccount ? "DEMO " : ""}${currentUser!.role.displayName.toUpperCase()} • ${currentUser!.name}',
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Mode Pill
+                      InkWell(
+                        onTap: onModeSwitchPressed,
+                        borderRadius: BorderRadius.circular(4),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: workflowMode == 'VALIDATION'
+                                ? Colors.tealAccent.withOpacity(0.15)
+                                : Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: workflowMode == 'VALIDATION' ? Colors.tealAccent : Colors.white60,
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            workflowMode == 'VALIDATION'
+                                ? 'VALIDATION MODE: REAL APTOS'
+                                : 'DEMO MODE: SIMULATED WORKFLOW',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              color: workflowMode == 'VALIDATION' ? Colors.tealAccent : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (currentUser != null)
+                    Text(
+                      '${currentUser!.isDemoAccount ? "DEMO " : ""}${currentUser!.role.displayName.toUpperCase()} • ${currentUser!.name}',
+                      style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w500),
+                    ),
+                ],
               ),
+            ),
           ],
         ),
         actions: actions,
@@ -141,6 +154,7 @@ class ResponsiveScaffold extends StatelessWidget {
         children: [
           if (isDesktop || isTablet)
             NavigationRail(
+              backgroundColor: Colors.white,
               selectedIndex: currentIndex.clamp(0, destinations.length - 1),
               onDestinationSelected: onNavigationIndexChanged,
               labelType: isDesktop
@@ -151,17 +165,19 @@ class ResponsiveScaffold extends StatelessWidget {
                     (d) => NavigationRailDestination(
                       icon: d.icon,
                       selectedIcon: d.selectedIcon,
-                      label: Text(d.label),
+                      label: Text(d.label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                     ),
                   )
                   .toList(),
             ),
-          if (isDesktop || isTablet) const VerticalDivider(thickness: 1, width: 1),
+          if (isDesktop || isTablet) const VerticalDivider(thickness: 1, width: 1, color: AppColors.border),
           Expanded(child: body),
         ],
       ),
       bottomNavigationBar: (!isDesktop && !isTablet)
           ? NavigationBar(
+              backgroundColor: Colors.white,
+              indicatorColor: AppColors.accentLight,
               selectedIndex: currentIndex.clamp(0, destinations.length - 1),
               onDestinationSelected: onNavigationIndexChanged,
               destinations: destinations,
