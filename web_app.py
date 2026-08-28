@@ -86,12 +86,12 @@ def assess_image_quality(img_rgb):
         status = "UNGRADABLE"
         if not feedback:
             feedback.append("Overall quality insufficient for automated diagnosis. Recapture required.")
-    elif overall_score >= 0.70:
-        status = "GOOD"
-        feedback = ["Image quality is optimal for automated DR screening."]
-    else:
+    elif sharp_score < 0.55 or illum_score < 0.50 or overall_score < 0.70:
         status = "BORDERLINE"
         feedback = ["Image is borderline. Adaptive CLAHE enhancement will be applied."]
+    else:
+        status = "GOOD"
+        feedback = ["Image quality is optimal for automated DR screening."]
 
     return {
         "status": status,
