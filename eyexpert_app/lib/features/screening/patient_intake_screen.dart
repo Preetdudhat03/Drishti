@@ -83,30 +83,6 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Demo Patient Quick Selection Pills
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: [
-                  ActionChip(
-                    avatar: const Icon(Icons.person_pin, size: 16),
-                    label: const Text('Demo Pt #1 (OD - Moderate)', style: TextStyle(fontSize: 11)),
-                    onPressed: () => _autofillDemoPatient('PT-2026-8819', '54', 'FEMALE', '8', 'OD'),
-                  ),
-                  ActionChip(
-                    avatar: const Icon(Icons.person_pin, size: 16),
-                    label: const Text('Demo Pt #2 (OS - Severe)', style: TextStyle(fontSize: 11)),
-                    onPressed: () => _autofillDemoPatient('PT-2026-7734', '62', 'MALE', '14', 'OS'),
-                  ),
-                  ActionChip(
-                    avatar: const Icon(Icons.person_pin, size: 16),
-                    label: const Text('Demo Pt #3 (OD - Normal)', style: TextStyle(fontSize: 11)),
-                    onPressed: () => _autofillDemoPatient('PT-2026-5402', '39', 'MALE', '2', 'OD'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
               // Intake Form Card
               ClinicalCard(
                 title: 'Patient Information',
