@@ -6,10 +6,8 @@ import '../../core/utils/formatters.dart';
 import '../../data/models/screening_case_model.dart';
 import '../../data/models/patient_model.dart';
 import '../../data/services/report_service.dart';
-import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/primary_button.dart';
-import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../screening/screening_session_provider.dart';
 
 class ScreeningReportScreen extends ConsumerStatefulWidget {
