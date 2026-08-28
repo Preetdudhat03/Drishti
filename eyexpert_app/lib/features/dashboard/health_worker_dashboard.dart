@@ -403,41 +403,49 @@ class HealthWorkerDashboard extends ConsumerWidget {
     );
   }
 
-            offset: Offset(0, 1),
+  Widget _statusIndicator(IconData icon, String label, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  Widget _triageMetric(String label, String count, Color color) {
+    return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Icon(icon, size: 18, color: color),
-            ],
-          ),
           Text(
-            value,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, letterSpacing: -0.5),
+            label,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted),
           ),
+          const SizedBox(height: 2),
           Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+            count,
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _triageDivider() {
+    return Container(
+      height: 32,
+      width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      color: AppColors.lightBorder,
     );
   }
 }
