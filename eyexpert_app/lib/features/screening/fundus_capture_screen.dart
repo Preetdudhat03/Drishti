@@ -105,28 +105,30 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Retinal Fundus Image Acquisition',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.3),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Patient: ${patient?.patientId ?? "N/A"} • Target: ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Retinal Image Acquisition',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • Session: ${session.screeningId ?? "Pending"}',
+                          style: const TextStyle(fontSize: 11.5, color: AppColors.darkTextSecondary),
+                        ),
+                      ],
+                    ),
                   ),
                   OutlinedButton(
                     onPressed: widget.onCancel,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      side: const BorderSide(color: AppColors.lightBorder),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      foregroundColor: AppColors.darkTextSecondary,
+                      side: const BorderSide(color: AppColors.borderDark),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     ),
-                    child: const Text('Cancel Session', style: TextStyle(fontSize: 12)),
+                    child: const Text('Cancel Session', style: TextStyle(fontSize: 11.5)),
                   ),
                 ],
               ),
@@ -249,7 +251,7 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
                       icon: const Icon(Icons.camera_alt_rounded, size: 18),
-                      label: const Text('Capture with Camera'),
+                      label: const Text('Capture with Camera', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.electricBlue,
                         foregroundColor: Colors.white,
@@ -263,10 +265,11 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined, size: 18),
-                      label: const Text('Upload Image File'),
+                      label: const Text('Upload Image File', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        foregroundColor: AppColors.textPrimary,
+                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.deepSpace,
                         side: const BorderSide(color: AppColors.borderDark),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -280,50 +283,51 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.deepSpace,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.lightBorder),
+                  border: Border.all(color: AppColors.borderDark),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.science_outlined, color: AppColors.electricBlue, size: 18),
+                    const Icon(Icons.science_outlined, color: AppColors.hudCyan, size: 18),
                     const SizedBox(width: 10),
                     Expanded(
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
+                          dropdownColor: AppColors.deepSpace,
                           isExpanded: true,
                           hint: const Text(
                             'Load Clinical Benchmark Sample (APTOS Dataset)...',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70),
                           ),
                           items: const [
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_normal.png',
-                              child: Text('Normal Retina — Level 0 (Non-Referable)', style: TextStyle(fontSize: 12)),
+                              child: Text('Normal Retina — Level 0 (Non-Referable)', style: TextStyle(fontSize: 12, color: Colors.white)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_npdr_mild.png',
-                              child: Text('Mild NPDR — Level 1 (Non-Referable)', style: TextStyle(fontSize: 12)),
+                              child: Text('Mild NPDR — Level 1 (Non-Referable)', style: TextStyle(fontSize: 12, color: Colors.white)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_npdr_moderate.png',
-                              child: Text('Moderate NPDR — Level 2 (Referable Alert)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              child: Text('Moderate NPDR — Level 2 (Referable Alert)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.statusBorderline)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_pdr_severe.png',
-                              child: Text('Proliferative DR — Level 4 (Severe Referable)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              child: Text('Proliferative DR — Level 4 (Severe Referable)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.referableAlert)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_borderline_illum.png',
-                              child: Text('Borderline Illumination (CLAHE Enhancement Target)', style: TextStyle(fontSize: 12)),
+                              child: Text('Borderline Illumination (CLAHE Enhancement Target)', style: TextStyle(fontSize: 12, color: Colors.white70)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_ungradable_blur.png',
-                              child: Text('Ungradable Motion Blur (Safety Gate Rejection)', style: TextStyle(fontSize: 12)),
+                              child: Text('Ungradable Motion Blur (Safety Gate Rejection)', style: TextStyle(fontSize: 12, color: AppColors.statusUngradable)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_ungradable_dark.png',
-                              child: Text('Ungradable Underexposed (Safety Gate Rejection)', style: TextStyle(fontSize: 12)),
+                              child: Text('Ungradable Underexposed (Safety Gate Rejection)', style: TextStyle(fontSize: 12, color: AppColors.statusUngradable)),
                             ),
                           ],
                           onChanged: (val) {
@@ -341,11 +345,12 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
               ElevatedButton.icon(
                 onPressed: _selectedImagePath != null ? _confirmImage : null,
                 icon: const Icon(Icons.verified_outlined, size: 18),
-                label: const Text('CONFIRM & EVALUATE IMAGE QUALITY', style: TextStyle(letterSpacing: 0.5)),
+                label: const Text('CONFIRM & EVALUATE IMAGE QUALITY', style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.w800)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.electricBlue,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledBackgroundColor: AppColors.graphite,
+                  disabledForegroundColor: AppColors.darkTextMuted,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
