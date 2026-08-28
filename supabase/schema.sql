@@ -143,6 +143,8 @@ CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON public.audit_events(timestamp 
 -- ----------------------------------------------------------------------------
 -- 8. ROW LEVEL SECURITY (RLS) POLICIES
 -- ----------------------------------------------------------------------------
+-- 8. ROW LEVEL SECURITY (RLS) POLICIES (IDEMPOTENT)
+-- ----------------------------------------------------------------------------
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.screenings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quality_assessments ENABLE ROW LEVEL SECURITY;
@@ -151,7 +153,44 @@ ALTER TABLE public.explainability_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clinician_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_events ENABLE ROW LEVEL SECURITY;
 
--- Allow public and authenticated health workers & clinicians full read/write access
+-- Drop existing policies if they already exist
+DROP POLICY IF EXISTS "Allow public read screenings" ON public.screenings;
+DROP POLICY IF EXISTS "Allow public insert screenings" ON public.screenings;
+DROP POLICY IF EXISTS "Allow public update screenings" ON public.screenings;
+DROP POLICY IF EXISTS "Allow authenticated read screenings" ON public.screenings;
+DROP POLICY IF EXISTS "Allow authenticated insert screenings" ON public.screenings;
+DROP POLICY IF EXISTS "Allow authenticated update screenings" ON public.screenings;
+
+DROP POLICY IF EXISTS "Allow public read quality" ON public.quality_assessments;
+DROP POLICY IF EXISTS "Allow public insert quality" ON public.quality_assessments;
+DROP POLICY IF EXISTS "Allow authenticated read quality" ON public.quality_assessments;
+DROP POLICY IF EXISTS "Allow authenticated insert quality" ON public.quality_assessments;
+
+DROP POLICY IF EXISTS "Allow public read predictions" ON public.ai_predictions;
+DROP POLICY IF EXISTS "Allow public insert predictions" ON public.ai_predictions;
+DROP POLICY IF EXISTS "Allow authenticated read predictions" ON public.ai_predictions;
+DROP POLICY IF EXISTS "Allow authenticated insert predictions" ON public.ai_predictions;
+
+DROP POLICY IF EXISTS "Allow public read explainability" ON public.explainability_results;
+DROP POLICY IF EXISTS "Allow public insert explainability" ON public.explainability_results;
+DROP POLICY IF EXISTS "Allow authenticated read explainability" ON public.explainability_results;
+DROP POLICY IF EXISTS "Allow authenticated insert explainability" ON public.explainability_results;
+
+DROP POLICY IF EXISTS "Allow public read reviews" ON public.clinician_reviews;
+DROP POLICY IF EXISTS "Allow public insert reviews" ON public.clinician_reviews;
+DROP POLICY IF EXISTS "Allow public update reviews" ON public.clinician_reviews;
+DROP POLICY IF EXISTS "Allow authenticated read reviews" ON public.clinician_reviews;
+DROP POLICY IF EXISTS "Allow authenticated insert reviews" ON public.clinician_reviews;
+
+DROP POLICY IF EXISTS "Allow public insert audit" ON public.audit_events;
+DROP POLICY IF EXISTS "Allow public read audit" ON public.audit_events;
+DROP POLICY IF EXISTS "Allow authenticated insert audit" ON public.audit_events;
+
+DROP POLICY IF EXISTS "Allow public read profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Allow user update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Allow authenticated read profiles" ON public.profiles;
+
+-- Create public & authenticated RLS policies
 CREATE POLICY "Allow public read screenings" ON public.screenings
     FOR SELECT TO public USING (true);
 
@@ -201,12 +240,17 @@ CREATE POLICY "Allow user update own profile" ON public.profiles
     FOR UPDATE TO public USING (true);
 
 -- ----------------------------------------------------------------------------
--- 9. STORAGE BUCKET SETUP
+-- 9. STORAGE BUCKET SETUP (IDEMPOTENT)
 -- ----------------------------------------------------------------------------
 -- Insert the public/private fundus storage bucket
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('fundus-images', 'fundus-images', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- Drop old storage policies before re-creating
+DROP POLICY IF EXISTS "Allow public uploads to fundus-images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow public read from fundus-images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated uploads to fundus-images" ON storage.objects;
 
 -- Storage RLS policy
 CREATE POLICY "Allow public uploads to fundus-images"
