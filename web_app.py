@@ -1823,6 +1823,18 @@ function snapCameraFrame() {
 """
 
 # ----------------- FLASK API ENDPOINTS -----------------
+@app.route('/health')
+@app.route('/ping')
+@app.route('/healthz')
+@app.route('/api/health')
+@app.route('/api/ping')
+def health_check():
+    """
+    Ultra-lightweight health check endpoint (<50 bytes) for cron-job.org / uptime monitoring.
+    Prevents 'output too large' errors and keeps Render container alive.
+    """
+    return jsonify({"status": "ok", "service": "drishti-ai"}), 200
+
 @app.route('/')
 def index():
     return render_template_string(
