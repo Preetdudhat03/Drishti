@@ -219,7 +219,7 @@ class ReportService {
 
   static pw.Widget _pdfInfoCol(String label, String value) {
     return pw.Column(
-      crossContent: pw.CrossAxisAlignment.start,
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(label, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
         pw.SizedBox(height: 2),
