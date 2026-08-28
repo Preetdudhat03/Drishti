@@ -21,13 +21,96 @@ class WorkflowStepBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 560;
+        final isMobile = constraints.maxWidth < 520;
 
+        if (isMobile) {
+          final stepNum = currentStep.clamp(1, 5);
+          final stepLabel = steps[stepNum - 1];
+
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.deepSpace,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.borderDark),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.electricBlue.withValues(alpha: 0.20),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: AppColors.electricBlue.withValues(alpha: 0.50)),
+                          ),
+                          child: Text(
+                            'STEP 0$stepNum / 05',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.electricBlue,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          stepLabel,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: List.generate(5, (idx) {
+                        final s = idx + 1;
+                        final done = s < currentStep;
+                        final active = s == currentStep;
+                        return Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.only(left: 4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: done
+                                ? AppColors.electricBlue
+                                : active
+                                    ? AppColors.hudCyan
+                                    : AppColors.borderDark,
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: currentStep / 5.0,
+                    backgroundColor: AppColors.graphite,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.electricBlue),
+                    minHeight: 3,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Desktop / Tablet 5-Step Connected Pipeline
         return Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: isCompact ? 10 : 16,
-            vertical: 10,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.deepSpace,
             borderRadius: BorderRadius.circular(10),
@@ -36,13 +119,12 @@ class WorkflowStepBar extends StatelessWidget {
           child: Row(
             children: List.generate(steps.length * 2 - 1, (index) {
               if (index.isOdd) {
-                // Connector line
                 final stepIndex = (index ~/ 2) + 1;
                 final isPassed = stepIndex < currentStep;
                 return Expanded(
                   child: Container(
                     height: 2,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
                     color: isPassed ? AppColors.electricBlue : AppColors.borderDark,
                   ),
                 );
@@ -53,15 +135,12 @@ class WorkflowStepBar extends StatelessWidget {
               final isActive = stepNum == currentStep;
               final isCompleted = stepNum < currentStep;
 
-              // On compact screens, only show label for active step; on wider screens show all
-              final showLabel = !isCompact || isActive;
-
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 22,
-                    height: 22,
+                    width: 24,
+                    height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isCompleted
@@ -80,33 +159,31 @@ class WorkflowStepBar extends StatelessWidget {
                     ),
                     child: Center(
                       child: isCompleted
-                          ? const Icon(Icons.check, size: 12, color: Colors.white)
+                          ? const Icon(Icons.check, size: 13, color: Colors.white)
                           : Text(
                               '0$stepNum',
                               style: TextStyle(
-                                fontSize: 9.5,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w800,
                                 color: isActive ? AppColors.electricBlue : AppColors.darkTextMuted,
                               ),
                             ),
                     ),
                   ),
-                  if (showLabel) ...[
-                    const SizedBox(width: 5),
-                    Text(
-                      stepLabel,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
-                        color: isActive
-                            ? Colors.white
-                            : isCompleted
-                                ? AppColors.darkTextSecondary
-                                : AppColors.darkTextMuted,
-                        letterSpacing: 0.3,
-                      ),
+                  const SizedBox(width: 6),
+                  Text(
+                    stepLabel,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                      color: isActive
+                          ? Colors.white
+                          : isCompleted
+                              ? AppColors.darkTextSecondary
+                              : AppColors.darkTextMuted,
+                      letterSpacing: 0.3,
                     ),
-                  ],
+                  ),
                 ],
               );
             }),
