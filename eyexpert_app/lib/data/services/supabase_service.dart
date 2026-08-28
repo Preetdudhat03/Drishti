@@ -181,7 +181,12 @@ class SupabaseService {
     if (supa == null) return false;
 
     try {
-      // 1. Insert into 'screenings'
+      // 1. Insert into 'screenings' (with image_url included)
+      final imgUrl = screeningCase.fundusImage?.imageUrl ??
+          screeningCase.fundusImage?.localPath ??
+          screeningCase.imagePath ??
+          screeningCase.explainability?.originalImageUrl;
+
       await supa.from('screenings').upsert({
         'screening_id': screeningCase.screeningId,
         'patient_id': screeningCase.patient.patientId,
@@ -192,6 +197,7 @@ class SupabaseService {
         'eye': screeningCase.patient.eye,
         'facility_id': screeningCase.patient.facilityId,
         'status': screeningCase.status.label,
+        if (imgUrl != null && imgUrl.isNotEmpty) 'image_url': imgUrl,
         'created_at': screeningCase.createdAt.toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       });
@@ -215,6 +221,9 @@ class SupabaseService {
       // 3. Insert into 'ai_predictions' if available
       if (screeningCase.prediction != null) {
         final p = screeningCase.prediction!;
+        final Map<String, double> strClassProbs = {};
+        p.classProbabilities.forEach((k, v) => strClassProbs[k.toString()] = v);
+
         await supa.from('ai_predictions').upsert({
           'screening_id': screeningCase.screeningId,
           'dr_level': p.drLevel,
@@ -222,7 +231,7 @@ class SupabaseService {
           'referable': p.referable,
           'model_probability': p.modelProbability,
           'calibrated_confidence': p.calibratedConfidence,
-          'class_probabilities': p.classProbabilities,
+          'class_probabilities': strClassProbs,
           'review_priority': p.referable ? 'HIGH' : 'NORMAL',
           'recommendation': p.recommendation,
           'model_version': p.provenance.modelId,
