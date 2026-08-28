@@ -53,7 +53,6 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
   late FundusViewerMode _currentMode;
   late double _opacity;
   double _splitRatio = 0.50; // For comparison slider (0.0 to 1.0)
-  bool _isFullscreen = false;
 
   @override
   void initState() {
@@ -82,7 +81,7 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
     final hasGradcam = widget.gradcamImagePath != null && widget.gradcamImagePath!.isNotEmpty;
     final hasEnhanced = widget.enhancedImagePath != null && widget.enhancedImagePath!.isNotEmpty;
 
-    final viewerBody = Container(
+    return Container(
       height: widget.height,
       decoration: BoxDecoration(
         color: AppColors.obsidian,
@@ -149,18 +148,17 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
                     if (widget.imageId != null) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.deepSpace.withValues(alpha: 0.85),
+                          color: AppColors.deepSpace.withValues(alpha: 0.80),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: AppColors.borderDark),
                         ),
                         child: Text(
                           widget.imageId!,
                           style: const TextStyle(
                             color: AppColors.darkTextSecondary,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 10,
+                            fontFamily: 'monospace',
                           ),
                         ),
                       ),
@@ -171,112 +169,34 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.deepSpace.withValues(alpha: 0.85),
+                      color: AppColors.deepSpace.withValues(alpha: 0.90),
                       borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: AppColors.statusGood.withValues(alpha: 0.5)),
+                      border: Border.all(color: AppColors.electricBlue.withValues(alpha: 0.5)),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.check_circle_outline, color: AppColors.statusGood, size: 12),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.qualityLabel!,
-                          style: const TextStyle(
-                            color: AppColors.statusGood,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      widget.qualityLabel!,
+                      style: const TextStyle(
+                        color: AppColors.electricBlue,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
               ],
             ),
           ),
 
-          // 4. Mode Selection Bar (Floating Workstation Toolbar)
-          if (widget.showControls && (hasGradcam || hasEnhanced))
+          // 4. Floating HUD Mode Switcher & Opacity Slider Pill
+          if (widget.showControls)
             Positioned(
               bottom: 12,
               left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.deepSpace.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.borderDark),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _modeButton('Original', FundusViewerMode.original),
-                    if (hasEnhanced) _modeButton('CLAHE Compare', FundusViewerMode.compare),
-                    if (hasGradcam) _modeButton('Grad-CAM', FundusViewerMode.xai),
-                    if (hasGradcam) _modeButton('Overlay', FundusViewerMode.overlay),
-                  ],
-                ),
-              ),
+              right: 12,
+              child: _buildFloatingHudControls(hasGradcam, hasEnhanced),
             ),
-
-          // 5. Workstation Actions (Reset Zoom, Opacity Slider, Fullscreen)
-          Positioned(
-            bottom: 12,
-            right: 12,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_currentMode == FundusViewerMode.overlay && widget.showControls)
-                  Container(
-                    width: 110,
-                    height: 32,
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.deepSpace.withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderDark),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.opacity, color: AppColors.aiViolet, size: 14),
-                        Expanded(
-                          child: SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
-                              trackHeight: 2,
-                              activeTrackColor: AppColors.aiViolet,
-                              inactiveTrackColor: AppColors.borderDark,
-                              thumbColor: Colors.white,
-                            ),
-                            child: Slider(
-                              value: _opacity,
-                              min: 0.0,
-                              max: 1.0,
-                              onChanged: (val) {
-                                setState(() => _opacity = val);
-                                widget.onOpacityChanged?.call(val);
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                _iconButton(
-                  icon: Icons.fit_screen_rounded,
-                  tooltip: 'Reset Zoom (100%)',
-                  onTap: _resetZoom,
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
-
-    return viewerBody;
   }
 
   Widget _buildCanvasContent(bool hasGradcam, bool hasEnhanced) {
@@ -292,7 +212,7 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
 
       case FundusViewerMode.overlay:
         return Stack(
-          alignment: Alignment.center,
+          fit: StackFit.expand,
           children: [
             _buildImage(widget.originalImagePath),
             if (hasGradcam)
@@ -307,7 +227,6 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
         return LayoutBuilder(
           builder: (context, constraints) {
             final w = constraints.maxWidth;
-            final h = constraints.maxHeight;
             return GestureDetector(
               onHorizontalDragUpdate: (details) {
                 setState(() {
@@ -315,6 +234,7 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
                 });
               },
               child: Stack(
+                fit: StackFit.expand,
                 children: [
                   // Before (Original)
                   _buildImage(widget.originalImagePath),
@@ -373,20 +293,110 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
       case FundusViewerMode.clinician:
         return Row(
           children: [
-            Expanded(child: _buildImage(widget.originalImagePath)),
-            Container(width: 1, color: AppColors.borderDark),
             Expanded(
-              child: hasGradcam
-                  ? _buildImage(widget.gradcamImagePath!)
-                  : _buildImage(widget.originalImagePath),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildImage(widget.originalImagePath),
+                  Positioned(top: 40, left: 10, child: _tagBadge('OPTICAL VIEW')),
+                ],
+              ),
+            ),
+            Container(width: 1.5, color: AppColors.borderDark),
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (hasGradcam)
+                    _buildImage(widget.gradcamImagePath!)
+                  else
+                    _buildImage(widget.originalImagePath),
+                  Positioned(top: 40, left: 10, child: _tagBadge('GRAD-CAM XAI')),
+                ],
+              ),
             ),
           ],
         );
     }
   }
 
-  Widget _modeButton(String label, FundusViewerMode mode) {
-    final isSelected = _currentMode == mode;
+  Widget _buildFloatingHudControls(bool hasGradcam, bool hasEnhanced) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.deepSpace.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderDark),
+        boxShadow: const [
+          BoxShadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Mode Switcher Buttons
+          _modeBtn(FundusViewerMode.original, 'RAW', Icons.image_outlined),
+          if (hasEnhanced) ...[
+            const SizedBox(width: 4),
+            _modeBtn(FundusViewerMode.compare, 'CLAHE', Icons.compare_rounded),
+          ],
+          if (hasGradcam) ...[
+            const SizedBox(width: 4),
+            _modeBtn(FundusViewerMode.overlay, 'OVERLAY', Icons.layers_outlined),
+            const SizedBox(width: 4),
+            _modeBtn(FundusViewerMode.xai, 'XAI MAP', Icons.grain_rounded),
+          ],
+
+          // Opacity Slider (only when Overlay mode is active)
+          if (_currentMode == FundusViewerMode.overlay && hasGradcam) ...[
+            const SizedBox(width: 8),
+            Container(height: 18, width: 1, color: AppColors.borderDark),
+            const SizedBox(width: 8),
+            const Text(
+              'BLEND',
+              style: TextStyle(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.darkTextMuted,
+                letterSpacing: 0.5,
+              ),
+            ),
+            SizedBox(
+              width: 90,
+              height: 24,
+              child: SliderTheme(
+                data: SliderThemeData(
+                  trackHeight: 2,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                  activeTrackColor: AppColors.hudCyan,
+                  inactiveTrackColor: AppColors.elevatedSurface,
+                  thumbColor: AppColors.hudCyan,
+                ),
+                child: Slider(
+                  value: _opacity,
+                  min: 0.1,
+                  max: 1.0,
+                  onChanged: (val) {
+                    setState(() => _opacity = val);
+                    widget.onOpacityChanged?.call(val);
+                  },
+                ),
+              ),
+            ),
+          ],
+
+          const Spacer(),
+
+          // Reset Zoom
+          _iconAction(Icons.restart_alt_rounded, 'Reset Zoom', _resetZoom),
+        ],
+      ),
+    );
+  }
+
+  Widget _modeBtn(FundusViewerMode mode, String label, IconData icon) {
+    final isActive = _currentMode == mode;
     return InkWell(
       onTap: () {
         setState(() => _currentMode = mode);
@@ -394,39 +404,44 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
       },
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.electricBlue : Colors.transparent,
+          color: isActive ? AppColors.hudCyan.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppColors.darkTextSecondary,
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          border: Border.all(
+            color: isActive ? AppColors.hudCyan : Colors.transparent,
           ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isActive ? AppColors.hudCyan : AppColors.darkTextSecondary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                color: isActive ? AppColors.hudCyan : AppColors.darkTextSecondary,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _iconButton({
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: AppColors.deepSpace.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.borderDark),
-      ),
+  Widget _iconAction(IconData icon, String tooltip, VoidCallback onTap) {
+    return Tooltip(
+      message: tooltip,
       child: IconButton(
         onPressed: onTap,
-        tooltip: tooltip,
+        constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
         padding: EdgeInsets.zero,
         iconSize: 16,
         icon: Icon(icon, color: AppColors.darkTextPrimary),
@@ -476,6 +491,10 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
           if (progress == null) return child;
           return const Center(child: CircularProgressIndicator(color: AppColors.hudCyan, strokeWidth: 2));
         },
+        errorBuilder: (_, __, ___) => _errorPlaceholder(),
+      );
+    }
+
     if (!kIsWeb) {
       try {
         final file = io.File(path);
@@ -515,4 +534,55 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
       ),
     );
   }
+}
+
+class _HorizontalSplitClipper extends CustomClipper<Rect> {
+  final double splitRatio;
+  _HorizontalSplitClipper({required this.splitRatio});
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTRB(size.width * splitRatio, 0, size.width, size.height);
+  }
+
+  @override
+  bool shouldReclip(_HorizontalSplitClipper oldClipper) => oldClipper.splitRatio != splitRatio;
+}
+
+class _RetinalReticlePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 * 0.85;
+
+    final paint = Paint()
+      ..color = AppColors.hudCyan.withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    final accentPaint = Paint()
+      ..color = AppColors.hudCyan.withValues(alpha: 0.70)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    // Outer alignment circle
+    canvas.drawCircle(center, radius, paint);
+
+    // Inner macular target
+    canvas.drawCircle(center, radius * 0.28, paint);
+
+    // Corner brackets
+    const bracketLen = 14.0;
+    // Top-left
+    canvas.drawLine(Offset(center.dx - radius, center.dy), Offset(center.dx - radius + bracketLen, center.dy), accentPaint);
+    // Right
+    canvas.drawLine(Offset(center.dx + radius, center.dy), Offset(center.dx + radius - bracketLen, center.dy), accentPaint);
+    // Top
+    canvas.drawLine(Offset(center.dx, center.dy - radius), Offset(center.dx, center.dy - radius + bracketLen), accentPaint);
+    // Bottom
+    canvas.drawLine(Offset(center.dx, center.dy + radius), Offset(center.dx, center.dy + radius - bracketLen), accentPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
