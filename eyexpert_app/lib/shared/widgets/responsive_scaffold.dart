@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/utils/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/user_model.dart';
-import 'eyexpert_logo.dart';
+import 'drishti_logo.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
   final int currentIndex;
