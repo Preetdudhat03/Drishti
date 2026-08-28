@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
 import '../../data/models/user_model.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
+import '../../shared/widgets/eyexpert_logo.dart';
 import 'auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -52,6 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -62,96 +66,152 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // App Icon & Branding
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.remove_red_eye_rounded,
-                        size: 48,
-                        color: AppColors.primary,
-                      ),
+                  // Minimal EyeXpert Logo
+                  const Center(
+                    child: EyeXpertLogo(
+                      size: 48,
+                      showText: true,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   const Text(
-                    AppConstants.appName,
+                    'Clinical Intelligence + Human Care',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    AppConstants.appTagline,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
+                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 6),
                   Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
+                        color: AppColors.accentLight,
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: Colors.blue.shade200),
+                        border: Border.all(color: AppColors.accent.withOpacity(0.3)),
                       ),
                       child: const Text(
-                        AppConstants.sihProblemStatement,
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue),
+                        'SIH 2026 | PS-26038',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accent,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
 
-                  // Quick Demo Account Selection Card
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
+                  // Login Form Card
+                  ClinicalCard(
+                    padding: const EdgeInsets.all(22),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Workstation Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Role Selector
+                        SegmentedButton<UserRole>(
+                          segments: const [
+                            ButtonSegment(
+                              value: UserRole.healthWorker,
+                              label: Text('Health Worker'),
+                              icon: Icon(Icons.health_and_safety_outlined, size: 16),
+                            ),
+                            ButtonSegment(
+                              value: UserRole.clinician,
+                              label: Text('Clinician'),
+                              icon: Icon(Icons.medical_services_outlined, size: 16),
+                            ),
+                          ],
+                          selected: {_selectedRole},
+                          onSelectionChanged: (set) {
+                            setState(() {
+                              _selectedRole = set.first;
+                              if (_selectedRole == UserRole.clinician) {
+                                _usernameController.text = 'clinician.demo@eyexpert';
+                              } else {
+                                _usernameController.text = 'healthworker.demo@eyexpert';
+                              }
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        TextField(
+                          controller: _usernameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Username / Email',
+                            prefixIcon: Icon(Icons.person_outline, size: 20),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: Icon(Icons.lock_outline, size: 20),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+
+                        PrimaryButton(
+                          text: 'Sign In to Screening Workstation',
+                          isLoading: authState.isLoading,
+                          onPressed: _handleLogin,
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Demo Quick Launch Box
+                  ClinicalCard(
+                    backgroundColor: AppColors.accentLight.withOpacity(0.4),
+                    borderColor: AppColors.accent.withOpacity(0.3),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.touch_app_rounded, size: 16, color: AppColors.secondary),
+                            Icon(Icons.play_circle_fill_rounded, size: 16, color: AppColors.accent),
                             SizedBox(width: 6),
                             Text(
-                              'QUICK DEMO ACCESS',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.secondary),
+                              'DEMO QUICK LAUNCH',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                                color: AppColors.accent,
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         Row(
                           children: [
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => _quickDemoLogin(UserRole.healthWorker),
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  side: BorderSide(
-                                    color: _selectedRole == UserRole.healthWorker
-                                        ? AppColors.primary
-                                        : Colors.grey.shade300,
-                                    width: _selectedRole == UserRole.healthWorker ? 2 : 1,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                                  foregroundColor: AppColors.primary,
+                                  side: const BorderSide(color: AppColors.border),
                                 ),
-                                child: const Column(
-                                  children: [
-                                    Text('Health Worker', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                    Text('Sunita Sharma', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                  ],
+                                child: const Text(
+                                  'Demo Health Worker\n(Sunita Sharma)',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.2),
                                 ),
                               ),
                             ),
@@ -160,19 +220,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               child: OutlinedButton(
                                 onPressed: () => _quickDemoLogin(UserRole.clinician),
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  side: BorderSide(
-                                    color: _selectedRole == UserRole.clinician
-                                        ? AppColors.primary
-                                        : Colors.grey.shade300,
-                                    width: _selectedRole == UserRole.clinician ? 2 : 1,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                                  foregroundColor: AppColors.primary,
+                                  side: const BorderSide(color: AppColors.border),
                                 ),
-                                child: const Column(
-                                  children: [
-                                    Text('Ophthalmologist', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                    Text('Dr. Rajesh Kumar', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                  ],
+                                child: const Text(
+                                  'Demo Clinician\n(Dr. Rajesh Kumar)',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.2),
                                 ),
                               ),
                             ),
@@ -181,51 +236,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // Login Form
-                  TextField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Username or Health Worker ID',
-                      prefixIcon: Icon(Icons.badge_outlined, size: 20),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline_rounded, size: 20),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  if (authState.errorMessage != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.statusUngradableBg,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        authState.errorMessage!,
-                        style: const TextStyle(color: AppColors.statusUngradable, fontSize: 12),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-
-                  PrimaryButton(
-                    text: 'Sign In to EyeXpert',
-                    onPressed: _handleLogin,
-                    isLoading: authState.isLoading,
-                    icon: Icons.login_rounded,
-                  ),
-                  const SizedBox(height: 24),
-
-                  const MedicalDisclaimerBanner(isCompact: true),
+                  const MedicalDisclaimerBanner(),
                 ],
               ),
             ),
