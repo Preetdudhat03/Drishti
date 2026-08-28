@@ -160,8 +160,15 @@ class SupabaseService {
         );
       }
 
-      // Retrieve public or signed URL
-      return supa.storage.from(AppConstants.storageBucketFundus).getPublicUrl(storagePath);
+      // Retrieve public URL
+      final publicUrl = supa.storage.from(AppConstants.storageBucketFundus).getPublicUrl(storagePath);
+      
+      // Update screenings table with the uploaded image URL
+      try {
+        await supa.from('screenings').update({'image_url': publicUrl}).eq('screening_id', screeningId);
+      } catch (_) {}
+
+      return publicUrl;
     } catch (e) {
       debugPrint('[SupabaseService] Image storage notice: $e');
       return null;
