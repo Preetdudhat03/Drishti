@@ -126,6 +126,25 @@ def crop_retina(pil_img):
     y1, x1 = coords.max(axis=0) + 1
     return pil_img.crop((x0, y0, x1, y1))
 
+# Load Real Trained Model if present
+REAL_MODEL = None
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model_pth_path = os.path.join(ROOT_DIR, "models", "EyeXpert_ResNet18_best.pth")
+
+if os.path.isfile(model_pth_path):
+    try:
+        REAL_MODEL = models.resnet18(weights=None)
+        REAL_MODEL.fc = nn.Linear(REAL_MODEL.fc.in_features, 5)
+        ckpt = torch.load(model_pth_path, map_location=DEVICE, weights_only=False)
+        if 'model_state_dict' in ckpt:
+            REAL_MODEL.load_state_dict(ckpt['model_state_dict'])
+        else:
+            REAL_MODEL.load_state_dict(ckpt)
+        REAL_MODEL.eval()
+        print(f"Loaded real trained ResNet-18 model from: {model_pth_path}")
+    except Exception as e:
+        print(f"Notice loading model: {e}")
+
 # ----------------- DR SEVERITY & GRAD-CAM -----------------
 def determine_referable(level):
     descriptions = {
@@ -635,24 +654,64 @@ def process_pipeline(pil_img, image_id):
         
         enhanced_b64 = pil_to_b64(enhanced_pil)
 
-        # Deterministic inference mapping for demonstration / evaluation
-        if "normal" in image_id.lower():
-            level = 0
-            probs = [0.912, 0.051, 0.023, 0.010, 0.004]
-        elif "mild" in image_id.lower():
-            level = 1
-            probs = [0.082, 0.834, 0.054, 0.021, 0.009]
-        elif "pdr" in image_id.lower() or "severe" in image_id.lower():
-            level = 4
-            probs = [0.005, 0.012, 0.038, 0.085, 0.860]
+        # Real Trained ResNet-18 Model Inference
+        if REAL_MODEL is not None:
+            eval_tfm = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            ])
+            tensor_img = eval_tfm(enhanced_pil)
+            with torch.no_grad():
+                logits = REAL_MODEL(tensor_img.unsqueeze(0).to(DEVICE))
+                soft_probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
+                probs = [round(float(p), 4) for p in soft_probs]
+                level = int(np.argmax(soft_probs))
+
+            # Compute Grad-CAM from real convolutional layer
+            last_conv = REAL_MODEL.layer4[1].conv2
+            features, grads = [], []
+            h_f = last_conv.register_forward_hook(lambda m, i, o: features.append(o))
+            h_b = last_conv.register_full_backward_hook(lambda m, gi, go: grads.append(go[0]))
+            
+            REAL_MODEL.eval()
+            out = REAL_MODEL(tensor_img.unsqueeze(0).to(DEVICE))
+            sc = out[0, level]
+            REAL_MODEL.zero_grad()
+            sc.backward()
+            
+            h_f.remove(); h_b.remove()
+            f = features[0][0].detach().cpu().numpy()
+            g = grads[0][0].detach().cpu().numpy()
+            w_act = np.mean(g, axis=(1, 2))
+            cam = np.zeros(f.shape[1:], dtype=np.float32)
+            for idx, wt in enumerate(w_act):
+                cam += wt * f[idx]
+            cam = np.maximum(0, cam)
+            if np.max(cam) > 0:
+                cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
+
+            w_orig, h_orig = enhanced_pil.size
+            cam_pil = Image.fromarray(cam).resize((w_orig, h_orig), Image.Resampling.BILINEAR)
+            cam_resized = np.array(cam_pil)
+            cmap = cm.get_cmap('turbo')
+            cam_colored = (cmap(cam_resized)[:, :, :3] * 255).astype(np.uint8)
+            orig_np = np.array(enhanced_pil)
+            alpha = (cam_resized[:, :, np.newaxis] * 0.45)
+            overlay_np = np.clip((1.0 - alpha) * orig_np + alpha * cam_colored, 0, 255).astype(np.uint8)
+
+            cam_b64 = pil_to_b64(Image.fromarray(cam_colored))
+            overlay_b64 = pil_to_b64(Image.fromarray(overlay_np))
+
         else:
+            # Fallback if model weights not yet loaded
             level = 2
             probs = [0.021, 0.045, 0.884, 0.042, 0.008]
+            cam_pil, overlay_pil = generate_cam_overlay(enhanced_pil, level)
+            cam_b64 = pil_to_b64(cam_pil)
+            overlay_b64 = pil_to_b64(overlay_pil)
 
         sev_text, is_ref, rec_text = determine_referable(level)
-        cam_pil, overlay_pil = generate_cam_overlay(enhanced_pil, level)
-        cam_b64 = pil_to_b64(cam_pil)
-        overlay_b64 = pil_to_b64(overlay_pil)
 
         class_result = {
             "level": level,

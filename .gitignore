@@ -1,0 +1,37 @@
+# Large Model Weights (>50MB)
+models/
+*.pth
+*.pt
+*.onnx
+*.bin
+
+# Datasets and Large Raw Images
+data/aptos/train_images/
+data/aptos/test_images/
+data/aptos/preprocessed_224/
+data/raw/
+data/processed/
+
+# Zip Archives & Temp Files
+*.zip
+*.tar
+*.gz
+*.tmp
+
+# Python & Environment
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+env/
+
+# MATLAB temporary files
+*.asv
+*.slxc
+slprj/
+*.autosave
+
+# OS specific
+.DS_Store
+Thumbs.db
