@@ -118,6 +118,7 @@ class ScreeningSessionState {
 class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
   final ScreeningRepository _repository;
   final Ref _ref;
+  final SupabaseService _supabaseService = SupabaseService();
 
   ScreeningSessionNotifier(this._repository, this._ref)
       : super(const ScreeningSessionState());
