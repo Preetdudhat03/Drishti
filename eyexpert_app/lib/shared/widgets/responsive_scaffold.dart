@@ -90,9 +90,12 @@ class ResponsiveScaffold extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                Flexible(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 // Mode Pill
