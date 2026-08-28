@@ -10,15 +10,8 @@ import '../../core/constants/dr_severity.dart';
 
 class MockDataService {
   static List<ScreeningCaseModel> getInitialCases() {
-    return [
-      _createCase(
-        id: 'EX-2026-000124',
-        patientId: 'PT-2026-8819',
-        age: 54,
-        gender: 'FEMALE',
-        diabetesDurationYears: 8,
-        eye: 'OD',
-        imageAsset: 'assets/sample_fundus/sample_good_npdr_moderate.png',
+    return [];
+  }
         gradcamAsset: 'assets/sample_fundus/real_aptos_gradcam_level_2_094858f005ab.png',
         level: 2,
         modelProb: 0.914,
