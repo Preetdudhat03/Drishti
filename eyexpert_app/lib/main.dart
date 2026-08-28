@@ -202,8 +202,6 @@ class _RootScreenState extends ConsumerState<RootScreen> {
       }),
       title: title,
       currentUser: user,
-      workflowMode: authState.workflowMode,
-      onModeSwitchPressed: _onModeSwitch,
       body: body,
     );
   }
