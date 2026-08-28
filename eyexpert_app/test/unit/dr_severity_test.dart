@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:eyexpert_app/core/constants/dr_severity.dart';
+import 'package:drishti_app/core/constants/dr_severity.dart';
 
 void main() {
   group('DRSeverity & Referable DR Logic Tests', () {

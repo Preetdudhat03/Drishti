@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:eyexpert_app/data/models/quality_assessment_model.dart';
+import 'package:drishti_app/data/models/quality_assessment_model.dart';
 
 void main() {
   group('QualityAssessmentModel Domain Tests', () {
