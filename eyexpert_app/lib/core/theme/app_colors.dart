@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // EyeXpert Clinical Intelligence Palette
+  // Drishti Clinical Intelligence Palette
   static const Color primary = Color(0xFF0B1F33); // Deep Navy
   static const Color primaryDark = Color(0xFF06111D);
   static const Color primaryLight = Color(0xFFE2E8F0);
