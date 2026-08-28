@@ -35,7 +35,6 @@ class ScreeningSessionState {
   final int processingStep; // 1: Quality, 2: Preprocessing, 3: AI Inference, 4: Grad-CAM
   final String? processingStepLabel;
   final String? errorMessage;
-  final Map<String, dynamic>? selectedDemoScenario;
 
   const ScreeningSessionState({
     this.patient,
@@ -50,7 +49,6 @@ class ScreeningSessionState {
     this.processingStep = 0,
     this.processingStepLabel,
     this.errorMessage,
-    this.selectedDemoScenario,
   });
 
   bool get hasImage => imagePath != null && imagePath!.isNotEmpty;
@@ -95,7 +93,6 @@ class ScreeningSessionState {
     int? processingStep,
     String? processingStepLabel,
     String? errorMessage,
-    Map<String, dynamic>? selectedDemoScenario,
   }) {
     return ScreeningSessionState(
       patient: patient ?? this.patient,
@@ -110,7 +107,6 @@ class ScreeningSessionState {
       processingStep: processingStep ?? this.processingStep,
       processingStepLabel: processingStepLabel ?? this.processingStepLabel,
       errorMessage: errorMessage,
-      selectedDemoScenario: selectedDemoScenario ?? this.selectedDemoScenario,
     );
   }
 }
