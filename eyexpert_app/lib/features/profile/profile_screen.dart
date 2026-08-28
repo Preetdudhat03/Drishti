@@ -32,7 +32,7 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: AppColors.primary.withOpacity(0.15),
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                       child: const Icon(Icons.person_rounded, size: 36, color: AppColors.primary),
                     ),
                     const SizedBox(width: 16),
@@ -40,27 +40,9 @@ class ProfileScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                user?.name ?? 'Health Worker',
-                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                              ),
-                              const SizedBox(width: 8),
-                              if (user?.isDemoAccount ?? true)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.shade50,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: Colors.amber.shade300),
-                                  ),
-                                  child: const Text(
-                                    'DEMO ACCOUNT',
-                                    style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.amber),
-                                  ),
-                                ),
-                            ],
+                          Text(
+                            user?.name ?? 'Sunita Sharma',
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                           ),
                           const SizedBox(height: 2),
                           Text(
@@ -68,7 +50,7 @@ class ProfileScreen extends ConsumerWidget {
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
                           ),
                           Text(
-                            user?.organization ?? 'Demo Primary Health Centre',
+                            user?.organization ?? 'PHC Ramgarh Tele-Screening Unit',
                             style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                           ),
                         ],
@@ -79,43 +61,31 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
 
-              // Workflow Mode Selection Card
+              // Facility & Tele-Screening Node Info
               ClinicalCard(
-                title: 'Operational Workflow Mode',
+                title: 'Assigned Healthcare Facility',
                 child: Column(
                   children: [
-                    RadioListTile<String>(
-                      value: 'DEMO',
-                      groupValue: workflowMode,
-                      title: const Text('DEMO MODE — SIMULATED WORKFLOW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                      subtitle: const Text('Interactive clinical walkthrough with curated demonstration scenarios.', style: TextStyle(fontSize: 11)),
-                      onChanged: (val) {
-                        if (val != null) ref.read(authProvider.notifier).setWorkflowMode(val);
-                      },
-                    ),
-                    const Divider(height: 1),
-                    RadioListTile<String>(
-                      value: 'VALIDATION',
-                      groupValue: workflowMode,
-                      title: const Text('VALIDATION MODE — REAL APTOS TEST DATA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                      subtitle: const Text('Exploration of real held-out APTOS 2019 test cases & verified Grad-CAM heatmaps.', style: TextStyle(fontSize: 11)),
-                      onChanged: (val) {
-                        if (val != null) ref.read(authProvider.notifier).setWorkflowMode(val);
-                      },
-                    ),
+                    _facilityRow('Primary Center', 'PHC-RAMGARH-01 (Sector 4)'),
+                    const Divider(height: 16),
+                    _facilityRow('Referral Center', 'District Eye Hospital (Apex Retinal Unit)'),
+                    const Divider(height: 16),
+                    _facilityRow('Cloud Telemetry', 'Supabase Real-Time Sync Active'),
+                    const Divider(height: 16),
+                    _facilityRow('AI Backend', 'PyTorch 2.2+ ResNet-18 Cloud Engine'),
                   ],
                 ),
               ),
               const SizedBox(height: 14),
 
-              // Role Switching Card (Demonstration Convenience)
+              // Role Switching Card
               ClinicalCard(
-                title: 'Role Switcher (Demonstration Control)',
+                title: 'Switch Active Persona',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Switch between Field Health Worker and Clinician personas to experience the full end-to-end human-in-the-loop screening workflow:',
+                      'Toggle between Field Health Worker and Ophthalmologist accounts:',
                       style: TextStyle(fontSize: 12, color: Colors.black87),
                     ),
                     const SizedBox(height: 12),
@@ -130,7 +100,7 @@ class ProfileScreen extends ConsumerWidget {
                                 width: user?.role == UserRole.healthWorker ? 2 : 1,
                               ),
                             ),
-                            child: const Text('Switch to Health Worker'),
+                            child: const Text('Health Worker'),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -143,7 +113,7 @@ class ProfileScreen extends ConsumerWidget {
                                 width: user?.role == UserRole.clinician ? 2 : 1,
                               ),
                             ),
-                            child: const Text('Switch to Clinician'),
+                            child: const Text('Ophthalmologist'),
                           ),
                         ),
                       ],
