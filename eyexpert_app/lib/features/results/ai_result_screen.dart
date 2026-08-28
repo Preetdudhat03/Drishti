@@ -185,7 +185,7 @@ class AiResultScreen extends ConsumerWidget {
               const SizedBox(height: 14),
 
               // 5. PROBABILITY SPECTRUM (WORKSTATION VIEW)
-              if (pred.probabilities != null && pred.probabilities!.isNotEmpty)
+              if (pred.probabilities.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -202,7 +202,7 @@ class AiResultScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 14),
                       ProbabilityDistributionWidget(
-                        probabilities: pred.probabilities!,
+                        probabilities: pred.probabilities,
                         predictedLevel: pred.drLevel,
                         isDarkMode: false,
                       ),
