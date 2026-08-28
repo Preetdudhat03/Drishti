@@ -84,9 +84,9 @@ class ApiClient {
     );
   }
 
-  void _handleException(dynamic e) {
+  Never _handleException(dynamic e) {
     if (e is AppException) {
-      rethrow;
+      throw e;
     }
     throw NetworkException(
       'Unable to connect to EyeXpert backend. Please check network connectivity.',
