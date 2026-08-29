@@ -118,6 +118,11 @@ class ReviewService {
   }
 
   void addCase(ScreeningCaseModel newCase) {
-    _cachedCases.insert(0, newCase);
+    final idx = _cachedCases.indexWhere((c) => c.screeningId == newCase.screeningId);
+    if (idx != -1) {
+      _cachedCases[idx] = newCase;
+    } else {
+      _cachedCases.insert(0, newCase);
+    }
   }
 }
