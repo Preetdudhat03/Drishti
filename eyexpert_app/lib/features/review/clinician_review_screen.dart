@@ -54,6 +54,22 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
     super.dispose();
   }
 
+  void _openFullReport() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          body: SafeArea(
+            child: ScreeningReportScreen(
+              screeningCase: widget.screeningCase,
+              onBack: () => Navigator.pop(context),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleValidateAi() async {
     final pred = widget.screeningCase.prediction;
     final drLevel = pred?.drLevel ?? 0;
