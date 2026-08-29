@@ -14,6 +14,7 @@ import '../../shared/widgets/probability_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import '../auth/auth_provider.dart';
 import 'review_queue_provider.dart';
+import '../../shared/widgets/connection_status_pill.dart';
 
 class ClinicianReviewScreen extends ConsumerStatefulWidget {
   final ScreeningCaseModel screeningCase;
