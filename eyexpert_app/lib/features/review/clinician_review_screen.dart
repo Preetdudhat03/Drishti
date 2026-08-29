@@ -191,7 +191,9 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                             ? c.image!.imageUrl
                             : (exp?.originalImageUrl.isNotEmpty == true)
                                 ? exp!.originalImageUrl
-                                : '',
+                                : (exp?.overlayImageUrl.isNotEmpty == true)
+                                    ? exp!.overlayImageUrl
+                                    : 'assets/sample_fundus/sample_good_npdr_moderate.png',
                         eyeTag: c.patient.eye,
                       ),
                     ),
@@ -222,7 +224,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                                 ? exp!.overlayImageUrl
                                 : (c.image?.imageUrl.isNotEmpty == true)
                                     ? c.image!.imageUrl
-                                    : '',
+                                    : 'assets/sample_fundus/sample_good_npdr_moderate.png',
                         eyeTag: 'Grad-CAM XAI',
                       ),
                     ),

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -170,7 +171,21 @@ class SupabaseService {
 
       return publicUrl;
     } catch (e) {
-      debugPrint('[SupabaseService] Image storage notice: $e');
+      debugPrint('[SupabaseService] Image storage bucket notice: $e');
+      // Fallback: If bucket upload fails or RLS policy restricts bucket, encode as compact Data URI
+      try {
+        String dataUri = '';
+        if (imageBytesOrFile is Uint8List) {
+          dataUri = 'data:image/jpeg;base64,${base64Encode(imageBytesOrFile)}';
+        } else if (imageBytesOrFile is File && imageBytesOrFile.existsSync()) {
+          final bytes = await imageBytesOrFile.readAsBytes();
+          dataUri = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        }
+        if (dataUri.isNotEmpty) {
+          await supa.from('screenings').update({'image_url': dataUri}).eq('screening_id', screeningId);
+          return dataUri;
+        }
+      } catch (_) {}
       return null;
     }
   }
@@ -181,6 +196,17 @@ class SupabaseService {
     if (supa == null) return false;
 
     try {
+      String? imageUrl = screeningCase.image?.imageUrl;
+      if (imageUrl != null && imageUrl.isNotEmpty && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+        try {
+          final file = File(imageUrl);
+          if (file.existsSync()) {
+            final bytes = await file.readAsBytes();
+            imageUrl = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+          }
+        } catch (_) {}
+      }
+
       // 1. Insert into 'screenings'
       await supa.from('screenings').upsert({
         'screening_id': screeningCase.screeningId,
@@ -192,6 +218,7 @@ class SupabaseService {
         'eye': screeningCase.patient.eye,
         'facility_id': screeningCase.patient.facilityId,
         'status': screeningCase.status.label,
+        'image_url': imageUrl,
         'created_at': screeningCase.createdAt.toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       });
@@ -237,7 +264,7 @@ class SupabaseService {
           'screening_id': screeningCase.screeningId,
           'gradcam_url': exp.gradcamImageUrl,
           'overlay_url': exp.overlayImageUrl,
-          'original_url': exp.originalImageUrl,
+          'original_url': exp.originalImageUrl.isNotEmpty ? exp.originalImageUrl : imageUrl,
           'target_layer': exp.targetLayer,
           'model_attended_regions': exp.modelAttendedRegions,
           'disclaimer': exp.disclaimer,
