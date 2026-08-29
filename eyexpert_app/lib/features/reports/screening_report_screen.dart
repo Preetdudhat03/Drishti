@@ -151,31 +151,34 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              AppConstants.appName,
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.primary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                AppConstants.appName,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.primary,
+                                ),
                               ),
-                            ),
-                            const Text(
-                              AppConstants.appTagline,
-                              style: TextStyle(fontSize: 11, color: Colors.grey),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Screening ID: ${c.screeningId}',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                              const Text(
+                                AppConstants.appTagline,
+                                style: TextStyle(fontSize: 11, color: Colors.grey),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Screening ID: ${c.screeningId}',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         isReferable
-                            ? StatusBadge.referable()
-                            : StatusBadge.nonReferable(),
+                            ? StatusBadge.referable(label: 'REFERABLE')
+                            : StatusBadge.nonReferable(label: 'NON-REFERABLE'),
                       ],
                     ),
                     const Divider(height: 24),
