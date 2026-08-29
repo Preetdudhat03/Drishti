@@ -186,22 +186,22 @@ class CaseQueueScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   StatusBadge(
-                                    label: review != null
-                                        ? 'REVIEWED'
+                                    label: c.hasReviewed
+                                        ? 'COMPLETED'
                                         : isReferable
                                             ? 'REFERABLE'
                                             : 'NON-REFERABLE',
-                                    color: review != null
+                                    color: c.hasReviewed
                                         ? AppColors.primary
                                         : isReferable
                                             ? AppColors.referableAlert
                                             : AppColors.statusGood,
-                                    backgroundColor: review != null
+                                    backgroundColor: c.hasReviewed
                                         ? AppColors.primaryLight
                                         : isReferable
                                             ? AppColors.referableAlertBg
                                             : AppColors.statusGoodBg,
-                                    icon: review != null ? Icons.verified : Icons.priority_high_rounded,
+                                    icon: c.hasReviewed ? Icons.verified : Icons.priority_high_rounded,
                                   ),
                                 ],
                               ),
@@ -241,11 +241,15 @@ class CaseQueueScreen extends ConsumerWidget {
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       minimumSize: Size.zero,
-                                      backgroundColor: isReferable ? AppColors.referableAlert : AppColors.primary,
+                                      backgroundColor: c.hasReviewed
+                                          ? AppColors.primary
+                                          : isReferable
+                                              ? AppColors.referableAlert
+                                              : const Color(0xFF0F766E),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
                                     child: Text(
-                                      review != null ? 'View Details' : 'Review Case',
+                                      c.hasReviewed ? 'View Report' : 'Review Case',
                                       style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
                                     ),
                                   ),
