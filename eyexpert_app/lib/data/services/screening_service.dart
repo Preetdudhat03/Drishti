@@ -180,37 +180,9 @@ class ScreeningService {
         screeningId: screeningId,
       );
     } catch (e) {
-      // Edge / Local Quality Fallback when remote server is sleeping/unreachable
-      if (rawBytes != null && rawBytes.isNotEmpty) {
-        final isReadable = rawBytes.length > 8000;
-        return QualityAssessmentModel(
-          screeningId: screeningId,
-          overallScore: isReadable ? 0.88 : 0.20,
-          status: isReadable ? QualityStatus.good : QualityStatus.ungradable,
-          sharpness: QualityMetric(
-            score: isReadable ? 0.90 : 0.15,
-            status: isReadable ? 'GOOD' : 'POOR',
-            metricName: 'Focus & Sharpness',
-          ),
-          illumination: QualityMetric(
-            score: isReadable ? 0.86 : 0.20,
-            status: isReadable ? 'GOOD' : 'POOR',
-            metricName: 'Illumination & Exposure',
-          ),
-          fieldOfView: QualityMetric(
-            score: isReadable ? 0.89 : 0.25,
-            status: isReadable ? 'GOOD' : 'POOR',
-            metricName: 'Field of View Coverage',
-          ),
-          feedbackMessages: isReadable
-              ? ['Retinal focus sharp & illumination balanced.', 'Passed edge quality safety checks.']
-              : ['Image file is underexposed or unreadable. Please recapture.'],
-          evaluatedAt: DateTime.now(),
-        );
-      }
       if (e is AppException) rethrow;
       throw NetworkException(
-        'Unable to connect to Drishti backend. Please check network connectivity.',
+        'Unable to connect to Drishti backend for quality assessment. Please check network connectivity.',
         details: e.toString(),
       );
     }
@@ -228,7 +200,7 @@ class ScreeningService {
       );
     }
 
-    // Strict Real Inference Path — Calls Live PyTorch ResNet-18 Engine with graceful fallback
+    // Strict Real Inference Path — Calls Live PyTorch ResNet-18 Engine
     try {
       final response = await _apiClient.post(ApiEndpoints.screeningAnalyze(screeningId));
       if (response != null && response is Map) {
@@ -247,35 +219,13 @@ class ScreeningService {
           'explainability': explainability,
         };
       }
-    } catch (_) {}
-
-    // Resilient fallback when remote Render container is spinning up
-    final pred = DRPredictionModel(
-      screeningId: screeningId,
-      drLevel: 2,
-      severityLabel: 'Moderate Non-Proliferative Retinopathy',
-      severityCode: 'LEVEL_2',
-      referable: true,
-      modelProbability: 0.914,
-      classProbabilities: const {0: 0.012, 1: 0.054, 2: 0.914, 3: 0.015, 4: 0.005},
-      reviewPriority: 'HIGH',
-      recommendation: 'Refer to ophthalmologist within 2-4 weeks for comprehensive retinal examination.',
-      provenance: ModelProvenanceModel.defaultProvenance,
-      analyzedAt: DateTime.now(),
-    );
-    final explainability = ExplainabilityModel(
-      screeningId: screeningId,
-      targetLayer: 'layer4[1].conv2',
-      gradcamImageUrl: '',
-      overlayImageUrl: '',
-      originalImageUrl: '',
-      modelAttendedRegions: const ['Temporal vascular arcade', 'Perimacular microaneurysms', 'Posterior pole'],
-      disclaimer: 'Highlighted regions represent areas contributing to the model prediction.',
-    );
-
-    return {
-      'prediction': pred,
-      'explainability': explainability,
-    };
+      throw NetworkException('Invalid response received from AI analysis engine.');
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw NetworkException(
+        'Unable to connect to Drishti AI Backend. The app cannot perform AI analysis while offline.',
+        details: e.toString(),
+      );
+    }
   }
 }
