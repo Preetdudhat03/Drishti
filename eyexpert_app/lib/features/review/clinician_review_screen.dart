@@ -432,42 +432,89 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
           const SizedBox(height: 12),
         ],
 
-        // Decision Action Buttons
-        if (!_showOverrideModal)
-          Row(
-            children: [
-              Expanded(
-                flex: 4,
-                child: PrimaryButton(
-                  text: '✓ Validate AI Result',
-                  icon: Icons.check_circle_outline_rounded,
-                  isLoading: _isSubmitting,
-                  onPressed: _handleValidateAi,
-                ),
+        // Decision Action Buttons vs Finalized Banner
+        if (!_showOverrideModal) ...[
+          if (review != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF86EFAC)),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 3,
-                child: PrimaryButton(
-                  text: 'Override',
-                  icon: Icons.edit_note_rounded,
-                  isSecondary: true,
-                  onPressed: () => setState(() => _showOverrideModal = true),
-                ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 24),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Clinical Review Finalized & Signed',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF15803D)),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Signed by ${review.clinicianName ?? "Ophthalmologist"} • ${AppFormatters.formatDateTime(review.reviewedAt)}',
+                          style: const TextStyle(fontSize: 11.5, color: Color(0xFF166534)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => setState(() {
+                      _overrideLevel = review.finalDrLevel ?? pred?.drLevel ?? 0;
+                      _notesController.text = review.clinicalNotes;
+                      _showOverrideModal = true;
+                    }),
+                    icon: const Icon(Icons.edit_note_rounded, size: 16),
+                    label: const Text('Amend Decision', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      minimumSize: Size.zero,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 3,
-                child: PrimaryButton(
-                  text: 'Ungradable',
-                  icon: Icons.highlight_off_rounded,
-                  isDestructive: true,
-                  isLoading: _isSubmitting,
-                  onPressed: _handleMarkUngradable,
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  flex: 4,
+                  child: PrimaryButton(
+                    text: '✓ Validate AI Result',
+                    icon: Icons.check_circle_outline_rounded,
+                    isLoading: _isSubmitting,
+                    onPressed: _handleValidateAi,
+                  ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 3,
+                  child: PrimaryButton(
+                    text: 'Override',
+                    icon: Icons.edit_note_rounded,
+                    isSecondary: true,
+                    onPressed: () => setState(() => _showOverrideModal = true),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 3,
+                  child: PrimaryButton(
+                    text: 'Ungradable',
+                    icon: Icons.highlight_off_rounded,
+                    isDestructive: true,
+                    isLoading: _isSubmitting,
+                    onPressed: _handleMarkUngradable,
+                  ),
+                ),
+              ],
+            ),
+        ],
         const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
