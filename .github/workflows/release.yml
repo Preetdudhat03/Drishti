@@ -1,0 +1,154 @@
+﻿name: Build & Release EyeXpert Apps (Android & iOS)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release Tag (e.g. v1.4.6)'
+        required: true
+        default: 'v1.4.6'
+
+permissions:
+  contents: write
+
+jobs:
+  # =========================================================================
+  # 1. BUILD ANDROID (APK & AAB)
+  # =========================================================================
+  build-android:
+    name: Build Android (APK & App Bundle)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: eyexpert_app
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: Build Android Release APK
+        run: flutter build apk --release
+
+      - name: Build Android App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      - name: Stage Android Binaries
+        run: |
+          mkdir -p ../dist-android
+          cp build/app/outputs/flutter-apk/app-release.apk ../dist-android/eyexpert-android-release.apk
+          cp build/app/outputs/bundle/release/app-release.aab ../dist-android/eyexpert-android-release.aab
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-binaries
+          path: dist-android/*
+          if-no-files-found: error
+
+  # =========================================================================
+  # 2. BUILD IOS (IPA)
+  # =========================================================================
+  build-ios:
+    name: Build iOS (IPA Package)
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: eyexpert_app
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: Build iOS Application (Unsigned)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package Runner into IPA
+        run: |
+          mkdir -p ../dist-ios/Payload
+          cp -r build/ios/iphoneos/Runner.app ../dist-ios/Payload/
+          cd ../dist-ios
+          zip -qr eyexpert-ios-unsigned.ipa Payload
+          rm -rf Payload
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-binaries
+          path: dist-ios/eyexpert-ios-unsigned.ipa
+          if-no-files-found: error
+
+  # =========================================================================
+  # 3. CREATE GITHUB RELEASE WITH ALL BINARIES
+  # =========================================================================
+  create-release:
+    name: Create GitHub Release
+    needs: [build-android, build-ios]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Android Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-binaries
+          path: release-assets
+
+      - name: Download iOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-release-binaries
+          path: release-assets
+
+      - name: Determine Release Tag
+        id: tag_info
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "TAG_NAME=${{ github.event.inputs.release_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_info.outputs.TAG_NAME }}
+          name: "EyeXpert ${{ steps.tag_info.outputs.TAG_NAME }} Release"
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            release-assets/eyexpert-android-release.apk
+            release-assets/eyexpert-android-release.aab
+            release-assets/eyexpert-ios-unsigned.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
