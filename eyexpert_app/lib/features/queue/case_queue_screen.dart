@@ -38,13 +38,13 @@ class CaseQueueScreen extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _filterChip(ref, 'All Cases', 'ALL', queueState.filter),
+                    _filterChip(ref, 'All Cases (${queueState.totalScreenedCount})', 'ALL', queueState.filter),
                     const SizedBox(width: 8),
-                    _filterChip(ref, 'Referable (High Priority)', 'REFERABLE', queueState.filter),
+                    _filterChip(ref, 'Completed (${queueState.completedCount})', 'COMPLETED', queueState.filter),
                     const SizedBox(width: 8),
-                    _filterChip(ref, 'Pending Review', 'PENDING', queueState.filter),
+                    _filterChip(ref, 'Pending Review (${queueState.totalPendingCount})', 'PENDING', queueState.filter),
                     const SizedBox(width: 8),
-                    _filterChip(ref, 'Validated by Clinician', 'VALIDATED', queueState.filter),
+                    _filterChip(ref, 'Referable Priority (${queueState.referableCount})', 'REFERABLE', queueState.filter),
                   ],
                 ),
               ),
