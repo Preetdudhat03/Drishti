@@ -72,8 +72,17 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
 
   Future<void> _handleValidateAi() async {
     final pred = widget.screeningCase.prediction;
-    final drLevel = pred?.drLevel ?? 0;
+    if (pred == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Color(0xFF991B1B),
+          content: Text('AI inference is still pending or ungradable. Please complete AI processing before validating.'),
+        ),
+      );
+      return;
+    }
 
+    final drLevel = pred.drLevel;
     setState(() => _isSubmitting = true);
     try {
       final user = ref.read(authProvider).user;
@@ -81,7 +90,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
         screeningId: widget.screeningCase.screeningId,
         action: ClinicianAction.validateAiResult,
         finalDrLevel: drLevel,
-        clinicalNotes: 'AI Level $drLevel classification confirmed by reviewing clinician.',
+        clinicalNotes: 'AI Level $drLevel (${pred.severityLabel}) classification confirmed and validated by reviewing clinician.',
         clinicianName: user?.name ?? 'Dr. Rajesh Kumar',
       );
 
