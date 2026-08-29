@@ -44,7 +44,7 @@ class StatusBadge extends StatelessWidget {
     );
   }
 
-  factory StatusBadge.referable({String label = '⚠ REFERABLE DR — OPHTHALMOLOGIST REVIEW', bool isLarge = false}) {
+  factory StatusBadge.referable({String label = '⚠ REFERABLE', bool isLarge = false}) {
     return StatusBadge(
       label: label,
       color: AppColors.referableAlert,
