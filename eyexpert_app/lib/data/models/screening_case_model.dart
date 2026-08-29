@@ -161,7 +161,15 @@ class ScreeningCaseModel {
     required this.updatedAt,
   });
 
-  bool get isReferable => prediction?.referable ?? false;
+  bool get isReferable {
+    if (review != null && review!.finalReferable != null) {
+      return review!.finalReferable!;
+    }
+    if (review != null && review!.finalDrLevel != null) {
+      return review!.finalDrLevel! >= 2;
+    }
+    return prediction?.referable ?? false;
+  }
   bool get hasReviewed =>
       review != null ||
       status == ScreeningStatus.completed ||
