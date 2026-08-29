@@ -121,12 +121,13 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
       return _errorPlaceholder();
     }
 
-    // 1. Base64 Encoded Image Data URI
-    if (path.startsWith('data:image')) {
+    // 1. Base64 Encoded Image Data URI or Raw Base64
+    if (path.startsWith('data:image') || (path.length > 50 && !path.contains('/') && !path.contains('\\') && !path.startsWith('http'))) {
       try {
         final commaIdx = path.indexOf(',');
         final base64Str = commaIdx != -1 ? path.substring(commaIdx + 1) : path;
-        final bytes = base64Decode(base64Str);
+        final cleanBase64 = base64Str.replaceAll(RegExp(r'\s+'), '');
+        final bytes = base64Decode(cleanBase64);
         return Image.memory(
           bytes,
           fit: BoxFit.contain,
