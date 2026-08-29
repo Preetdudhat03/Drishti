@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/screening_case_model.dart';
 import '../../shared/widgets/status_badge.dart';
+import '../../core/network/connection_provider.dart';
 import '../review/review_queue_provider.dart';
 
 class CaseQueueScreen extends ConsumerWidget {
