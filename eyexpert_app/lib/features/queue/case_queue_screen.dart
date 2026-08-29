@@ -66,7 +66,10 @@ class CaseQueueScreen extends ConsumerWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+                  onPressed: () async {
+                    await ref.read(connectionProvider.notifier).checkConnection();
+                    await ref.read(reviewQueueProvider.notifier).loadPendingReviews();
+                  },
                   child: const Text('Retry', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
                 ),
               ],
@@ -77,7 +80,12 @@ class CaseQueueScreen extends ConsumerWidget {
         // Cases List with Pull-to-Refresh
         Expanded(
           child: RefreshIndicator(
-            onRefresh: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+            onRefresh: () async {
+              await Future.wait([
+                ref.read(connectionProvider.notifier).checkConnection(),
+                ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+              ]);
+            },
             color: AppColors.primary,
             child: cases.isEmpty
                 ? LayoutBuilder(
