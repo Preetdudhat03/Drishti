@@ -41,10 +41,10 @@ class ReviewQueueState {
         return c.isReferable;
       } else if (filter == 'PENDING') {
         return c.isPendingReview;
-      } else if (filter == 'VALIDATED') {
+      } else if (filter == 'COMPLETED' || filter == 'VALIDATED') {
         return c.hasReviewed;
       }
-      return true;
+      return true; // 'ALL' shows all patient records
     }).toList();
   }
 
