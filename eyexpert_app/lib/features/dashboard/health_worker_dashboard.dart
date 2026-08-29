@@ -41,7 +41,12 @@ class HealthWorkerDashboard extends ConsumerWidget {
         ),
         Expanded(
           child: RefreshIndicator(
-            onRefresh: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+            onRefresh: () async {
+              await Future.wait([
+                ref.read(connectionProvider.notifier).checkConnection(),
+                ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+              ]);
+            },
             color: AppColors.primary,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
