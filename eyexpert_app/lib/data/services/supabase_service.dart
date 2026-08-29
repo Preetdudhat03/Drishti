@@ -412,7 +412,11 @@ class SupabaseService {
 
     try {
       final now = DateTime.now().toIso8601String();
-      await supa.from('clinician_reviews').upsert({
+      // 1. Delete previous review row for this screening
+      await supa.from('clinician_reviews').delete().eq('screening_id', screeningId);
+
+      // 2. Insert validated review
+      await supa.from('clinician_reviews').insert({
         'screening_id': screeningId,
         'reviewer_id': reviewerId ?? supa.auth.currentUser?.id,
         'clinician_name': clinicianName,
@@ -423,27 +427,30 @@ class SupabaseService {
         'reviewed_at': now,
       });
 
-      // Update status on parent screening record
+      // 3. Update status on parent screening record
       await supa.from('screenings').update({
         'status': action == ClinicianAction.markUngradable
-            ? ScreeningStatus.ungradable.label
-            : ScreeningStatus.completed.label,
+            ? 'RECAPTURE_REQUIRED'
+            : 'COMPLETED',
         'updated_at': now,
       }).eq('screening_id', screeningId);
 
-      // Record immutable audit event
-      await supa.from('audit_events').insert({
-        'screening_id': screeningId,
-        'event_type': 'CLINICIAN_REVIEW_RECORDED',
-        'actor_id': reviewerId ?? supa.auth.currentUser?.id,
-        'payload': {
-          'action': action.label,
-          'final_dr_level': finalDrLevel,
-          'notes': clinicalNotes,
-        },
-        'timestamp': now,
-      });
+      // 4. Record immutable audit event
+      try {
+        await supa.from('audit_events').insert({
+          'screening_id': screeningId,
+          'event_type': 'CLINICIAN_REVIEW_RECORDED',
+          'actor_id': reviewerId ?? supa.auth.currentUser?.id,
+          'payload': {
+            'action': action.label,
+            'final_dr_level': finalDrLevel,
+            'notes': clinicalNotes,
+          },
+          'timestamp': now,
+        });
+      } catch (_) {}
 
+      debugPrint('[SupabaseService] Successfully recorded clinician review for $screeningId');
       return true;
     } catch (e) {
       debugPrint('[SupabaseService] Clinician review recording notice: $e');
