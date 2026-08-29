@@ -131,13 +131,13 @@ SCREENING_STORE = {}
 
 def store_case_record(sid, record):
     global SCREENING_STORE
-    # Keep store bounded to last 10 cases to prevent RAM growth
-    if len(SCREENING_STORE) > 10:
-        non_demo_keys = [k for k in SCREENING_STORE.keys() if not k.startswith("EX-2026-0001")]
-        if non_demo_keys:
-            del SCREENING_STORE[non_demo_keys[0]]
-            gc.collect()
+    # Keep store bounded to last 3 cases to prevent RAM growth on 512MB instances
+    non_demo_keys = [k for k in SCREENING_STORE.keys() if not k.startswith("EX-2026-0001")]
+    while len(non_demo_keys) >= 3:
+        oldest = non_demo_keys.pop(0)
+        del SCREENING_STORE[oldest]
     SCREENING_STORE[sid] = record
+    trim_memory()
 
 def init_demo_cases():
     cases = [
@@ -365,10 +365,25 @@ def crop_retina(pil_img):
     y1, x1 = coords.max(axis=0) + 1
     return pil_img.crop((x0, y0, x1, y1))
 
-def pil_to_b64(pil_img):
+def pil_to_b64(pil_img, max_dim=384, quality=75):
+    """
+    Downsamples and compresses images into ultra-compact JPEG base64 strings (~20KB instead of 20MB PNG).
+    Prevents Render 512MB RAM exhaustion during multi-image screenings.
+    """
+    if pil_img is None:
+        return ""
+    img = pil_img.convert('RGB')
+    w, h = img.size
+    if max(w, h) > max_dim:
+        scale = max_dim / float(max(w, h))
+        img = img.resize((int(w * scale), int(h * scale)), Image.Resampling.BILINEAR)
+    
     buf = io.BytesIO()
-    pil_img.save(buf, format="PNG")
-    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode('utf-8')
+    img.save(buf, format="JPEG", quality=quality, optimize=True)
+    b64_str = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
+    del img, buf
+    return b64_str
 
 # ----------------- CLINICAL TRIAGE & RECOMMENDATION -----------------
 def get_clinical_triage(level):
@@ -1899,7 +1914,7 @@ def api_upload_screening():
     if 'file' not in request.files:
         return jsonify({"error": "No file payload uploaded"}), 400
     file = request.files['file']
-    pil_img = Image.open(file.stream)
+    pil_img = load_and_downsample_image(file.stream, max_dim=512)
     screening_id = f"EX-2026-{uuid.uuid4().hex[:6].upper()}"
     
     meta = {
@@ -1914,12 +1929,13 @@ def api_upload_screening():
 
 @app.route('/api/screenings/camera_capture', methods=['POST'])
 def api_camera_capture():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     b64_str = data.get('image_b64', '')
     if ',' in b64_str:
         b64_str = b64_str.split(',', 1)[1]
     img_bytes = base64.b64decode(b64_str)
-    pil_img = Image.open(io.BytesIO(img_bytes))
+    pil_img = load_and_downsample_image(io.BytesIO(img_bytes), max_dim=512)
+    del img_bytes
     screening_id = f"EX-2026-{uuid.uuid4().hex[:6].upper()}"
     return process_screening_case(pil_img, screening_id, sample_key="device_camera_snapshot")
 
@@ -1983,7 +1999,7 @@ def process_screening_case(pil_img, screening_id, sample_key="custom_upload", pa
     }
     store_case_record(screening_id, case_record)
 
-    return jsonify({
+    res = {
         "screeningId": screening_id,
         "quality": q_result,
         "originalImgB64": orig_b64,
@@ -1991,7 +2007,9 @@ def process_screening_case(pil_img, screening_id, sample_key="custom_upload", pa
         "camImgB64": cam_b64,
         "overlayImgB64": overlay_b64,
         "classification": class_result
-    })
+    }
+    trim_memory()
+    return jsonify(res)
 
 @app.route('/api/queue')
 def api_get_queue():
