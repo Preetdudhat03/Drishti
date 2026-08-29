@@ -79,12 +79,12 @@ class ConnectionNotifier extends StateNotifier<ConnectionStateModel> {
       if (SupabaseService.isInitialized) {
         final client = SupabaseService.client;
         if (client != null) {
-          final res = await client
+          await client
               .from('screenings')
               .select('id')
               .limit(1)
               .timeout(const Duration(seconds: 5));
-          supaOk = res != null;
+          supaOk = true;
         }
       }
     } catch (e) {
