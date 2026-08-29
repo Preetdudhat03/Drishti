@@ -295,7 +295,9 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
                   ),
                   const SizedBox(width: 8),
                   if (pred != null)
-                    pred.referable ? StatusBadge.referable() : StatusBadge.nonReferable(),
+                    pred.referable
+                        ? StatusBadge.referable(label: 'REFERABLE')
+                        : StatusBadge.nonReferable(label: 'NON-REFERABLE'),
                 ],
               ),
               const SizedBox(height: 8),
