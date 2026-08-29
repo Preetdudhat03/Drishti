@@ -325,16 +325,24 @@ class SupabaseService {
           final pList = row['ai_predictions'] as List<dynamic>?;
           if (pList != null && pList.isNotEmpty) {
             prediction = DRPredictionModel.fromJson(
-              Map<String, dynamic>.from(pList.first),
+              Map<String, dynamic>.from(pList.last),
             );
           }
 
           ExplainabilityModel? explainability;
           final expList = row['explainability_results'] as List<dynamic>?;
           if (expList != null && expList.isNotEmpty) {
-            explainability = ExplainabilityModel.fromJson(
-              Map<String, dynamic>.from(expList.first),
-            );
+            Map<String, dynamic>? bestExp;
+            for (final item in expList) {
+              final m = Map<String, dynamic>.from(item);
+              final g = m['gradcam_url'] as String? ?? '';
+              if (g.length > 50) {
+                bestExp = m;
+                break;
+              }
+            }
+            bestExp ??= Map<String, dynamic>.from(expList.last);
+            explainability = ExplainabilityModel.fromJson(bestExp);
           }
 
           ClinicianReviewModel? review;
