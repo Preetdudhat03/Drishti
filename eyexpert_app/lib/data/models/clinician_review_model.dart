@@ -6,22 +6,27 @@ enum ClinicianAction {
   String get label {
     switch (this) {
       case ClinicianAction.validateAiResult:
-        return 'VALIDATE_AI_RESULT';
+        return 'VALIDATE_AI';
       case ClinicianAction.override:
-        return 'OVERRIDE';
+        return 'OVERRIDE_GRADE';
       case ClinicianAction.markUngradable:
-        return 'MARK_UNGRADABLE';
+        return 'REJECT_RECAPTURE';
     }
   }
 
   static ClinicianAction fromString(String? action) {
     switch (action?.toUpperCase()) {
       case 'OVERRIDE':
+      case 'OVERRIDE_GRADE':
       case 'CLINICIAN_OVERRIDDEN':
         return ClinicianAction.override;
       case 'MARK_UNGRADABLE':
+      case 'REJECT_RECAPTURE':
+      case 'UNGRADABLE':
         return ClinicianAction.markUngradable;
+      case 'VALIDATE_AI':
       case 'VALIDATE_AI_RESULT':
+      case 'CONFIRMED':
       case 'CLINICIAN_VALIDATED':
       default:
         return ClinicianAction.validateAiResult;
