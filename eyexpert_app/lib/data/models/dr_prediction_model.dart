@@ -97,16 +97,28 @@ class DRPredictionModel {
   DRSeverity get severity => DRSeverity.fromLevel(drLevel);
 
   factory DRPredictionModel.fromJson(Map<String, dynamic> json, {String? screeningId}) {
-    final pred = json['prediction'] ?? json;
     final Map<int, double> classProbs = {};
-    if (pred['class_probabilities'] != null) {
-      (pred['class_probabilities'] as Map).forEach((key, value) {
-        final int k = int.tryParse(key.toString()) ?? 0;
-        classProbs[k] = (value as num).toDouble();
-      });
+    final rawProbs = pred['class_probabilities'] ?? pred['probabilities'];
+    if (rawProbs != null) {
+      if (rawProbs is Map) {
+        rawProbs.forEach((key, value) {
+          final int k = int.tryParse(key.toString()) ?? 0;
+          classProbs[k] = (value as num?)?.toDouble() ?? 0.0;
+        });
+      } else if (rawProbs is List) {
+        for (int i = 0; i < rawProbs.length; i++) {
+          classProbs[i] = (rawProbs[i] as num?)?.toDouble() ?? 0.0;
+        }
+      }
     }
 
     final int level = (pred['dr_level'] as num?)?.toInt() ?? (pred['level'] as num?)?.toInt() ?? 0;
+
+    if (classProbs.isEmpty) {
+      for (int i = 0; i <= 4; i++) {
+        classProbs[i] = i == level ? 1.0 : 0.0;
+      }
+    }
 
     return DRPredictionModel(
       screeningId: screeningId ?? json['screening_id'] ?? '',
