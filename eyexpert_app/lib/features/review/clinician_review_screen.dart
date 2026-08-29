@@ -457,6 +457,24 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
               ),
             ],
           ),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _openFullReport,
+            icon: const Icon(Icons.description_outlined, size: 18),
+            label: const Text(
+              'VIEW FULL CLINICAL REPORT (PDF / PRINT)',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5, letterSpacing: 0.3),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0F172A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ),
       ],
     );
 
@@ -476,13 +494,18 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            onPressed: _openFullReport,
+            icon: const Icon(Icons.picture_as_pdf_outlined, color: Colors.white),
+            tooltip: 'View Full Patient Report (PDF / Print)',
+          ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
             child: ConnectionStatusPill(isCompact: true),
           ),
           if (c.isReferable)
             Container(
-              margin: const EdgeInsets.only(right: 16),
+              margin: const EdgeInsets.only(right: 12),
               child: StatusBadge.referable(label: 'PRIORITY: REFERABLE'),
             ),
         ],
