@@ -13,6 +13,7 @@ import '../../data/models/screening_case_model.dart';
 import '../review/review_queue_provider.dart';
 import '../offline/sync_queue_provider.dart';
 import '../auth/auth_provider.dart';
+import '../../core/network/connection_provider.dart';
 
 class HealthWorkerDashboard extends ConsumerWidget {
   final VoidCallback onStartScreening;
