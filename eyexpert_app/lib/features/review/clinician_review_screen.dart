@@ -450,6 +450,10 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
           ],
         ),
         actions: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+            child: ConnectionStatusPill(isCompact: true),
+          ),
           if (c.isReferable)
             Container(
               margin: const EdgeInsets.only(right: 16),
