@@ -97,6 +97,7 @@ class DRPredictionModel {
   DRSeverity get severity => DRSeverity.fromLevel(drLevel);
 
   factory DRPredictionModel.fromJson(Map<String, dynamic> json, {String? screeningId}) {
+    final pred = json['prediction'] ?? json;
     final Map<int, double> classProbs = {};
     final rawProbs = pred['class_probabilities'] ?? pred['probabilities'];
     if (rawProbs != null) {
