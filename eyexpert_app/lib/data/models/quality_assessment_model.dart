@@ -86,21 +86,26 @@ class QualityAssessmentModel {
     return QualityAssessmentModel(
       screeningId: screeningId ?? json['screening_id'] ?? '',
       overallScore: (json['overall_score'] as num?)?.toDouble() ??
+          (json['quality_score'] as num?)?.toDouble() ??
           (json['overallScore'] as num?)?.toDouble() ??
           0.0,
       status: QualityStatus.fromString(json['status']),
       sharpness: QualityMetric.fromJson(
-        json['sharpness'] is Map ? Map<String, dynamic>.from(json['sharpness']) : {},
+        json['sharpness'] is Map
+            ? Map<String, dynamic>.from(json['sharpness'] as Map)
+            : {'score': json['sharpness_score']},
         'Focus & Sharpness',
       ),
       illumination: QualityMetric.fromJson(
-        json['illumination'] is Map ? Map<String, dynamic>.from(json['illumination']) : {},
+        json['illumination'] is Map
+            ? Map<String, dynamic>.from(json['illumination'] as Map)
+            : {'score': json['illumination_score']},
         'Illumination & Exposure',
       ),
       fieldOfView: QualityMetric.fromJson(
         (json['field_of_view'] ?? json['fov']) is Map
-            ? Map<String, dynamic>.from(json['field_of_view'] ?? json['fov'])
-            : {},
+            ? Map<String, dynamic>.from((json['field_of_view'] ?? json['fov']) as Map)
+            : {'score': json['fov_score']},
         'Field of View Coverage',
       ),
       enhancementApplied: json['enhancement_applied'] ?? json['clahe_applied'] ?? false,
