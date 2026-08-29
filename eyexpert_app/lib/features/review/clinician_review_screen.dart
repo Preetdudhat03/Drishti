@@ -249,16 +249,19 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    pred != null
-                        ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
-                        : (c.quality?.isUngradable ?? false)
-                            ? 'Inference Blocked (Image Ungradable)'
-                            : 'Awaiting AI Analysis',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.primary),
+                  Expanded(
+                    child: Text(
+                      pred != null
+                          ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
+                          : (c.quality?.isUngradable ?? false)
+                              ? 'Inference Blocked (Image Ungradable)'
+                              : 'Awaiting AI Analysis',
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AppColors.primary),
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   if (pred != null)
                     pred.referable ? StatusBadge.referable() : StatusBadge.nonReferable(),
                 ],
