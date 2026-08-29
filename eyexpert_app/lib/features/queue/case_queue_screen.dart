@@ -125,7 +125,6 @@ class CaseQueueScreen extends ConsumerWidget {
                     final c = cases[index];
                     final pred = c.prediction;
                     final quality = c.quality;
-                    final review = c.review;
                     final isReferable = pred?.referable ?? false;
 
                     return Card(
