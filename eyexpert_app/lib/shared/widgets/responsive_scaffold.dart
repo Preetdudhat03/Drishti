@@ -3,6 +3,7 @@ import '../../core/utils/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/user_model.dart';
 import 'drishti_logo.dart';
+import 'connection_status_pill.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
   final int currentIndex;
