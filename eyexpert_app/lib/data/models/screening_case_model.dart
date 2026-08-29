@@ -162,10 +162,19 @@ class ScreeningCaseModel {
   });
 
   bool get isReferable => prediction?.referable ?? false;
-  bool get hasReviewed => review != null;
+  bool get hasReviewed =>
+      review != null ||
+      status == ScreeningStatus.completed ||
+      status == ScreeningStatus.clinicianValidated ||
+      status == ScreeningStatus.clinicianOverridden;
   bool get isPendingReview =>
-      status == ScreeningStatus.readyForReview ||
-      status == ScreeningStatus.pendingClinicianReview;
+      !hasReviewed &&
+      (status == ScreeningStatus.readyForReview ||
+       status == ScreeningStatus.pendingClinicianReview ||
+       status == ScreeningStatus.aiProcessing ||
+       status == ScreeningStatus.qualityAssessment ||
+       status == ScreeningStatus.imageReceived ||
+       status == ScreeningStatus.created);
 
   factory ScreeningCaseModel.fromJson(Map<String, dynamic> json) {
     return ScreeningCaseModel(
