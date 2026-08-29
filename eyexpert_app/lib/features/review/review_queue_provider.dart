@@ -87,7 +87,15 @@ class ReviewQueueNotifier extends StateNotifier<ReviewQueueState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final cases = await _repository.getPendingReviews(isDemo: false);
-      state = state.copyWith(cases: cases, isLoading: false);
+      final Set<String> seen = {};
+      final List<ScreeningCaseModel> uniqueCases = [];
+      for (final c in cases) {
+        if (!seen.contains(c.screeningId)) {
+          seen.add(c.screeningId);
+          uniqueCases.add(c);
+        }
+      }
+      state = state.copyWith(cases: uniqueCases, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
@@ -134,8 +142,15 @@ class ReviewQueueNotifier extends StateNotifier<ReviewQueueState> {
 
   void addCase(ScreeningCaseModel newCase) {
     _repository.addScreeningCase(newCase);
-    final updatedList = [newCase, ...state.cases];
-    state = state.copyWith(cases: updatedList);
+    final existingIdx = state.cases.indexWhere((c) => c.screeningId == newCase.screeningId);
+    if (existingIdx != -1) {
+      final updatedList = List<ScreeningCaseModel>.from(state.cases);
+      updatedList[existingIdx] = newCase;
+      state = state.copyWith(cases: updatedList);
+    } else {
+      final updatedList = [newCase, ...state.cases];
+      state = state.copyWith(cases: updatedList);
+    }
   }
 }
 
