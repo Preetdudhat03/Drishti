@@ -74,18 +74,19 @@ class ConnectionNotifier extends StateNotifier<ConnectionStateModel> {
     bool backendOk = false;
     String? errorDetails;
 
-    // 1. Check Supabase Connectivity
+    // 1. Check Supabase Connectivity (re-initialize if needed)
     try {
-      if (SupabaseService.isInitialized) {
-        final client = SupabaseService.client;
-        if (client != null) {
-          await client
-              .from('screenings')
-              .select('id')
-              .limit(1)
-              .timeout(const Duration(seconds: 5));
-          supaOk = true;
-        }
+      if (!SupabaseService.isInitialized) {
+        await SupabaseService.initialize();
+      }
+      final client = SupabaseService.client;
+      if (client != null) {
+        await client
+            .from('screenings')
+            .select('id')
+            .limit(1)
+            .timeout(const Duration(seconds: 5));
+        supaOk = true;
       }
     } catch (e) {
       supaOk = false;
