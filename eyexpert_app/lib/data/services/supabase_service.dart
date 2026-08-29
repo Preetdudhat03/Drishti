@@ -293,12 +293,14 @@ class SupabaseService {
 
       final List<dynamic> data = response as List<dynamic>;
       final List<ScreeningCaseModel> cases = [];
+      final Set<String> seenIds = {};
 
       for (final item in data) {
         try {
           final Map<String, dynamic> row = Map<String, dynamic>.from(item);
           final sid = row['screening_id'] as String? ?? '';
-          if (sid.isEmpty) continue;
+          if (sid.isEmpty || seenIds.contains(sid)) continue;
+          seenIds.add(sid);
 
           final patient = PatientModel(
             patientId: row['patient_id'] as String? ?? 'PT-UNKNOWN',
