@@ -316,18 +316,18 @@ class SupabaseService {
 
           QualityAssessmentModel? quality;
           final qList = row['quality_assessments'] as List<dynamic>?;
-          if (qList != null && qList.isNotEmpty) {
+          if (qList != null && qList.isNotEmpty && qList.first is Map) {
             quality = QualityAssessmentModel.fromJson(
-              Map<String, dynamic>.from(qList.first),
+              Map<String, dynamic>.from(qList.first as Map),
               screeningId: sid,
             );
           }
 
           DRPredictionModel? prediction;
           final pList = row['ai_predictions'] as List<dynamic>?;
-          if (pList != null && pList.isNotEmpty) {
+          if (pList != null && pList.isNotEmpty && pList.last is Map) {
             prediction = DRPredictionModel.fromJson(
-              Map<String, dynamic>.from(pList.last),
+              Map<String, dynamic>.from(pList.last as Map),
             );
           }
 
@@ -336,22 +336,29 @@ class SupabaseService {
           if (expList != null && expList.isNotEmpty) {
             Map<String, dynamic>? bestExp;
             for (final item in expList) {
-              final m = Map<String, dynamic>.from(item);
-              final g = m['gradcam_url'] as String? ?? '';
-              if (g.length > 50) {
-                bestExp = m;
-                break;
+              if (item is Map) {
+                final m = Map<String, dynamic>.from(item);
+                final g = m['gradcam_url'] as String? ?? '';
+                final o = m['overlay_url'] as String? ?? '';
+                if (g.length > 50 || o.length > 50) {
+                  bestExp = m;
+                  break;
+                }
               }
             }
-            bestExp ??= Map<String, dynamic>.from(expList.last);
-            explainability = ExplainabilityModel.fromJson(bestExp);
+            if (bestExp == null && expList.last is Map) {
+              bestExp = Map<String, dynamic>.from(expList.last as Map);
+            }
+            if (bestExp != null) {
+              explainability = ExplainabilityModel.fromJson(bestExp);
+            }
           }
 
           ClinicianReviewModel? review;
           final rList = row['clinician_reviews'] as List<dynamic>?;
-          if (rList != null && rList.isNotEmpty) {
+          if (rList != null && rList.isNotEmpty && rList.first is Map) {
             review = ClinicianReviewModel.fromJson(
-              Map<String, dynamic>.from(rList.first),
+              Map<String, dynamic>.from(rList.first as Map),
             );
           }
 
