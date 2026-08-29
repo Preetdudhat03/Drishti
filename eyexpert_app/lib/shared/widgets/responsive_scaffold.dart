@@ -155,10 +155,14 @@ class ResponsiveScaffold extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
-        actions: actions,
-      ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+            child: ConnectionStatusPill(isCompact: !isDesktop),
+          ),
+          if (actions != null) ...actions!,
+          const SizedBox(width: 8),
+        ],
       body: Row(
         children: [
           if (isDesktop || isTablet)
