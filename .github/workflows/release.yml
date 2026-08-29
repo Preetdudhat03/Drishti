@@ -1,4 +1,4 @@
-﻿name: Build & Release EyeXpert Apps (Android & iOS)
+name: Build & Release Drishti Apps (Android & iOS)
 
 on:
   push:
@@ -54,8 +54,8 @@ jobs:
       - name: Stage Android Binaries
         run: |
           mkdir -p ../dist-android
-          cp build/app/outputs/flutter-apk/app-release.apk ../dist-android/eyexpert-android-release.apk
-          cp build/app/outputs/bundle/release/app-release.aab ../dist-android/eyexpert-android-release.aab
+          cp build/app/outputs/flutter-apk/app-release.apk ../dist-android/drishti-android-release.apk
+          cp build/app/outputs/bundle/release/app-release.aab ../dist-android/drishti-android-release.aab
 
       - name: Upload Android Artifacts
         uses: actions/upload-artifact@v4
@@ -95,14 +95,14 @@ jobs:
           mkdir -p ../dist-ios/Payload
           cp -r build/ios/iphoneos/Runner.app ../dist-ios/Payload/
           cd ../dist-ios
-          zip -qr eyexpert-ios-unsigned.ipa Payload
+          zip -qr drishti-ios-unsigned.ipa Payload
           rm -rf Payload
 
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-binaries
-          path: dist-ios/eyexpert-ios-unsigned.ipa
+          path: dist-ios/drishti-ios-unsigned.ipa
           if-no-files-found: error
 
   # =========================================================================
@@ -142,13 +142,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag_info.outputs.TAG_NAME }}
-          name: "EyeXpert ${{ steps.tag_info.outputs.TAG_NAME }} Release"
+          name: "Drishti ${{ steps.tag_info.outputs.TAG_NAME }} Release"
           generate_release_notes: true
           draft: false
           prerelease: false
           files: |
-            release-assets/eyexpert-android-release.apk
-            release-assets/eyexpert-android-release.aab
-            release-assets/eyexpert-ios-unsigned.ipa
+            release-assets/drishti-android-release.apk
+            release-assets/drishti-android-release.aab
+            release-assets/drishti-ios-unsigned.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
