@@ -49,7 +49,27 @@ class CaseQueueScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ),
+        if (queueState.errorMessage != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: const Color(0xFFFFFBEB),
+            child: Row(
+              children: [
+                const Icon(Icons.cloud_off_rounded, color: Color(0xFFD97706), size: 20),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'App is currently offline. Showing local cases. Tap retry to reconnect.',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF92400E), fontWeight: FontWeight.w600),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+                  child: const Text('Retry', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                ),
+              ],
+            ),
+          ),
         const Divider(height: 1),
 
         // Cases List with Pull-to-Refresh
