@@ -55,7 +55,7 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
 
   Future<void> _handleValidateAi() async {
     final pred = widget.screeningCase.prediction;
-    if (pred == null) return;
+    final drLevel = pred?.drLevel ?? 0;
 
     setState(() => _isSubmitting = true);
     try {
@@ -63,21 +63,27 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
       await ref.read(reviewQueueProvider.notifier).submitClinicianDecision(
         screeningId: widget.screeningCase.screeningId,
         action: ClinicianAction.validateAiResult,
-        finalDrLevel: pred.drLevel,
-        clinicalNotes: 'AI Level ${pred.drLevel} classification confirmed by reviewing ophthalmologist.',
+        finalDrLevel: drLevel,
+        clinicalNotes: 'AI Level $drLevel classification confirmed by reviewing clinician.',
         clinicianName: user?.name ?? 'Dr. Rajesh Kumar',
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✓ AI screening result confirmed and validated.')),
+          const SnackBar(
+            backgroundColor: Color(0xFF166534),
+            content: Text('✓ AI screening result confirmed and validated.'),
+          ),
         );
         widget.onReviewSubmitted();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission error: $e')),
+          SnackBar(
+            backgroundColor: const Color(0xFF991B1B),
+            content: Text('Submission error: $e'),
+          ),
         );
       }
     } finally {
