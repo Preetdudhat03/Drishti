@@ -122,7 +122,15 @@ class _FundusImageViewerState extends State<FundusImageViewer> {
     }
 
     // 1. Base64 Encoded Image Data URI or Raw Base64
-    if (path.startsWith('data:image') || (path.length > 50 && !path.contains('/') && !path.contains('\\') && !path.startsWith('http'))) {
+    if (path.startsWith('data:image') ||
+        path.contains('base64,') ||
+        (path.length > 50 &&
+            !path.startsWith('http://') &&
+            !path.startsWith('https://') &&
+            !path.startsWith('assets/') &&
+            !path.startsWith('/') &&
+            !path.startsWith('file:') &&
+            !path.contains(':\\'))) {
       try {
         final commaIdx = path.indexOf(',');
         final base64Str = commaIdx != -1 ? path.substring(commaIdx + 1) : path;
