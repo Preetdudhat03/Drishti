@@ -14,6 +14,7 @@ import ctypes
 import numpy as np
 from PIL import Image
 from flask import Flask, request, jsonify, render_template_string
+from werkzeug.exceptions import HTTPException
 
 import torch
 import torch.nn as nn
@@ -2172,6 +2173,48 @@ def api_v1_index():
         }
     })
 
+@app.route('/favicon.ico')
+def favicon():
+    return ('', 204)
+
+@app.route('/api/v1/auth/login', methods=['POST'])
+def api_v1_login():
+    data = request.get_json(silent=True) or request.form or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    role_req = data.get('role_requested', 'HEALTH_WORKER').upper()
+
+    # Match user profile
+    if 'clinician' in username.lower() or 'ophthalmologist' in role_req or 'CLINICIAN' in role_req:
+        user_role = 'clinician'
+        user_name = 'Dr. Rajesh Kumar'
+        user_id = 'USR-2026-CLIN01'
+        facility = 'DISTRICT-EYE-HOSPITAL'
+    elif 'admin' in username.lower() or 'ADMIN' in role_req:
+        user_role = 'administrator'
+        user_name = 'Admin Officer'
+        user_id = 'USR-2026-ADM01'
+        facility = 'STATE-HEALTH-MISSION'
+    else:
+        user_role = 'healthWorker'
+        user_name = 'Sunita Sharma'
+        user_id = 'USR-2026-HW01'
+        facility = 'PHC-RAMGARH-01'
+
+    token = f"drishti_jwt_{uuid.uuid4().hex}"
+
+    return jsonify({
+        "token": token,
+        "user": {
+            "id": user_id,
+            "name": user_name,
+            "email": username if username else f"{user_role}@drishti.org",
+            "role": user_role,
+            "facility_id": facility,
+            "last_login": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+        }
+    }), 200
+
 @app.route('/api/v1/system/status')
 def api_v1_status():
     return jsonify({
@@ -2334,6 +2377,11 @@ def api_v1_explainability(id):
 
 @app.errorhandler(Exception)
 def handle_global_exception(e):
+    if isinstance(e, HTTPException):
+        return jsonify({
+            "error": e.name,
+            "message": e.description
+        }), e.code
     return jsonify({
         "error": "SERVER_ERROR",
         "message": str(e)
