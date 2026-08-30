@@ -74,7 +74,6 @@ class AuthService {
                 organization: supaUser.userMetadata?['facility_id'] ?? 'PHC Tele-Screening Unit',
                 facilityId: supaUser.userMetadata?['facility_id'] ?? 'PHC-RAMGARH-01',
                 isActive: true,
-                isDemoAccount: false,
               );
 
           // Check account status
