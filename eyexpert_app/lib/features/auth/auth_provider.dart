@@ -64,7 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login({
     required String username,
     required String password,
-    required UserRole roleRequested,
+    UserRole roleRequested = UserRole.healthWorker,
     String? medicalRegistrationId,
   }) async {
     state = state.copyWith(
