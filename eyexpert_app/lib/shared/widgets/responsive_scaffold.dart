@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/user_model.dart';
+import '../../features/auth/auth_provider.dart';
 import 'drishti_logo.dart';
 import 'connection_status_pill.dart';
 
-class ResponsiveScaffold extends StatelessWidget {
+class ResponsiveScaffold extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onNavigationIndexChanged;
   final Widget body;
@@ -75,11 +77,70 @@ class ResponsiveScaffold extends StatelessWidget {
     ];
   }
 
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.obsidianSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.obsidianBorder),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_outlined, color: AppColors.statusWarning, size: 20),
+            SizedBox(width: 10),
+            Text(
+              'Sign out of Drishti?',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textBright,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Your current screening data will remain safely synchronized.',
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.textSubtle,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSubtle),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(authProvider.notifier).logout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.statusCritical,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final isTablet = ResponsiveLayout.isTablet(context);
     final destinations = _getDestinations(currentUser?.role);
+    final isClinician = currentUser?.role == UserRole.clinician;
 
     return Scaffold(
       appBar: AppBar(
@@ -88,13 +149,13 @@ class ResponsiveScaffold extends StatelessWidget {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF0F1E36), Color(0xFF1E293B)],
+              colors: [Color(0xFF080B12), Color(0xFF0D111C)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             border: Border(
               bottom: BorderSide(
-                color: Color(0xFF334155),
+                color: AppColors.obsidianBorder,
                 width: 1,
               ),
             ),
@@ -103,7 +164,7 @@ class ResponsiveScaffold extends StatelessWidget {
         title: Row(
           children: [
             const DrishtiLogo(
-              size: 34,
+              size: 32,
               showText: false,
               color: Colors.white,
             ),
@@ -113,15 +174,21 @@ class ResponsiveScaffold extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    title,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16.5,
-                      color: Colors.white,
-                      letterSpacing: -0.2,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15.5,
+                            color: Colors.white,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   if (currentUser != null)
                     Container(
@@ -132,8 +199,8 @@ class ResponsiveScaffold extends StatelessWidget {
                           Container(
                             width: 6,
                             height: 6,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF34D399),
+                            decoration: BoxDecoration(
+                              color: isClinician ? AppColors.aiViolet : AppColors.electricBlue,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -144,7 +211,7 @@ class ResponsiveScaffold extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 10.5,
-                                color: Color(0xFF94A3B8),
+                                color: AppColors.textSubtle,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.2,
                               ),
@@ -153,48 +220,68 @@ class ResponsiveScaffold extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ],
-                ),
+                ],
               ),
-            ],
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-              child: ConnectionStatusPill(isCompact: !isDesktop),
             ),
-            if (actions != null) ...actions!,
-            const SizedBox(width: 8),
           ],
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+            child: ConnectionStatusPill(isCompact: !isDesktop),
+          ),
+          if (actions != null) ...actions!,
+          IconButton(
+            icon: const Icon(Icons.logout_outlined, color: AppColors.textSubtle, size: 20),
+            tooltip: 'Sign Out',
+            onPressed: () => _showLogoutDialog(context, ref),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Row(
         children: [
           if (isDesktop || isTablet)
             NavigationRail(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.obsidianCanvas,
               selectedIndex: currentIndex.clamp(0, destinations.length - 1),
               onDestinationSelected: onNavigationIndexChanged,
               labelType: isDesktop
                   ? NavigationRailLabelType.all
                   : NavigationRailLabelType.selected,
+              unselectedIconTheme: const IconThemeData(color: AppColors.textSubtle),
+              selectedIconTheme: IconThemeData(
+                color: isClinician ? AppColors.aiViolet : AppColors.electricBlue,
+              ),
+              unselectedLabelTextStyle: const TextStyle(
+                color: AppColors.textSubtle,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+              selectedLabelTextStyle: TextStyle(
+                color: isClinician ? AppColors.aiViolet : AppColors.electricBlue,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+              ),
               destinations: destinations
                   .map(
                     (d) => NavigationRailDestination(
                       icon: d.icon,
                       selectedIcon: d.selectedIcon,
-                      label: Text(d.label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                      label: Text(d.label),
                     ),
                   )
                   .toList(),
             ),
-          if (isDesktop || isTablet) const VerticalDivider(thickness: 1, width: 1, color: AppColors.border),
+          if (isDesktop || isTablet)
+            const VerticalDivider(thickness: 1, width: 1, color: AppColors.obsidianBorder),
           Expanded(child: body),
         ],
       ),
       bottomNavigationBar: (!isDesktop && !isTablet)
           ? NavigationBar(
-              backgroundColor: Colors.white,
-              indicatorColor: AppColors.accentLight,
+              backgroundColor: AppColors.obsidianCanvas,
+              indicatorColor: (isClinician ? AppColors.aiViolet : AppColors.electricBlue).withValues(alpha: 0.2),
               selectedIndex: currentIndex.clamp(0, destinations.length - 1),
               onDestinationSelected: onNavigationIndexChanged,
               destinations: destinations,
@@ -204,3 +291,4 @@ class ResponsiveScaffold extends StatelessWidget {
     );
   }
 }
+

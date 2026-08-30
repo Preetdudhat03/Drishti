@@ -12,8 +12,11 @@ class SystemService {
       : _apiClient = apiClient ?? ApiClient(),
         _syncService = syncService;
 
-  Future<SystemStatusModel> getSystemStatus({bool isDemo = true}) async {
-    if (isDemo) {
+  Future<SystemStatusModel> getSystemStatus() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.systemStatus);
+      return SystemStatusModel.fromJson(response);
+    } catch (_) {
       return SystemStatusModel(
         status: _syncService.isOnline ? 'HEALTHY' : 'OFFLINE_MODE',
         timestamp: DateTime.now(),
@@ -40,8 +43,5 @@ class SystemService {
         pendingSyncCount: _syncService.pendingCount,
       );
     }
-
-    final response = await _apiClient.get(ApiEndpoints.systemStatus);
-    return SystemStatusModel.fromJson(response);
   }
 }

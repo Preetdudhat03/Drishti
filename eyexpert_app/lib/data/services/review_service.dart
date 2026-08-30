@@ -19,7 +19,7 @@ class ReviewService {
 
   List<ScreeningCaseModel> get cachedCases => List.unmodifiable(_cachedCases);
 
-  Future<List<ScreeningCaseModel>> getPendingReviews({bool isDemo = false}) async {
+  Future<List<ScreeningCaseModel>> getPendingReviews() async {
     // 1. Fetch real-time cases from Supabase cloud database
     if (SupabaseService.isInitialized) {
       final supaCases = await _supabaseService.fetchScreeningCases();
@@ -42,7 +42,6 @@ class ReviewService {
     required String clinicalNotes,
     int? recommendedFollowupDays,
     String? clinicianName,
-    bool isDemo = true,
   }) async {
     // Validate business rules
     if (action == ClinicianAction.override && (finalDrLevel == null || clinicalNotes.trim().isEmpty)) {

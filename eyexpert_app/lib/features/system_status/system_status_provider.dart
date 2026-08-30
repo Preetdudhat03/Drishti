@@ -10,5 +10,5 @@ final systemServiceProvider = Provider<SystemService>((ref) {
 
 final systemStatusProvider = FutureProvider.autoDispose<SystemStatusModel>((ref) async {
   final systemService = ref.watch(systemServiceProvider);
-  return systemService.getSystemStatus(isDemo: true);
+  return systemService.getSystemStatus();
 });

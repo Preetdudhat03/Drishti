@@ -7,8 +7,8 @@ class ReviewRepository {
 
   ReviewRepository({required ReviewService reviewService}) : _reviewService = reviewService;
 
-  Future<List<ScreeningCaseModel>> getPendingReviews({bool isDemo = false}) async {
-    return _reviewService.getPendingReviews(isDemo: isDemo);
+  Future<List<ScreeningCaseModel>> getPendingReviews() async {
+    return _reviewService.getPendingReviews();
   }
 
   Future<ScreeningCaseModel> submitReview({
@@ -18,7 +18,6 @@ class ReviewRepository {
     required String clinicalNotes,
     int? recommendedFollowupDays,
     String? clinicianName,
-    bool isDemo = false,
   }) async {
     return _reviewService.submitClinicianReview(
       screeningId: screeningId,
@@ -27,7 +26,6 @@ class ReviewRepository {
       clinicalNotes: clinicalNotes,
       recommendedFollowupDays: recommendedFollowupDays,
       clinicianName: clinicianName,
-      isDemo: isDemo,
     );
   }
 

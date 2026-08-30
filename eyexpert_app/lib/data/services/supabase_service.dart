@@ -43,14 +43,14 @@ class SupabaseService {
     if (supa == null) return null;
 
     final response = await supa.auth.signInWithPassword(
-      email: email,
+      email: email.trim(),
       password: password,
     );
 
     final user = response.user;
     if (user == null) return null;
 
-    return await fetchUserProfile(user.id);
+    return await fetchUserProfile(user.id, fallbackEmail: user.email);
   }
 
   Future<UserModel?> signUp({
@@ -59,17 +59,19 @@ class SupabaseService {
     required String fullName,
     required UserRole role,
     String facilityId = 'PHC-RAMGARH-01',
+    String? professionalId,
   }) async {
     final supa = client;
     if (supa == null) return null;
 
     final response = await supa.auth.signUp(
-      email: email,
+      email: email.trim(),
       password: password,
       data: {
         'full_name': fullName,
         'role': role.displayName,
         'facility_id': facilityId,
+        'professional_id': professionalId,
       },
     );
 
@@ -80,11 +82,13 @@ class SupabaseService {
     try {
       await supa.from('profiles').upsert({
         'id': user.id,
-        'email': email,
+        'email': email.trim(),
         'name': fullName,
         'role': role.displayName,
         'facility_id': facilityId,
+        'professional_id': professionalId,
         'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
       });
     } catch (e) {
       debugPrint('[SupabaseService] Profile creation notice: $e');
@@ -92,9 +96,14 @@ class SupabaseService {
 
     return UserModel(
       id: user.id,
+      email: email.trim(),
       name: fullName,
       role: role,
       organization: facilityId,
+      facilityId: facilityId,
+      professionalId: professionalId,
+      isActive: true,
+      isDemoAccount: false,
     );
   }
 
@@ -104,7 +113,7 @@ class SupabaseService {
     } catch (_) {}
   }
 
-  Future<UserModel?> fetchUserProfile(String userId) async {
+  Future<UserModel?> fetchUserProfile(String userId, {String? fallbackEmail}) async {
     final supa = client;
     if (supa == null) return null;
 
@@ -112,10 +121,15 @@ class SupabaseService {
       final data = await supa.from('profiles').select().eq('id', userId).maybeSingle();
       if (data != null) {
         return UserModel(
-          id: data['id'] ?? userId,
-          name: data['name'] ?? 'Medical Officer',
-          role: UserRole.fromString(data['role']),
-          organization: data['facility_id'] ?? 'PHC-01',
+          id: data['id']?.toString() ?? userId,
+          email: data['email']?.toString() ?? fallbackEmail ?? '',
+          name: data['name']?.toString() ?? data['full_name']?.toString() ?? 'Medical Officer',
+          role: UserRole.fromString(data['role']?.toString()),
+          organization: data['organization']?.toString() ?? data['facility_id']?.toString() ?? 'Primary Health Centre',
+          facilityId: data['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
+          professionalId: data['professional_id']?.toString() ?? data['registration_id']?.toString(),
+          isActive: data['is_active'] is bool ? data['is_active'] : (data['is_active']?.toString() != 'false'),
+          isDemoAccount: false,
         );
       }
     } catch (e) {
@@ -126,9 +140,14 @@ class SupabaseService {
     if (user != null) {
       return UserModel(
         id: user.id,
-        name: user.userMetadata?['full_name'] ?? user.email ?? 'Healthcare Worker',
-        role: UserRole.fromString(user.userMetadata?['role']),
-        organization: user.userMetadata?['facility_id'] ?? 'PHC-01',
+        email: user.email ?? fallbackEmail ?? '',
+        name: user.userMetadata?['full_name']?.toString() ?? user.email ?? 'Healthcare Worker',
+        role: UserRole.fromString(user.userMetadata?['role']?.toString()),
+        organization: user.userMetadata?['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
+        facilityId: user.userMetadata?['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
+        professionalId: user.userMetadata?['professional_id']?.toString(),
+        isActive: true,
+        isDemoAccount: false,
       );
     }
     return null;

@@ -1,19 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/user_model.dart';
 import '../../data/services/auth_service.dart';
-import '../../core/security/secure_storage.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
 class AuthState {
   final UserModel? user;
   final bool isLoading;
+  final String? authenticatingMessage;
   final String? errorMessage;
+  final bool isSessionRestored;
 
   const AuthState({
     this.user,
     this.isLoading = false,
+    this.authenticatingMessage,
     this.errorMessage,
+    this.isSessionRestored = false,
   });
 
   bool get isAuthenticated => user != null;
@@ -23,12 +26,18 @@ class AuthState {
   AuthState copyWith({
     UserModel? user,
     bool? isLoading,
+    String? authenticatingMessage,
     String? errorMessage,
+    bool? isSessionRestored,
+    bool clearUser = false,
+    bool clearError = false,
   }) {
     return AuthState(
-      user: user ?? this.user,
+      user: clearUser ? null : (user ?? this.user),
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
+      authenticatingMessage: authenticatingMessage ?? this.authenticatingMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      isSessionRestored: isSessionRestored ?? this.isSessionRestored,
     );
   }
 }
@@ -36,52 +45,68 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
 
-  AuthNotifier(this._authService) : super(const AuthState(user: UserModel.healthWorkerDefault)) {
+  AuthNotifier(this._authService) : super(const AuthState()) {
     _initSession();
   }
 
   Future<void> _initSession() async {
-    final user = await _authService.getCurrentUser();
-    state = state.copyWith(
-      user: user ?? UserModel.healthWorkerDefault,
-    );
+    try {
+      final user = await _authService.getCurrentUser();
+      state = state.copyWith(
+        user: user,
+        isSessionRestored: true,
+      );
+    } catch (_) {
+      state = state.copyWith(isSessionRestored: true);
+    }
   }
 
-  Future<void> login({
+  Future<bool> login({
     required String username,
     required String password,
     required UserRole roleRequested,
-    bool isDemo = false,
+    String? medicalRegistrationId,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      authenticatingMessage: 'Verifying secure clinical access...',
+      clearError: true,
+    );
+
     try {
       final user = await _authService.login(
         username: username,
         password: password,
         roleRequested: roleRequested,
-        isDemo: isDemo,
+        medicalRegistrationId: medicalRegistrationId,
       );
-      state = state.copyWith(user: user, isLoading: false);
+      state = state.copyWith(
+        user: user,
+        isLoading: false,
+        authenticatingMessage: null,
+        clearError: true,
+      );
+      return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        authenticatingMessage: null,
+        errorMessage: e.toString(),
+      );
+      return false;
     }
   }
 
-  Future<void> switchRole(UserRole newRole) async {
-    final user = newRole == UserRole.clinician
-        ? UserModel.clinicianDefault
-        : UserModel.healthWorkerDefault;
-    await login(
-      username: user.name,
-      password: '',
-      roleRequested: newRole,
-      isDemo: false,
-    );
+  void clearError() {
+    state = state.copyWith(clearError: true);
   }
 
   Future<void> logout() async {
-    await _authService.logout();
-    state = const AuthState(user: null);
+    state = state.copyWith(isLoading: true, authenticatingMessage: 'Signing out...');
+    try {
+      await _authService.logout();
+    } catch (_) {}
+    state = const AuthState(isSessionRestored: true);
   }
 }
 

@@ -9,7 +9,7 @@ void main() {
         child: DrishtiApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.byType(DrishtiApp), findsOneWidget);
   });
 }

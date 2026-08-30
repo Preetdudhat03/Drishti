@@ -69,7 +69,6 @@ class ScreeningService {
   Future<ScreeningCaseModel> createScreening({
     required PatientModel patient,
     required String clientRequestId,
-    bool isDemo = true,
   }) async {
     final String id = 'DR-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
     final screeningCase = ScreeningCaseModel(
@@ -83,10 +82,6 @@ class ScreeningService {
     // Primary: Cloud Supabase Registration
     if (SupabaseService.isInitialized) {
       await _supabaseService.saveScreeningCase(screeningCase);
-    }
-
-    if (isDemo) {
-      return screeningCase;
     }
 
     try {
@@ -106,7 +101,6 @@ class ScreeningService {
   Future<QualityAssessmentModel> assessImageQuality({
     required String screeningId,
     required String imagePath,
-    bool isDemo = false,
   }) async {
     Uint8List? rawBytes;
     if (imagePath.isNotEmpty) {
@@ -191,7 +185,6 @@ class ScreeningService {
   Future<Map<String, dynamic>> analyzeScreening({
     required String screeningId,
     required QualityAssessmentModel quality,
-    bool isDemo = false,
   }) async {
     // Safety Gate: UNGRADABLE images strictly block automated DR classification
     if (quality.isUngradable) {

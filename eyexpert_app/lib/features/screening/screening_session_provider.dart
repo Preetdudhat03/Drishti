@@ -131,7 +131,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
     final sId = 'EX-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
 
     final patient = PatientModel(
-      patientId: patientId.trim().isEmpty ? 'PT-2026-DEMO' : patientId.trim(),
+      patientId: patientId.trim().isEmpty ? 'PT-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}' : patientId.trim(),
       age: age,
       gender: gender,
       diabetesDurationYears: diabetesDurationYears,

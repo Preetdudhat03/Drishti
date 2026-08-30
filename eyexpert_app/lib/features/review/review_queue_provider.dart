@@ -86,7 +86,7 @@ class ReviewQueueNotifier extends StateNotifier<ReviewQueueState> {
   Future<void> loadPendingReviews() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final cases = await _repository.getPendingReviews(isDemo: false);
+      final cases = await _repository.getPendingReviews();
       final Set<String> seen = {};
       final List<ScreeningCaseModel> uniqueCases = [];
       for (final c in cases) {
@@ -125,7 +125,6 @@ class ReviewQueueNotifier extends StateNotifier<ReviewQueueState> {
         clinicalNotes: clinicalNotes,
         recommendedFollowupDays: recommendedFollowupDays,
         clinicianName: clinicianName,
-        isDemo: false,
       );
 
       final updatedList = state.cases.map((c) {

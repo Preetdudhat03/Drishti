@@ -75,46 +75,20 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
 
-              // Role Switching Card
+              // Account & Security Details Card
               ClinicalCard(
-                title: 'Switch Active Persona',
+                title: 'Authenticated Credentials',
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Toggle between Field Health Worker and Ophthalmologist accounts:',
-                      style: TextStyle(fontSize: 12, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => ref.read(authProvider.notifier).switchRole(UserRole.healthWorker),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                color: user?.role == UserRole.healthWorker ? AppColors.primary : Colors.grey.shade300,
-                                width: user?.role == UserRole.healthWorker ? 2 : 1,
-                              ),
-                            ),
-                            child: const Text('Health Worker'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => ref.read(authProvider.notifier).switchRole(UserRole.clinician),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                color: user?.role == UserRole.clinician ? AppColors.primary : Colors.grey.shade300,
-                                width: user?.role == UserRole.clinician ? 2 : 1,
-                              ),
-                            ),
-                            child: const Text('Ophthalmologist'),
-                          ),
-                        ),
-                      ],
-                    ),
+                    _facilityRow('User ID', user?.id ?? 'N/A'),
+                    const Divider(height: 16),
+                    _facilityRow('Role', user?.role.displayName ?? 'Health Worker'),
+                    if (user?.professionalId != null && user!.professionalId!.isNotEmpty) ...[
+                      const Divider(height: 16),
+                      _facilityRow('Registration ID', user.professionalId!),
+                    ],
+                    const Divider(height: 16),
+                    _facilityRow('Account Status', user?.isActive == true ? 'ACTIVE (Verified)' : 'INACTIVE'),
                   ],
                 ),
               ),
