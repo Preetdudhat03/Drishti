@@ -85,14 +85,14 @@ class OphthalmologistDashboard extends ConsumerWidget {
                           children: [
                             Text(
                               user?.name.isNotEmpty == true ? user!.name : 'Specialist Ophthalmologist',
-                              style: AppTypography.titleLarge.copyWith(
+                              style: AppTypography.pageHeading.copyWith(
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              'OPHTHALMOLOGIST · ${user?.organization ?? "DISTRICT EYE CENTRE"}',
+                              'OPHTHALMOLOGIST · ${user?.organization.toUpperCase() ?? "DISTRICT EYE CENTRE"}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
@@ -181,8 +181,10 @@ class OphthalmologistDashboard extends ConsumerWidget {
                 // Urgent Priority Queue Preview
                 ClinicalCard(
                   title: 'Cases Requiring Immediate Specialist Review',
-                  actionText: 'View All (${reviewState.cases.length})',
-                  onActionTap: onOpenReviewQueue,
+                  titleAction: TextButton(
+                    onPressed: onOpenReviewQueue,
+                    child: Text('View All (${reviewState.cases.length})'),
+                  ),
                   child: pendingCases.isEmpty
                       ? Container(
                           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -231,19 +233,21 @@ class OphthalmologistDashboard extends ConsumerWidget {
                                   const SizedBox(width: 8),
                                   StatusBadge(
                                     label: AppFormatters.formatEye(c.patient.eye),
-                                    type: StatusBadgeType.neutral,
+                                    color: AppColors.textSecondary,
+                                    backgroundColor: Colors.grey.shade100,
                                   ),
                                   const Spacer(),
                                   if (pred != null) ...[
                                     StatusBadge(
                                       label: 'AI: Level ${pred.drLevel}',
-                                      type: c.isReferable ? StatusBadgeType.critical : StatusBadgeType.good,
+                                      color: c.isReferable ? AppColors.statusCritical : AppColors.statusGood,
+                                      backgroundColor: c.isReferable ? AppColors.statusCriticalBg : AppColors.statusGoodBg,
                                     ),
                                   ],
                                 ],
                               ),
                               subtitle: Text(
-                                '${c.screeningId} • Registered ${AppFormatters.formatTimeAgo(c.createdAt)}',
+                                '${c.screeningId} • ${AppFormatters.formatDateTime(c.createdAt)}',
                                 style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
                               ),
                               trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
