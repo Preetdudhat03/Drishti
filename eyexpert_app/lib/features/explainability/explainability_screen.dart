@@ -206,7 +206,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(Icons.warning_amber_rounded, color: AppColors.statusBorderline, size: 20),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '⚠ Interpretability output — highlights regions contributing to AI model prediction and does not represent a definitive lesion diagnosis.',
