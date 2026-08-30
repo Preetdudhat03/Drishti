@@ -23,7 +23,7 @@ void main() {
     });
 
     test('UserModel JSON serialization & deserialization', () {
-      final user = UserModel(
+      const user = UserModel(
         id: 'USR-TEST-001',
         email: 'doc@drishti.org',
         name: 'Dr. Test Clinician',
