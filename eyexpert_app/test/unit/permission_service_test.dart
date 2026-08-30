@@ -22,7 +22,7 @@ void main() {
     );
 
     test('PHC Health Worker permissions', () {
-      final permissions = PermissionService(healthWorker);
+      const permissions = PermissionService(healthWorker);
 
       expect(permissions.canRegisterPatient, isTrue);
       expect(permissions.canSubmitCase, isTrue);
@@ -39,7 +39,7 @@ void main() {
     });
 
     test('Ophthalmologist permissions', () {
-      final permissions = PermissionService(ophthalmologist);
+      const permissions = PermissionService(ophthalmologist);
 
       // Specialist Review & Validation
       expect(permissions.canAccessReviewQueue, isTrue);
