@@ -18,7 +18,6 @@ void main() {
         finalDrLevel: 2,
         clinicalNotes: 'AI Level 2 validated by clinician.',
         clinicianName: 'Dr. Rajesh Kumar',
-        isDemo: true,
       );
 
       expect(updated.review, isNotNull);
@@ -34,7 +33,6 @@ void main() {
           action: ClinicianAction.override,
           finalDrLevel: 3,
           clinicalNotes: '', // Empty notes should fail
-          isDemo: true,
         ),
         throwsA(isA<AppException>()),
       );
@@ -47,7 +45,6 @@ void main() {
         finalDrLevel: 3,
         clinicalNotes: 'Multiple hemorrhages observed in four quadrants; upgrading to Level 3 Severe NPDR.',
         clinicianName: 'Dr. Rajesh Kumar',
-        isDemo: true,
       );
 
       expect(updated.review!.action, ClinicianAction.override);
