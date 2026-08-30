@@ -222,7 +222,7 @@ class ReportService {
       children: [
         pw.Text(label, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
         pw.SizedBox(height: 2),
-        pw.Text(value, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+        pw.Text(value, style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
       ],
     );
   }
