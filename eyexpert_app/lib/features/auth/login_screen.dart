@@ -259,7 +259,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 2),
                         Text(
                           isPHC
-                              ? 'Facility: Demo Primary Health Centre | Access: Patient Intake & Fundus AI'
+                              ? 'Facility: Primary Health Centre | Access: Patient Intake & Fundus AI'
                               : 'Clearance: Tele-Ophthalmologist Review & Final Diagnostic Override',
                           style: const TextStyle(
                             fontSize: 11,
