@@ -103,7 +103,6 @@ class SupabaseService {
       facilityId: facilityId,
       professionalId: professionalId,
       isActive: true,
-      isDemoAccount: false,
     );
   }
 
@@ -129,7 +128,6 @@ class SupabaseService {
           facilityId: data['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
           professionalId: data['professional_id']?.toString() ?? data['registration_id']?.toString(),
           isActive: data['is_active'] is bool ? data['is_active'] : (data['is_active']?.toString() != 'false'),
-          isDemoAccount: false,
         );
       }
     } catch (e) {
@@ -147,7 +145,6 @@ class SupabaseService {
         facilityId: user.userMetadata?['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
         professionalId: user.userMetadata?['professional_id']?.toString(),
         isActive: true,
-        isDemoAccount: false,
       );
     }
     return null;
