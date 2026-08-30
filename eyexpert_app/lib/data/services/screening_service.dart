@@ -29,17 +29,14 @@ class ScreeningService {
 
       final bytes = byteData.buffer.asUint8List();
       int redTotal = 0;
-      int greenTotal = 0;
       int blueTotal = 0;
       int blueDominantCount = 0;
       int pixelCount = bytes.length ~/ 4;
 
       for (int i = 0; i < bytes.length; i += 4) {
         final r = bytes[i];
-        final g = bytes[i + 1];
         final b = bytes[i + 2];
         redTotal += r;
-        greenTotal += g;
         blueTotal += b;
         if (b > r + 15 && b > 50) {
           blueDominantCount++;
