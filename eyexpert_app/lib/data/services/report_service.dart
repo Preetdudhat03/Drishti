@@ -32,7 +32,7 @@ class ReportService {
                     children: [
                       pw.Text(
                         'Drishti Screening Report (दृष्टि)',
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           fontSize: 20,
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColors.teal900,
@@ -88,7 +88,7 @@ class ReportService {
 
               // Image Quality Section
               pw.Text('1. Image Quality Assessment',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                  style: const pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
               pw.SizedBox(height: 4),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -103,7 +103,7 @@ class ReportService {
 
               // AI Screening Result Section
               pw.Text('2. AI Screening Result',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                  style: const pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
               pw.SizedBox(height: 4),
               pw.Container(
                 padding: const pw.EdgeInsets.all(10),
@@ -121,7 +121,7 @@ class ReportService {
                           pred != null
                               ? 'Level ${pred.drLevel} — ${pred.severityLabel}'
                               : 'AI Prediction Blocked (Ungradable Quality)',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+                          style: const pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
                         ),
                         if (pred != null)
                           pw.Text(
@@ -140,7 +140,7 @@ class ReportService {
 
               // Clinician Review Section
               pw.Text('3. Clinician Final Decision',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                  style: const pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
               pw.SizedBox(height: 4),
               pw.Container(
                 padding: const pw.EdgeInsets.all(10),
@@ -158,7 +158,7 @@ class ReportService {
                             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                             children: [
                               pw.Text('Action: ${review.action.label}',
-                                  style: pw.TextStyle(
+                                  style: const pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold, fontSize: 11)),
                               pw.Text('Reviewer: ${review.clinicianName ?? "Ophthalmologist"}',
                                   style: const pw.TextStyle(fontSize: 10)),
@@ -174,7 +174,7 @@ class ReportService {
                       )
                     : pw.Text(
                         'Human Validation State: PENDING OPHTHALMOLOGIST REVIEW',
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 10,
                             color: PdfColors.amber900),
@@ -184,7 +184,7 @@ class ReportService {
 
               // Model Provenance
               pw.Text('4. Model Provenance & Traceability',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                  style: const pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
               pw.SizedBox(height: 2),
               pw.Text(
                 'Model: Drishti DR Classifier (ResNet-18) | Dataset: APTOS 2019 Blindness Detection | Target Layer: layer4[1].conv2',
