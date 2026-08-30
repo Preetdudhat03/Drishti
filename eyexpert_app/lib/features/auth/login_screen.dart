@@ -5,7 +5,6 @@ import '../../data/models/user_model.dart';
 import '../../shared/widgets/drishti_logo.dart';
 import 'auth_provider.dart';
 import 'widgets/retinal_visual_panel.dart';
-import 'widgets/role_selection_card.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,48 +15,28 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _registrationIdController = TextEditingController();
-
-  UserRole _selectedRole = UserRole.healthWorker;
   bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
-    _registrationIdController.dispose();
     super.dispose();
   }
 
-  void _onRoleChanged(UserRole role) {
-    if (_selectedRole == role) return;
-    setState(() {
-      _selectedRole = role;
-      _usernameController.clear();
-      _passwordController.clear();
-      _registrationIdController.clear();
-    });
+  void _handleLogin() async {
     ref.read(authProvider.notifier).clearError();
-  }
-
-  void _handleLogin() {
-    ref.read(authProvider.notifier).clearError();
-    ref.read(authProvider.notifier).login(
-      username: _usernameController.text.trim(),
+    await ref.read(authProvider.notifier).login(
+      username: _emailController.text.trim(),
       password: _passwordController.text,
-      roleRequested: _selectedRole,
-      medicalRegistrationId: _selectedRole == UserRole.clinician
-          ? _registrationIdController.text.trim()
-          : null,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final isPHC = _selectedRole == UserRole.healthWorker;
 
     return Scaffold(
       backgroundColor: AppColors.obsidianDeep,
@@ -71,23 +50,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
+                    constraints: const BoxConstraints(maxWidth: 1100),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Left Panel: Clinical Authentication Form
+                        // Left: Workstation Authentication Panel
                         Expanded(
                           flex: 5,
-                          child: _buildLoginFormPanel(context, authState, isPHC),
+                          child: _buildLoginForm(context, authState),
                         ),
                         const SizedBox(width: 32),
 
-                        // Right Panel: AI Retinal Imaging Workstation Visual
-                        Expanded(
+                        // Right: Retinal Vascular Map & AI Telemetry
+                        const Expanded(
                           flex: 5,
                           child: SizedBox(
-                            height: 720,
-                            child: RetinalVisualPanel(activeRole: _selectedRole),
+                            height: 620,
+                            child: RetinalVisualPanel(activeRole: UserRole.healthWorker),
                           ),
                         ),
                       ],
@@ -97,13 +76,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               );
             }
 
-            // Mobile / Narrow Viewport: Single Column Layout
+            // Mobile / Narrow Viewport
             return Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: _buildLoginFormPanel(context, authState, isPHC),
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: _buildLoginForm(context, authState),
                 ),
               ),
             );
@@ -113,15 +92,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildLoginFormPanel(
-    BuildContext context,
-    AuthState authState,
-    bool isPHC,
-  ) {
-    final activeAccent = isPHC ? AppColors.electricBlue : AppColors.aiViolet;
-
+  Widget _buildLoginForm(BuildContext context, AuthState authState) {
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppColors.obsidianCanvas,
         borderRadius: BorderRadius.circular(24),
@@ -142,7 +115,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header: Drishti Brand + Subtitle + SIH Badge
+            // Header: Drishti Logo + System Title
             Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -150,138 +123,48 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               runSpacing: 8,
               children: [
                 const DrishtiLogo(
-                  size: 34,
+                  size: 38,
                   showText: true,
                   textColor: AppColors.textBright,
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.obsidianElevated,
+                    color: AppColors.electricBlue.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: AppColors.obsidianBorder,
-                      width: 0.8,
+                      color: AppColors.electricBlue.withValues(alpha: 0.4),
+                      width: 1,
                     ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.verified_outlined,
-                        size: 12,
-                        color: AppColors.hudCyan,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'SIH 2026 • PS-26038',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.hudCyan,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
+                  child: const Text(
+                    'SECURE GATEWAY',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.hudCyan,
+                      letterSpacing: 0.8,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             const Text(
-              'Clinical Intelligence & Tele-Ophthalmology Portal',
+              'Explainable Retinal Intelligence & Clinical Decision Support',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textSubtle,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 28),
 
-            // Step 1: Role Selection Section
+            // Work Email Field
             const Text(
-              'SELECT CLINICAL ROLE',
+              'WORK EMAIL / USERNAME',
               style: TextStyle(
                 fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textSubtle,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 10),
-            RoleSelectionCard(
-              role: UserRole.healthWorker,
-              isSelected: _selectedRole == UserRole.healthWorker,
-              onTap: () => _onRoleChanged(UserRole.healthWorker),
-            ),
-            const SizedBox(height: 10),
-            RoleSelectionCard(
-              role: UserRole.clinician,
-              isSelected: _selectedRole == UserRole.clinician,
-              onTap: () => _onRoleChanged(UserRole.clinician),
-            ),
-            const SizedBox(height: 20),
-
-            // Step 2: Role Context Summary Banner
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: activeAccent.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: activeAccent.withValues(alpha: 0.35),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    isPHC ? Icons.local_hospital_outlined : Icons.shield_outlined,
-                    size: 16,
-                    color: activeAccent,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isPHC
-                              ? 'PHC FIELD SCREENING ENVIRONMENT'
-                              : 'SPECIALIST CLINICAL REVIEW WORKSPACE',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            color: activeAccent,
-                            letterSpacing: 0.6,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          isPHC
-                              ? 'Facility: Primary Health Centre | Access: Patient Intake & Fundus AI'
-                              : 'Clearance: Tele-Ophthalmologist Review & Final Diagnostic Override',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSubtle,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-
-            // Step 3: Login Input Fields
-            // Email / Clinician ID Field
-            Text(
-              isPHC
-                  ? 'REGISTERED EMAIL / HEALTH WORKER ID'
-                  : 'PROFESSIONAL EMAIL / CLINICIAN ID',
-              style: const TextStyle(
-                fontSize: 10.5,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textSubtle,
                 letterSpacing: 0.5,
@@ -289,14 +172,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 6),
             TextField(
-              controller: _usernameController,
+              controller: _emailController,
               style: const TextStyle(color: AppColors.textBright, fontSize: 14),
               decoration: InputDecoration(
-                hintText: isPHC
-                    ? 'healthworker@phc.gov.in'
-                    : 'clinician@retina-telemed.org',
+                hintText: 'user@facility.gov.in',
                 hintStyle: const TextStyle(color: AppColors.textDisabled, fontSize: 13.5),
-                prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.textSubtle, size: 18),
+                prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textSubtle, size: 18),
                 fillColor: AppColors.obsidianSurface,
                 filled: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -310,21 +191,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: activeAccent, width: 1.5),
+                  borderSide: const BorderSide(color: AppColors.electricBlue, width: 1.5),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
 
             // Password Field
-            const Text(
-              'PASSWORD',
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSubtle,
-                letterSpacing: 0.5,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'PASSWORD',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSubtle,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please contact your facility administrator or IT desk to reset your password.'),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Forgot password?',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.electricBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 6),
             TextField(
@@ -356,51 +259,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: activeAccent, width: 1.5),
+                  borderSide: const BorderSide(color: AppColors.electricBlue, width: 1.5),
                 ),
               ),
             ),
-
-            // Optional Medical Registration ID for Clinician
-            if (!isPHC) ...[
-              const SizedBox(height: 14),
-              const Text(
-                'MEDICAL REGISTRATION ID (OPTIONAL)',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSubtle,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _registrationIdController,
-                style: const TextStyle(color: AppColors.textBright, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'e.g. MCI-2018-84729 / State Medical Council',
-                  hintStyle: const TextStyle(color: AppColors.textDisabled, fontSize: 13.5),
-                  prefixIcon: const Icon(Icons.verified_outlined, color: AppColors.textSubtle, size: 18),
-                  fillColor: AppColors.obsidianSurface,
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.obsidianBorder),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.obsidianBorder),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: activeAccent, width: 1.5),
-                  ),
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Error Display Banner
             if (authState.errorMessage != null) ...[
@@ -444,14 +307,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
             ],
 
-            // Step 4: Primary Sign In Button
+            // Sign In Button
             ElevatedButton(
               onPressed: authState.isLoading ? null : _handleLogin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: activeAccent,
+                backgroundColor: AppColors.electricBlue,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -482,38 +345,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ],
                     )
-                  : Row(
+                  : const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          isPHC ? Icons.login_outlined : Icons.lock_open_outlined,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            isPHC
-                                ? 'Sign In to PHC Screening Workstation'
-                                : 'Sign In to Specialist Review Portal',
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.2,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        Icon(Icons.login_outlined, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'SIGN IN',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
                           ),
                         ),
                       ],
                     ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            // Step 5: Clinical Safety & AI Governance Footer
-            Center(
+            // Clinical Safety & AI Governance Footer
+            const Center(
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     'DRISHTI • SIH 2026 • PS-26038',
                     style: TextStyle(
                       fontSize: 10.5,
@@ -522,13 +377,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       letterSpacing: 0.8,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: 3),
                   Text(
                     'AI-assisted screening • Final clinical validation by an ophthalmologist.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 10,
-                      color: AppColors.textDisabled.withValues(alpha: 0.8),
+                      color: AppColors.textDisabled,
                     ),
                   ),
                 ],
@@ -540,4 +395,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
-
