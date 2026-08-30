@@ -257,7 +257,7 @@ class _RetinalVisualPanelState extends State<RetinalVisualPanel>
                         size: 15,
                         color: AppColors.statusNormal,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Human-in-the-Loop Architecture: AI provides screening recommendations; final diagnosis remains strictly under qualified ophthalmologists.',
