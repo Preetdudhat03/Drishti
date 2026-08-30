@@ -15,10 +15,8 @@ final screeningServiceProvider = Provider<ScreeningService>((ref) => ScreeningSe
 
 final screeningRepositoryProvider = Provider<ScreeningRepository>((ref) {
   final screeningService = ref.watch(screeningServiceProvider);
-  final syncService = ref.watch(syncServiceProvider);
   return ScreeningRepository(
     screeningService: screeningService,
-    syncService: syncService,
   );
 });
 
