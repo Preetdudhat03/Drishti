@@ -222,13 +222,13 @@ class ResponsiveScaffold extends ConsumerWidget {
                           const SizedBox(width: 5),
                           Flexible(
                             child: Text(
-                              '${currentUser!.role.displayName.toUpperCase()} • ${currentUser!.name}',
+                              '${isClinician ? "OPHTHALMOLOGIST" : "HEALTH WORKER"} · ${currentUser!.organization.toUpperCase()}',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 10.5,
                                 color: AppColors.textSubtle,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.2,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
                               ),
                             ),
                           ),
