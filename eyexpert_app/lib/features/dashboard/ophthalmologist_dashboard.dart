@@ -241,7 +241,9 @@ class OphthalmologistDashboard extends ConsumerWidget {
                                     StatusBadge(
                                       label: 'AI: Level ${pred.drLevel}',
                                       color: c.isReferable ? AppColors.statusCritical : AppColors.statusGood,
-                                      backgroundColor: c.isReferable ? AppColors.statusCriticalBg : AppColors.statusGoodBg,
+                                      backgroundColor: c.isReferable
+                                          ? AppColors.statusCritical.withValues(alpha: 0.15)
+                                          : AppColors.statusGood.withValues(alpha: 0.15),
                                     ),
                                   ],
                                 ],
