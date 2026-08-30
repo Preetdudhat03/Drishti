@@ -175,7 +175,6 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final q = await _repository.checkQuality(
         screeningId: state.screeningId!,
         imagePath: state.imagePath!,
-        isDemo: false,
       );
 
       final nextStatus = q.isUngradable
@@ -231,7 +230,6 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
-        isDemo: false,
       );
 
       // Step 4: Grad-CAM Explainability Generation
