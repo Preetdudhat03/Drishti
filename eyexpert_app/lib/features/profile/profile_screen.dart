@@ -497,8 +497,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           content: SingleChildScrollView(
-            child: SizedBox(
-              width: 440,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
