@@ -361,7 +361,7 @@ class _RetinalWorkstationPainter extends CustomPainter {
     // Concentric Retinal Inspection Rings
     for (int i = 1; i <= 4; i++) {
       final r = maxRadius * (i / 4.0);
-      canvas.drawCircle(center, r, ringPaint);
+      canvas.drawCircle(center, r, i == 4 ? ringGlowPaint : ringPaint);
     }
 
     // Animated Pulsing Retinal Scan Ring
