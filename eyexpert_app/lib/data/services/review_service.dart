@@ -53,7 +53,7 @@ class ReviewService {
 
     final review = ClinicianReviewModel(
       action: action,
-      clinicianId: 'DOC-DEMO-002',
+      clinicianId: 'DOC-OPHTHAL-01',
       clinicianName: clinicianName ?? 'Dr. Rajesh Kumar',
       clinicianRole: 'Ophthalmologist',
       finalDrLevel: finalDrLevel,
