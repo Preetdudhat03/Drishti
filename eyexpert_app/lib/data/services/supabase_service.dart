@@ -10,6 +10,9 @@ import '../models/dr_prediction_model.dart';
 import '../models/explainability_model.dart';
 import '../models/screening_case_model.dart';
 import '../models/clinician_review_model.dart';
+import '../models/facility_model.dart';
+import '../models/professional_profile_model.dart';
+import '../models/verification_document_model.dart';
 
 class SupabaseService {
   static SupabaseClient? get client {
@@ -118,16 +121,49 @@ class SupabaseService {
     try {
       final data = await supa.from('profiles').select().eq('id', userId).maybeSingle();
       if (data != null) {
-        return UserModel(
+        final role = UserRole.fromString(data['role']?.toString());
+        final facilityId = data['facility_id']?.toString() ?? 'PHC-RAMGARH-01';
+
+        // Load relational data
+        FacilityModel? facility;
+        ProfessionalProfileModel? profProfile;
+        List<VerificationDocumentModel> documents = [];
+
+        if (role == UserRole.healthWorker) {
+          facility = await fetchFacility(facilityId);
+        } else {
+          profProfile = await fetchProfessionalProfile(userId);
+        }
+
+        documents = await fetchVerificationDocuments(userId);
+
+        final user = UserModel(
           id: data['id']?.toString() ?? userId,
           email: data['email']?.toString() ?? fallbackEmail ?? '',
           name: data['name']?.toString() ?? data['full_name']?.toString() ?? 'Medical Officer',
-          role: UserRole.fromString(data['role']?.toString()),
-          organization: data['organization']?.toString() ?? data['facility_id']?.toString() ?? 'Primary Health Centre',
-          facilityId: data['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
-          professionalId: data['professional_id']?.toString() ?? data['registration_id']?.toString(),
+          phone: data['phone']?.toString() ?? '',
+          role: role,
+          organization: data['organization']?.toString() ?? data['facility_name']?.toString() ?? facility?.facilityName ?? (role == UserRole.clinician ? 'District Eye Centre' : 'Primary Health Centre'),
+          facilityId: facilityId,
+          professionalId: data['professional_id']?.toString() ?? profProfile?.registrationNumber,
+          avatarUrl: data['avatar_url']?.toString(),
+          district: data['district']?.toString() ?? 'Ramgarh',
+          state: data['state']?.toString() ?? 'Jharkhand',
+          address: data['address']?.toString() ?? '',
+          pinCode: data['pin_code']?.toString() ?? '829122',
+          gender: data['gender']?.toString() ?? 'Not Specified',
+          preferredLanguage: data['preferred_language']?.toString() ?? 'English / Hindi',
+          profileCompletion: (data['profile_completion'] as num?)?.toInt() ?? 80,
+          verificationStatus: OverallVerificationStatus.fromString(data['verification_status']?.toString()),
           isActive: data['is_active'] is bool ? data['is_active'] : (data['is_active']?.toString() != 'false'),
+          createdAt: data['created_at'] != null ? DateTime.tryParse(data['created_at'].toString()) : null,
+          lastLoginAt: data['last_login_at'] != null ? DateTime.tryParse(data['last_login_at'].toString()) : null,
+          facility: facility,
+          professionalProfile: profProfile,
+          documents: documents,
         );
+
+        return user.copyWith(profileCompletion: user.calculateCompletionPercentage());
       }
     } catch (e) {
       debugPrint('[SupabaseService] Profile fetch notice: $e');
@@ -135,18 +171,285 @@ class SupabaseService {
 
     final user = supa.auth.currentUser;
     if (user != null) {
+      final role = UserRole.fromString(user.userMetadata?['role']?.toString());
       return UserModel(
         id: user.id,
         email: user.email ?? fallbackEmail ?? '',
         name: user.userMetadata?['full_name']?.toString() ?? user.email ?? 'Healthcare Worker',
-        role: UserRole.fromString(user.userMetadata?['role']?.toString()),
-        organization: user.userMetadata?['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
+        role: role,
+        organization: user.userMetadata?['facility_id']?.toString() ?? (role == UserRole.clinician ? 'District Eye Centre' : 'PHC Ramgarh'),
         facilityId: user.userMetadata?['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
         professionalId: user.userMetadata?['professional_id']?.toString(),
         isActive: true,
       );
     }
     return null;
+  }
+
+  // Profile Management: Update Personal & Contact Info
+  // Profile Management: Update Personal & Contact Info
+  Future<bool> updateProfile(UserModel user) async {
+    final supa = client;
+    if (supa == null) return false;
+
+    try {
+      final now = DateTime.now().toIso8601String();
+      await supa.from('profiles').upsert({
+        'id': user.id,
+        'email': user.email,
+        'full_name': user.name,
+        'name': user.name,
+        'phone': user.phone,
+        'role': user.role.displayName,
+        'organization': user.organization,
+        'facility_id': user.facilityId,
+        'professional_id': user.professionalId,
+        'avatar_url': user.avatarUrl,
+        'district': user.district,
+        'state': user.state,
+        'address': user.address,
+        'pin_code': user.pinCode,
+        'gender': user.gender,
+        'preferred_language': user.preferredLanguage,
+        'profile_completion': user.calculateCompletionPercentage(),
+        'verification_status': user.verificationStatus.code,
+        'updated_at': now,
+      }, onConflict: 'id');
+
+      // Update nested relational info if present
+      if (user.isHealthWorker && user.facility != null) {
+        await updateFacility(user.facility!);
+      } else if (user.isClinician && user.professionalProfile != null) {
+        await updateProfessionalProfile(user.professionalProfile!);
+      }
+
+      debugPrint('[SupabaseService] Profile updated successfully for ${user.id}');
+      return true;
+    } catch (e) {
+      debugPrint('[SupabaseService] Error updating full profile: $e');
+      try {
+        await supa.from('profiles').upsert({
+          'id': user.id,
+          'email': user.email,
+          'name': user.name,
+          'phone': user.phone,
+          'facility_id': user.facilityId,
+          'updated_at': DateTime.now().toIso8601String(),
+        }, onConflict: 'id');
+        return true;
+      } catch (e2) {
+        debugPrint('[SupabaseService] Basic profile update also failed: $e2');
+        return false;
+      }
+    }
+  }
+
+  // Facility Management (PHC / Hospital)
+  Future<FacilityModel?> fetchFacility(String facilityIdentifier) async {
+    final supa = client;
+    if (supa == null) return null;
+
+    try {
+      final data = await supa
+          .from('facilities')
+          .select()
+          .or('facility_identifier.eq.$facilityIdentifier,id.eq.$facilityIdentifier')
+          .maybeSingle();
+
+      if (data != null) {
+        return FacilityModel.fromJson(Map<String, dynamic>.from(data));
+      }
+    } catch (e) {
+      debugPrint('[SupabaseService] Facility fetch notice: $e');
+    }
+    return null;
+  }
+
+  Future<bool> updateFacility(FacilityModel facility) async {
+    final supa = client;
+    if (supa == null) return false;
+
+    try {
+      final now = DateTime.now().toIso8601String();
+      await supa.from('facilities').upsert({
+        'facility_name': facility.facilityName,
+        'facility_type': facility.facilityType.displayName,
+        'facility_identifier': facility.facilityIdentifier,
+        'address': facility.address,
+        'village_town': facility.villageTown,
+        'district': facility.district,
+        'state': facility.state,
+        'pin_code': facility.pinCode,
+        'contact_number': facility.contactNumber,
+        'official_email': facility.officialEmail,
+        'number_of_screening_staff': facility.numberOfScreeningStaff,
+        'camera_available': facility.cameraAvailable,
+        'camera_manufacturer': facility.cameraManufacturer,
+        'camera_model': facility.cameraModel,
+        'connectivity_type': facility.connectivityType.displayName,
+        'updated_at': now,
+      }, onConflict: 'facility_identifier');
+      return true;
+    } catch (e) {
+      debugPrint('[SupabaseService] Error updating facility: $e');
+      return false;
+    }
+  }
+
+  // Professional Profile Management (Ophthalmologist)
+  Future<ProfessionalProfileModel?> fetchProfessionalProfile(String userId) async {
+    final supa = client;
+    if (supa == null) return null;
+
+    try {
+      final data = await supa.from('professional_profiles').select().eq('user_id', userId).maybeSingle();
+      if (data != null) {
+        return ProfessionalProfileModel.fromJson(Map<String, dynamic>.from(data));
+      }
+    } catch (e) {
+      debugPrint('[SupabaseService] Professional profile fetch notice: $e');
+    }
+    return null;
+  }
+
+  Future<bool> updateProfessionalProfile(ProfessionalProfileModel prof) async {
+    final supa = client;
+    if (supa == null) return false;
+
+    try {
+      final now = DateTime.now().toIso8601String();
+      await supa.from('professional_profiles').upsert({
+        'user_id': prof.userId,
+        'qualification': prof.qualification,
+        'specialization': prof.specialization,
+        'registration_number': prof.registrationNumber,
+        'registration_authority': prof.registrationAuthority,
+        'years_experience': prof.yearsExperience,
+        'facility_name': prof.facilityName,
+        'facility_id': prof.facilityId,
+        'professional_phone': prof.professionalPhone,
+        'professional_email': prof.professionalEmail,
+        'consultation_location': prof.consultationLocation,
+        'district': prof.district,
+        'state': prof.state,
+        'updated_at': now,
+      }, onConflict: 'user_id');
+      return true;
+    } catch (e) {
+      debugPrint('[SupabaseService] Error updating professional profile: $e');
+      return false;
+    }
+  }
+
+  // Private Document Storage & Verification Records
+  Future<VerificationDocumentModel?> uploadVerificationDocument({
+    required String userId,
+    required String documentType,
+    required String documentTitle,
+    required dynamic bytesOrFile,
+    required String fileName,
+    String mimeType = 'application/pdf',
+    String? facilityId,
+    bool isMandatory = true,
+  }) async {
+    final supa = client;
+    if (supa == null) return null;
+
+    try {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final cleanFileName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+      final storagePath = '$userId/${documentType}_${timestamp}_$cleanFileName';
+
+      // 1. Upload to private Supabase Storage Bucket 'profile-documents'
+      int fileSize = 0;
+      if (bytesOrFile is Uint8List) {
+        fileSize = bytesOrFile.length;
+        await supa.storage.from('profile-documents').uploadBinary(
+          storagePath,
+          bytesOrFile,
+          fileOptions: FileOptions(contentType: mimeType, upsert: true),
+        );
+      } else if (bytesOrFile is File && bytesOrFile.existsSync()) {
+        fileSize = await bytesOrFile.length();
+        await supa.storage.from('profile-documents').upload(
+          storagePath,
+          bytesOrFile,
+          fileOptions: FileOptions(contentType: mimeType, upsert: true),
+        );
+      }
+
+      // 2. Insert record in 'verification_documents' table (Under Review status)
+      final now = DateTime.now();
+      final row = {
+        'user_id': userId,
+        'facility_id': facilityId,
+        'document_type': documentType,
+        'document_title': documentTitle,
+        'file_name': fileName,
+        'storage_path': storagePath,
+        'mime_type': mimeType,
+        'file_size_bytes': fileSize,
+        'verification_status': 'UNDER_REVIEW',
+        'uploaded_at': now.toIso8601String(),
+        'is_mandatory': isMandatory,
+      };
+
+      final inserted = await supa.from('verification_documents').insert(row).select().maybeSingle();
+
+      return VerificationDocumentModel(
+        id: inserted?['id']?.toString() ?? 'DOC-$timestamp',
+        userId: userId,
+        facilityId: facilityId,
+        documentType: documentType,
+        documentTitle: documentTitle,
+        fileName: fileName,
+        storagePath: storagePath,
+        mimeType: mimeType,
+        fileSizeBytes: fileSize,
+        verificationStatus: DocumentVerificationStatus.underReview,
+        uploadedAt: now,
+        isMandatory: isMandatory,
+      );
+    } catch (e) {
+      debugPrint('[SupabaseService] Document upload notice: $e');
+      return null;
+    }
+  }
+
+  Future<List<VerificationDocumentModel>> fetchVerificationDocuments(String userId) async {
+    final supa = client;
+    if (supa == null) return [];
+
+    try {
+      final List<dynamic> data = await supa
+          .from('verification_documents')
+          .select()
+          .eq('user_id', userId)
+          .order('uploaded_at', ascending: false);
+
+      return data
+          .map((item) => VerificationDocumentModel.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList();
+    } catch (e) {
+      debugPrint('[SupabaseService] Verification documents fetch notice: $e');
+      return [];
+    }
+  }
+
+  // Account Security: Password Change
+  Future<bool> changePassword({required String newPassword}) async {
+    final supa = client;
+    if (supa == null) return false;
+
+    try {
+      final response = await supa.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      return response.user != null;
+    } catch (e) {
+      debugPrint('[SupabaseService] Password update notice: $e');
+      return false;
+    }
   }
 
   // Storage Bucket: Upload Captured Fundus Photo

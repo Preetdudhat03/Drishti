@@ -96,40 +96,37 @@ class ResponsiveScaffold extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.obsidianSurface,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.obsidianBorder),
+          side: const BorderSide(color: AppColors.border),
         ),
         title: const Row(
           children: [
-            Icon(Icons.logout_outlined, color: AppColors.statusWarning, size: 20),
+            Icon(Icons.logout_rounded, color: AppColors.statusWarning, size: 22),
             SizedBox(width: 10),
             Text(
               'Sign out of Drishti?',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textBright,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
         ),
         content: const Text(
-          'Your current screening data will remain safely synchronized.',
+          'Your screening sessions and local cache will remain securely saved.',
           style: TextStyle(
             fontSize: 13,
-            color: AppColors.textSubtle,
-            height: 1.4,
+            color: AppColors.textSecondary,
+            height: 1.45,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSubtle),
-            ),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -158,24 +155,10 @@ class ResponsiveScaffold extends ConsumerWidget {
     final isClinician = currentUser?.role == UserRole.clinician;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF080B12), Color(0xFF0D111C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border(
-              bottom: BorderSide(
-                color: AppColors.obsidianBorder,
-                width: 1,
-              ),
-            ),
-          ),
-        ),
+        backgroundColor: AppColors.primary,
         title: Row(
           children: [
             const DrishtiLogo(
@@ -189,21 +172,15 @@ class ResponsiveScaffold extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          title,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15.5,
-                            color: Colors.white,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15.5,
+                      color: Colors.white,
+                      letterSpacing: -0.2,
+                    ),
                   ),
                   if (currentUser != null)
                     Container(
@@ -215,7 +192,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: isClinician ? AppColors.aiViolet : AppColors.electricBlue,
+                              color: isClinician ? AppColors.aiViolet : AppColors.statusGood,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -226,7 +203,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 10.5,
-                                color: AppColors.textSubtle,
+                                color: Color(0xFF94A3B8),
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0.4,
                               ),
@@ -247,7 +224,7 @@ class ResponsiveScaffold extends ConsumerWidget {
           ),
           if (actions != null) ...actions!,
           IconButton(
-            icon: const Icon(Icons.logout_outlined, color: AppColors.textSubtle, size: 20),
+            icon: const Icon(Icons.logout_rounded, color: Colors.white70, size: 20),
             tooltip: 'Sign Out',
             onPressed: () => _showLogoutDialog(context, ref),
           ),
@@ -258,23 +235,23 @@ class ResponsiveScaffold extends ConsumerWidget {
         children: [
           if (isDesktop || isTablet)
             NavigationRail(
-              backgroundColor: AppColors.obsidianCanvas,
+              backgroundColor: AppColors.surface,
               selectedIndex: currentIndex.clamp(0, destinations.length - 1),
               onDestinationSelected: onNavigationIndexChanged,
               labelType: isDesktop
                   ? NavigationRailLabelType.all
                   : NavigationRailLabelType.selected,
-              unselectedIconTheme: const IconThemeData(color: AppColors.textSubtle),
-              selectedIconTheme: IconThemeData(
-                color: isClinician ? AppColors.aiViolet : AppColors.electricBlue,
+              unselectedIconTheme: const IconThemeData(color: AppColors.textSecondary),
+              selectedIconTheme: const IconThemeData(
+                color: AppColors.accent,
               ),
               unselectedLabelTextStyle: const TextStyle(
-                color: AppColors.textSubtle,
+                color: AppColors.textSecondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
-              selectedLabelTextStyle: TextStyle(
-                color: isClinician ? AppColors.aiViolet : AppColors.electricBlue,
+              selectedLabelTextStyle: const TextStyle(
+                color: AppColors.accent,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w700,
               ),
@@ -289,14 +266,14 @@ class ResponsiveScaffold extends ConsumerWidget {
                   .toList(),
             ),
           if (isDesktop || isTablet)
-            const VerticalDivider(thickness: 1, width: 1, color: AppColors.obsidianBorder),
+            const VerticalDivider(thickness: 1, width: 1, color: AppColors.border),
           Expanded(child: body),
         ],
       ),
       bottomNavigationBar: (!isDesktop && !isTablet)
           ? NavigationBar(
-              backgroundColor: AppColors.obsidianCanvas,
-              indicatorColor: (isClinician ? AppColors.aiViolet : AppColors.electricBlue).withValues(alpha: 0.2),
+              backgroundColor: AppColors.surface,
+              indicatorColor: AppColors.accentLight,
               selectedIndex: currentIndex.clamp(0, destinations.length - 1),
               onDestinationSelected: onNavigationIndexChanged,
               destinations: destinations,
@@ -306,4 +283,3 @@ class ResponsiveScaffold extends ConsumerWidget {
     );
   }
 }
-

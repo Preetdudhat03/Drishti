@@ -160,6 +160,219 @@ class AuthService {
     }
   }
 
+  // Multi-Step Onboarding & Clinical Registration
+  Future<UserModel> registerAndOnboard({
+    required String email,
+    required String password,
+    required String fullName,
+    required String phone,
+    required UserRole role,
+    required String district,
+    required String state,
+    required String address,
+    required String pinCode,
+    String gender = 'Not Specified',
+    String preferredLanguage = 'English / Hindi',
+    String? organizationName,
+    String? facilityId,
+    String? facilityType,
+    String? cameraManufacturer,
+    String? cameraModel,
+    bool cameraAvailable = true,
+    String connectivity = 'ONLINE',
+    String? medicalRegistrationNo,
+    String? registrationAuthority,
+    String? qualification,
+    String? specialization,
+    int yearsExperience = 5,
+    List<Map<String, dynamic>> initialDocuments = const [],
+  }) async {
+    final supa = SupabaseService.client;
+    if (supa == null) {
+      throw const AuthException(
+        'Supabase authentication service is not initialized.\nPlease check your network connection.',
+        code: 'supabase_uninitialized',
+      );
+    }
+
+    try {
+      final finalFacilityId = facilityId?.trim().isNotEmpty == true
+          ? facilityId!.trim()
+          : (role == UserRole.clinician ? 'FAC-CLINIC' : 'PHC-UNIT');
+
+      final finalOrg = organizationName?.trim().isNotEmpty == true
+          ? organizationName!.trim()
+          : (role == UserRole.clinician ? 'Eye Care Hospital' : 'Primary Health Centre');
+
+      // 1. Create Supabase Auth User
+      final AuthResponse response = await supa.auth.signUp(
+        email: email.trim(),
+        password: password,
+        data: {
+          'full_name': fullName.trim(),
+          'role': role.displayName,
+          'facility_id': finalFacilityId,
+          'professional_id': medicalRegistrationNo?.trim(),
+        },
+      );
+
+      final supaUser = response.user;
+      if (supaUser == null) {
+        throw const AuthException(
+          'Failed to create account. Please verify your email and try again.',
+          code: 'signup_failed',
+        );
+      }
+
+      final userId = supaUser.id;
+
+      // 2. Persist Profile
+      await supa.from('profiles').upsert({
+        'id': userId,
+        'email': email.trim(),
+        'full_name': fullName.trim(),
+        'name': fullName.trim(),
+        'phone': phone.trim(),
+        'role': role.displayName,
+        'organization': finalOrg,
+        'facility_id': finalFacilityId,
+        'professional_id': medicalRegistrationNo?.trim(),
+        'district': district.trim(),
+        'state': state.trim(),
+        'address': address.trim(),
+        'pin_code': pinCode.trim(),
+        'gender': gender,
+        'preferred_language': preferredLanguage,
+        'profile_completion': 90,
+        'verification_status': 'UNDER_REVIEW',
+        'is_active': true,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+
+      // 3. Persist Facility or Professional Profile
+      if (role == UserRole.healthWorker) {
+        await supa.from('facilities').upsert({
+          'facility_name': finalOrg,
+          'facility_type': facilityType ?? 'Primary Health Centre (PHC)',
+          'facility_identifier': finalFacilityId,
+          'address': address.trim(),
+          'district': district.trim(),
+          'state': state.trim(),
+          'pin_code': pinCode.trim(),
+          'contact_number': phone.trim(),
+          'official_email': email.trim(),
+          'camera_available': cameraAvailable,
+          'camera_manufacturer': cameraManufacturer?.trim() ?? '',
+          'camera_model': cameraModel?.trim() ?? '',
+          'connectivity_type': connectivity,
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      } else {
+        await supa.from('professional_profiles').upsert({
+          'user_id': userId,
+          'qualification': qualification?.trim() ?? '',
+          'specialization': specialization?.trim() ?? '',
+          'registration_number': medicalRegistrationNo?.trim() ?? '',
+          'registration_authority': registrationAuthority?.trim() ?? '',
+          'years_experience': yearsExperience,
+          'facility_name': finalOrg,
+          'facility_id': finalFacilityId,
+          'professional_phone': phone.trim(),
+          'professional_email': email.trim(),
+          'district': district.trim(),
+          'state': state.trim(),
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      }
+
+      // 4. Fetch the full created profile
+      final user = await _supabaseService.fetchUserProfile(userId, fallbackEmail: email.trim());
+      final finalUser = user ??
+          UserModel(
+            id: userId,
+            email: email.trim(),
+            name: fullName.trim(),
+            phone: phone.trim(),
+            role: role,
+            organization: finalOrg,
+            facilityId: finalFacilityId,
+            professionalId: medicalRegistrationNo,
+            district: district.trim(),
+            state: state.trim(),
+            address: address.trim(),
+            pinCode: pinCode.trim(),
+            gender: gender,
+            preferredLanguage: preferredLanguage,
+            profileCompletion: 90,
+            verificationStatus: OverallVerificationStatus.underReview,
+            isActive: true,
+          );
+
+      // Persist session locally
+      final token = response.session?.accessToken;
+      if (token != null) {
+        await SecureStorage.saveToken(token);
+      }
+      await SecureStorage.saveUserData(jsonEncode(finalUser.toJson()));
+      return finalUser;
+    } on AuthApiException catch (e) {
+      debugPrint('[AuthService] Supabase signup error: ${e.message}');
+      throw AuthException(e.message, code: e.statusCode);
+    } catch (e) {
+      if (e is AuthException) rethrow;
+      debugPrint('[AuthService] General signup error: $e');
+      throw const AuthException(
+        'Registration failed. Please check your connection and details.',
+        code: 'registration_error',
+      );
+    }
+  }
+
+  // Update Profile
+  Future<UserModel> updateUserProfile(UserModel updatedUser) async {
+    // 1. Update Auth User Metadata if signed in
+    try {
+      final supa = SupabaseService.client;
+      if (supa != null && supa.auth.currentUser != null) {
+        await supa.auth.updateUser(
+          UserAttributes(
+            data: {
+              'full_name': updatedUser.name,
+              'name': updatedUser.name,
+              'phone': updatedUser.phone,
+              'facility_id': updatedUser.facilityId,
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[AuthService] Auth metadata update notice: $e');
+    }
+
+    // 2. Persist to PostgreSQL tables
+    try {
+      await _supabaseService.updateProfile(updatedUser);
+    } catch (e) {
+      debugPrint('[AuthService] Supabase profile table update warning: $e');
+    }
+
+    // 3. Always update local secure cache so UI updates instantly and stays responsive
+    await SecureStorage.saveUserData(jsonEncode(updatedUser.toJson()));
+    return updatedUser;
+  }
+
+  // Change Password
+  Future<void> changePassword(String newPassword) async {
+    final success = await _supabaseService.changePassword(newPassword: newPassword);
+    if (!success) {
+      throw const AuthException(
+        'Failed to update password. Please check your connection.',
+        code: 'password_update_failed',
+      );
+    }
+  }
+
   Future<UserModel?> getCurrentUser() async {
     // 1. Check Supabase session first
     if (SupabaseService.isInitialized) {

@@ -9,6 +9,7 @@ import 'data/services/supabase_service.dart';
 import 'shared/widgets/responsive_scaffold.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
+import 'features/onboarding/onboarding_screen.dart';
 import 'features/dashboard/health_worker_dashboard.dart';
 import 'features/dashboard/ophthalmologist_dashboard.dart';
 import 'features/screening/patient_intake_screen.dart';
@@ -61,6 +62,7 @@ class RootScreen extends ConsumerStatefulWidget {
 
 class _RootScreenState extends ConsumerState<RootScreen> {
   int _navIndex = 0;
+  bool _showOnboarding = false;
 
   // Screening sub-flow state for Health Worker
   // 0: Intake, 1: Capture, 2: Quality, 3: Processing, 4: Result, 5: Explainability, 6: Report
@@ -139,9 +141,16 @@ class _RootScreenState extends ConsumerState<RootScreen> {
     final authState = ref.watch(authProvider);
     final user = authState.user;
 
-    // 1. If not authenticated, display unified LoginScreen
+    // 1. If not authenticated, display Onboarding or LoginScreen
     if (!authState.isAuthenticated || user == null) {
-      return const LoginScreen();
+      if (_showOnboarding) {
+        return OnboardingScreen(
+          onCancelToLogin: () => setState(() => _showOnboarding = false),
+        );
+      }
+      return LoginScreen(
+        onOpenOnboarding: () => setState(() => _showOnboarding = true),
+      );
     }
 
     final permissions = PermissionService(user);
@@ -209,7 +218,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
           break;
         case 5:
         default:
-          title = 'Clinician Profile';
+          title = 'Clinician Profile & Verification';
           body = const ProfileScreen();
           break;
       }
@@ -288,7 +297,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
         break;
       case 4:
       default:
-        title = 'Worker Profile';
+        title = 'Worker Profile & Facility';
         body = const ProfileScreen();
         break;
     }

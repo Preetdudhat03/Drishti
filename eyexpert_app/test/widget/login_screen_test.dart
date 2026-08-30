@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drishti_app/features/auth/login_screen.dart';
-import 'package:drishti_app/features/auth/widgets/retinal_visual_panel.dart';
 
 void main() {
   setUp(() {
@@ -29,9 +28,8 @@ void main() {
     expect(find.text('WORK EMAIL / USERNAME'), findsOneWidget);
     expect(find.text('PASSWORD'), findsOneWidget);
     expect(find.text('SIGN IN'), findsOneWidget);
-    expect(find.text('SECURE GATEWAY'), findsOneWidget);
+    expect(find.text('CLINICAL AI WORKSTATION'), findsOneWidget);
     expect(find.text('Forgot password?'), findsOneWidget);
-    expect(find.byType(RetinalVisualPanel), findsOneWidget);
 
     // Verify NO role toggles or demo buttons exist
     expect(find.text('DEMO ENVIRONMENT'), findsNothing);

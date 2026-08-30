@@ -61,6 +61,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> refreshUserProfile() async {
+    try {
+      final user = await _authService.getCurrentUser();
+      if (user != null) {
+        state = state.copyWith(user: user);
+      }
+    } catch (_) {}
+  }
+
   Future<bool> login({
     required String username,
     required String password,
@@ -82,6 +91,122 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       state = state.copyWith(
         user: user,
+        isLoading: false,
+        authenticatingMessage: null,
+        clearError: true,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        authenticatingMessage: null,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> registerAndOnboard({
+    required String email,
+    required String password,
+    required String fullName,
+    required String phone,
+    required UserRole role,
+    required String district,
+    required String stateName,
+    required String address,
+    required String pinCode,
+    String gender = 'Not Specified',
+    String preferredLanguage = 'English / Hindi',
+    String? organizationName,
+    String? facilityId,
+    String? facilityType,
+    String? cameraManufacturer,
+    String? cameraModel,
+    bool cameraAvailable = true,
+    String connectivity = 'ONLINE',
+    String? medicalRegistrationNo,
+    String? registrationAuthority,
+    String? qualification,
+    String? specialization,
+    int yearsExperience = 5,
+  }) async {
+    state = state.copyWith(
+      isLoading: true,
+      authenticatingMessage: 'Registering clinical profile with Supabase...',
+      clearError: true,
+    );
+
+    try {
+      final user = await _authService.registerAndOnboard(
+        email: email,
+        password: password,
+        fullName: fullName,
+        phone: phone,
+        role: role,
+        district: district,
+        state: stateName,
+        address: address,
+        pinCode: pinCode,
+        gender: gender,
+        preferredLanguage: preferredLanguage,
+        organizationName: organizationName,
+        facilityId: facilityId,
+        facilityType: facilityType,
+        cameraManufacturer: cameraManufacturer,
+        cameraModel: cameraModel,
+        cameraAvailable: cameraAvailable,
+        connectivity: connectivity,
+        medicalRegistrationNo: medicalRegistrationNo,
+        registrationAuthority: registrationAuthority,
+        qualification: qualification,
+        specialization: specialization,
+        yearsExperience: yearsExperience,
+      );
+
+      state = state.copyWith(
+        user: user,
+        isLoading: false,
+        authenticatingMessage: null,
+        clearError: true,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        authenticatingMessage: null,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateProfile(UserModel updatedUser) async {
+    state = state.copyWith(isLoading: true, authenticatingMessage: 'Saving profile updates...');
+    try {
+      final user = await _authService.updateUserProfile(updatedUser);
+      state = state.copyWith(
+        user: user,
+        isLoading: false,
+        authenticatingMessage: null,
+        clearError: true,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        authenticatingMessage: null,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> changePassword(String newPassword) async {
+    state = state.copyWith(isLoading: true, authenticatingMessage: 'Updating credentials...');
+    try {
+      await _authService.changePassword(newPassword);
+      state = state.copyWith(
         isLoading: false,
         authenticatingMessage: null,
         clearError: true,
