@@ -4,7 +4,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/screening_case_model.dart';
 import '../../core/constants/app_constants.dart';
-import '../../core/constants/dr_severity.dart';
 import '../../core/utils/formatters.dart';
 
 class ReportService {
