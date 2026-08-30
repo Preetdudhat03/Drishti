@@ -28,7 +28,7 @@ class AuthService {
   Future<UserModel> login({
     required String username,
     required String password,
-    required UserRole roleRequested,
+    UserRole roleRequested = UserRole.healthWorker,
     String? medicalRegistrationId,
   }) async {
     final trimmedEmail = username.trim();
