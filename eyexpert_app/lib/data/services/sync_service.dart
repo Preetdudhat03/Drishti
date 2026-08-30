@@ -2,19 +2,15 @@ import 'dart:async';
 import 'package:uuid/uuid.dart';
 import '../models/sync_queue_item.dart';
 import '../models/patient_model.dart';
-import '../models/screening_case_model.dart';
-import '../api/api_client.dart';
-import '../api/api_endpoints.dart';
 
 class SyncService {
-  final ApiClient _apiClient;
   final List<SyncQueueItem> _queue = [];
   bool _isOnline = true;
   bool _isSyncing = false;
 
   final _syncStreamController = StreamController<List<SyncQueueItem>>.broadcast();
 
-  SyncService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  SyncService();
 
   List<SyncQueueItem> get queue => List.unmodifiable(_queue);
   bool get isOnline => _isOnline;
