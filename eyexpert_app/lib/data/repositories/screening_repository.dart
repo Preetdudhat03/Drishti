@@ -2,7 +2,6 @@ import '../models/patient_model.dart';
 import '../models/quality_assessment_model.dart';
 import '../models/screening_case_model.dart';
 import '../services/screening_service.dart';
-import '../services/sync_service.dart';
 
 class ScreeningRepository {
   final ScreeningService _screeningService;
