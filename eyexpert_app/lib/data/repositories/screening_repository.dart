@@ -6,13 +6,10 @@ import '../services/sync_service.dart';
 
 class ScreeningRepository {
   final ScreeningService _screeningService;
-  final SyncService _syncService;
 
   ScreeningRepository({
     required ScreeningService screeningService,
-    required SyncService syncService,
-  })  : _screeningService = screeningService,
-        _syncService = syncService;
+  })  : _screeningService = screeningService;
 
   Future<ScreeningCaseModel> createScreening({
     required PatientModel patient,
