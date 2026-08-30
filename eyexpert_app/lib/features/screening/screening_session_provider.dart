@@ -8,7 +8,6 @@ import '../../data/models/screening_case_model.dart';
 import '../../data/services/screening_service.dart';
 import '../../data/repositories/screening_repository.dart';
 import '../review/review_queue_provider.dart';
-import '../offline/sync_queue_provider.dart';
 import '../../data/services/supabase_service.dart';
 
 final screeningServiceProvider = Provider<ScreeningService>((ref) => ScreeningService());
