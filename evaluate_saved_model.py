@@ -128,21 +128,40 @@ def evaluate():
     # 2. Referable DR Metrics (Level >= 2)
     y_true_bin = (test_targets >= 2).astype(int)
     y_prob_ref = test_probs[:, 2:].sum(axis=1)
-    y_pred_bin = (test_preds >= 2).astype(int)
+    
+    # (A) Standard Argmax Referable Metric (tau = 0.50 equivalent)
+    y_pred_bin_raw = (test_preds >= 2).astype(int)
+    tp_raw = int(np.sum((y_true_bin == 1) & (y_pred_bin_raw == 1)))
+    tn_raw = int(np.sum((y_true_bin == 0) & (y_pred_bin_raw == 0)))
+    fp_raw = int(np.sum((y_true_bin == 0) & (y_pred_bin_raw == 1)))
+    fn_raw = int(np.sum((y_true_bin == 1) & (y_pred_bin_raw == 0)))
+    sens_raw = tp_raw / max(1, (tp_raw + fn_raw))
+    spec_raw = tn_raw / max(1, (tn_raw + fp_raw))
+    prec_raw = tp_raw / max(1, (tp_raw + fp_raw))
+    ref_f1_raw = 2 * prec_raw * sens_raw / max(1e-5, (prec_raw + sens_raw))
+    ref_acc_raw = (tp_raw + tn_raw) / max(1, (tp_raw + tn_raw + fp_raw + fn_raw))
 
-    tp = int(np.sum((y_true_bin == 1) & (y_pred_bin == 1)))
-    tn = int(np.sum((y_true_bin == 0) & (y_pred_bin == 0)))
-    fp = int(np.sum((y_true_bin == 0) & (y_pred_bin == 1)))
-    fn = int(np.sum((y_true_bin == 1) & (y_pred_bin == 0)))
-
-    sens = tp / max(1, (tp + fn))
-    spec = tn / max(1, (tn + fp))
-    prec = tp / max(1, (tp + fp))
-    ref_f1 = 2 * prec * sens / max(1e-5, (prec + sens))
-    ref_acc = (tp + tn) / max(1, (tp + tn + fp + fn))
+    # (B) Calibrated Triage Threshold Metric (tau = 0.30 for High-Sensitivity Clinical Screening)
+    tau = 0.30
+    y_pred_bin_cal = (y_prob_ref >= tau).astype(int)
+    tp_cal = int(np.sum((y_true_bin == 1) & (y_pred_bin_cal == 1)))
+    tn_cal = int(np.sum((y_true_bin == 0) & (y_pred_bin_cal == 0)))
+    fp_cal = int(np.sum((y_true_bin == 0) & (y_pred_bin_cal == 1)))
+    fn_cal = int(np.sum((y_true_bin == 1) & (y_pred_bin_cal == 0)))
+    sens_cal = tp_cal / max(1, (tp_cal + fn_cal))
+    spec_cal = tn_cal / max(1, (tn_cal + fp_cal))
+    prec_cal = tp_cal / max(1, (tp_cal + fp_cal))
+    ref_f1_cal = 2 * prec_cal * sens_cal / max(1e-5, (prec_cal + sens_cal))
+    ref_acc_cal = (tp_cal + tn_cal) / max(1, (tp_cal + tn_cal + fp_cal + fn_cal))
 
     fpr, tpr, _ = roc_curve(y_true_bin, y_prob_ref)
     auc = roc_auc_score(y_true_bin, y_prob_ref)
+
+    print(f"\n--- Model Evaluation Results (Held-Out Test Set: {len(test_df)} samples) ---")
+    print(f"5-Class Accuracy: {acc*100:.2f}% | QWK: {qwk:.3f}")
+    print(f"[Raw Argmax] Sensitivity: {sens_raw*100:.2f}% | Specificity: {spec_raw*100:.2f}% | Acc: {ref_acc_raw*100:.2f}% (TP={tp_raw}, FN={fn_raw}, FP={fp_raw})")
+    print(f"[Calibrated tau={tau:.2f}] Sensitivity: {sens_cal*100:.2f}% | Specificity: {spec_cal*100:.2f}% | Acc: {ref_acc_cal*100:.2f}% (TP={tp_cal}, FN={fn_cal}, FP={fp_cal})")
+    print(f"ROC-AUC: {auc:.3f}")
 
     # Save Predictions CSV
     pred_records = []
@@ -156,12 +175,15 @@ def evaluate():
             'prob_level_2': round(float(test_probs[i, 2]), 4),
             'prob_level_3': round(float(test_probs[i, 3]), 4),
             'prob_level_4': round(float(test_probs[i, 4]), 4),
-            'predicted_referable': int(test_preds[i] >= 2),
+            'prob_referable': round(float(y_prob_ref[i]), 4),
+            'predicted_referable_raw': int(test_preds[i] >= 2),
+            'predicted_referable_calibrated': int(y_prob_ref[i] >= tau),
             'ground_truth_referable': int(test_targets[i] >= 2)
         })
     pred_df = pd.DataFrame(pred_records)
     pred_df.to_csv(os.path.join(val_dir, "test_predictions.csv"), index=False)
-    print(f"Saved test predictions: {len(pred_df)} rows")
+    print(f"Saved test predictions: {len(pred_df)} rows to validation/test_predictions.csv")
+
 
     # Plot Confusion Matrix
     plt.figure(figsize=(6, 5))
