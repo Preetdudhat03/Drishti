@@ -251,7 +251,15 @@ def evaluate():
             continue
         sample_row = sample_rows.iloc[0]
         sample_id = sample_row['id_code']
-        raw_img_p = sample_row['image_path']
+        raw_img_p = sample_row.get('image_path', '')
+        if not os.path.isfile(raw_img_p):
+            cand1 = os.path.join(root_dir, "data", "aptos", "train_images", sample_id + ".png")
+            cand2 = os.path.join(cache_dir, sample_id + ".png")
+            raw_img_p = cand1 if os.path.isfile(cand1) else cand2
+
+        if not os.path.isfile(raw_img_p):
+            print(f"Skipping Grad-CAM for sample {sample_id} (image file not found)")
+            continue
 
         orig_pil = Image.open(raw_img_p).convert('RGB')
         w_orig, h_orig = orig_pil.size
