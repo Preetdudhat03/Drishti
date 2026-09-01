@@ -4,9 +4,12 @@ Calculates Sensitivity (Recall), Specificity, Precision, Accuracy, F1-Score, and
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, accuracy_score
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 def print_banner(title):
     print("=" * 70)
