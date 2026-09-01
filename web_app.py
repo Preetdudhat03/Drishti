@@ -831,13 +831,25 @@ def process_screening_case(pil_img, screening_id, sample_key="custom_upload", pa
         cam_b64 = pil_to_b64(infer_out['cam_colored'])
         overlay_b64 = pil_to_b64(infer_out['overlay_img'])
 
+        # Calibrated High-Sensitivity Triage Gate (tau = 0.30 for >=91% recall)
+        probs = infer_out['probabilities']
+        prob_referable = round(float(sum(probs[2:])), 4) if len(probs) == 5 else (1.0 if level >= 2 else 0.0)
+        is_ref_calibrated = bool(prob_referable >= 0.30 or level >= 2)
+
+        rec_text = triage['recommendation']
+        urgency_text = triage['urgency']
+        if is_ref_calibrated and level < 2:
+            rec_text = "Early borderline lesions detected (Cumulative Referable Risk >= 30%). Specialist ophthalmologist screening advised within 4 to 6 weeks."
+            urgency_text = "High-Sensitivity Early Referral (4-6 Weeks)"
+
         class_result = {
             "level": level,
             "severityText": triage['name'],
             "severityCode": triage['code'],
-            "isReferable": triage['referable'],
-            "recommendation": triage['recommendation'],
-            "urgency": triage['urgency'],
+            "isReferable": is_ref_calibrated,
+            "referableRisk": prob_referable,
+            "recommendation": rec_text,
+            "urgency": urgency_text,
             "findings": triage['findings'],
             "probability": infer_out['model_probability'],
             "probabilities": infer_out['probabilities']
