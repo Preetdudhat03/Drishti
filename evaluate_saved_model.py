@@ -407,21 +407,13 @@ ROC-AUC:                            {auc:.3f}   [EXCEEDED - Target >0.90]
     print(f"5_CLASS_ACCURACY: {acc*100:.2f}%")
     print(f"MACRO_F1: {macro_f1*100:.2f}%")
     print(f"QWK: {qwk:.3f}")
-    print(f"CALIBRATED_SENSITIVITY_TAU_0.30: {sens_cal*100:.2f}% (MET)")
-    print(f"CALIBRATED_SPECIFICITY_TAU_0.30: {spec_cal*100:.2f}% (MET)")
-    print(f"CALIBRATED_ACCURACY_TAU_0.30: {ref_acc_cal*100:.2f}%")
-    print(f"RAW_SENSITIVITY_ARGMAX: {sens_raw*100:.2f}%")
-    print(f"RAW_SPECIFICITY_ARGMAX: {spec_raw*100:.2f}%")
-    print(f"ROC_AUC: {auc:.3f}")
-    print("=========================================================================\n")
-
-    print(f"REFERABLE_AUC: {auc:.3f}")
-    print(f"SIH_SENSITIVITY_TARGET_STATUS: {sih_sens_status}")
-    print(f"SIH_SPECIFICITY_TARGET_STATUS: {sih_spec_status}")
+    print(f"CALIBRATED_SENSITIVITY_STATUS: {sih_sens_status_cal}")
+    print(f"CALIBRATED_SPECIFICITY_STATUS: {sih_spec_status_cal}")
     print(f"GRADCAM_STATUS: REAL_APTOS_IMAGES_VERIFIED")
     print(f"MODEL_FILE: models/EyeXpert_ResNet18_best.pth")
     print(f"VALIDATION_REPORT: results/EyeXpert_APTOS_Validation_Report.md")
-    print("=========================================================================")
+    print("=========================================================================\n")
 
 if __name__ == "__main__":
     evaluate()
+
