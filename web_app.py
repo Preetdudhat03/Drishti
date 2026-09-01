@@ -107,14 +107,17 @@ MODEL_PROVENANCE = {
     "input_resolution": "224 x 224 x 3",
     "explainability_layer": "layer4[1].conv2 (Last Convolutional Feature Map)",
     "device": str(DEVICE),
-    "referable_rule": "DR Level >= 2 (Moderate, Severe, or Proliferative DR)",
+    "referable_rule": "Cumulative Risk P(Level>=2) >= 0.30 (Calibrated High-Sensitivity Triage Gate)",
     "held_out_benchmark": {
         "test_samples": 549,
         "cohen_kappa_qwk": 0.870,
-        "referable_sensitivity": "82.14%",
-        "referable_specificity": "96.62%",
-        "binary_accuracy": "90.71%",
-        "roc_auc": 0.980
+        "calibrated_sensitivity": "91.07%",
+        "calibrated_specificity": "94.77%",
+        "binary_accuracy": "93.26%",
+        "raw_sensitivity": "82.14%",
+        "raw_specificity": "96.62%",
+        "roc_auc": 0.980,
+        "threshold_tau": 0.30
     }
 }
 
