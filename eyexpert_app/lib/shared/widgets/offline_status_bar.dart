@@ -20,20 +20,27 @@ class OfflineStatusBar extends StatelessWidget {
     }
 
     final isOffline = !isOnline;
-    final bgColor = isOffline ? AppColors.offlineBannerBg : AppColors.statusGoodBg;
-    final fgColor = isOffline ? Colors.white : AppColors.statusGood;
-    final borderColor = isOffline ? Colors.transparent : AppColors.statusGood.withValues(alpha: 0.3);
+    final bgColor = isOffline ? AppColors.badgeModerateBg : AppColors.badgeLowRiskBg;
+    final fgColor = isOffline ? AppColors.badgeModerateText : AppColors.statusGood;
+    final borderColor = isOffline ? AppColors.badgeModerateBorder : AppColors.badgeLowRiskBorder;
 
     return InkWell(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: bgColor,
-          border: Border(
-            bottom: BorderSide(color: borderColor, width: 1),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -43,21 +50,24 @@ class OfflineStatusBar extends StatelessWidget {
               height: 7,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isOffline ? const Color(0xFFF87171) : AppColors.statusGood,
+                color: isOffline ? AppColors.badgeModerateText : AppColors.statusGood,
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              isOffline
-                  ? (pendingCount > 0
-                      ? 'Offline — $pendingCount ${pendingCount == 1 ? "case" : "cases"} waiting to sync'
-                      : 'Offline — data will be synchronized when connectivity is restored')
-                  : '✓ All cases synchronized',
-              style: TextStyle(
-                color: fgColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.1,
+            Flexible(
+              child: Text(
+                isOffline
+                    ? (pendingCount > 0
+                        ? 'Offline — $pendingCount ${pendingCount == 1 ? "case" : "cases"} waiting to sync'
+                        : 'Offline — data will be synchronized when connectivity is restored')
+                    : '✓ All cases synchronized',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: fgColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.1,
+                ),
               ),
             ),
             if (pendingCount > 0) ...[
@@ -65,8 +75,9 @@ class OfflineStatusBar extends StatelessWidget {
               Text(
                 'Tap to manage',
                 style: TextStyle(
-                  color: fgColor.withValues(alpha: 0.8),
+                  color: fgColor.withValues(alpha: 0.9),
                   fontSize: 11,
+                  fontWeight: FontWeight.w800,
                   decoration: TextDecoration.underline,
                 ),
               ),
