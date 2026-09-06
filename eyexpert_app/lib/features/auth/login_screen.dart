@@ -46,8 +46,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _fillDoctorDemo() {
     setState(() {
       _selectedRole = UserRole.clinician;
-      _emailController.text = 'doctor@retina.org';
-      _passwordController.text = 'eyexpert2026';
+      _emailController.text = 'ophthalmologist@drishti.org';
+      _passwordController.text = 'RetinaSpecialist@2026!';
     });
     _handleLogin();
   }
@@ -55,8 +55,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _fillWorkerDemo() {
     setState(() {
       _selectedRole = UserRole.healthWorker;
-      _emailController.text = 'worker@phc.gov.in';
-      _passwordController.text = 'eyexpert2026';
+      _emailController.text = 'healthworker@phc.gov.in';
+      _passwordController.text = 'HealthWorker@2026!';
     });
     _handleLogin();
   }
