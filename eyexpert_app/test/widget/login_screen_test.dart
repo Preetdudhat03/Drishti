@@ -28,7 +28,7 @@ void main() {
     expect(find.text('WORK EMAIL / USERNAME'), findsOneWidget);
     expect(find.text('PASSWORD'), findsOneWidget);
     expect(find.text('Enter Workstation'), findsOneWidget);
-    expect(find.text('CLINICAL AI WORKSTATION'), findsOneWidget);
+    expect(find.text('Drishti AI'), findsOneWidget);
     expect(find.text('Forgot password?'), findsOneWidget);
 
     // Verify NO role toggles or demo buttons exist
