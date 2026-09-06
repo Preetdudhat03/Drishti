@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/clinical_card.dart';
+import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
 import 'screening_session_provider.dart';
@@ -64,63 +65,108 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 640),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
-              const Text(
-                'New Retinal Screening Session',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              // Screen Header Banner
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, AppColors.laserBlue],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.28),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Patient Intake & Initialization',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          'Initialize screening token and demographics for AI retinal pipeline',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Enter minimal patient identifiers to initialize image capture session.',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 20),
 
               // Intake Form Card
               ClinicalCard(
-                title: 'Patient Information',
+                title: 'PATIENT DEMOGRAPHICS',
+                titleAction: StatusBadge.aiBadge(label: 'TOKEN ID ACTIVE'),
                 child: Column(
                   children: [
                     TextField(
                       controller: _patientIdController,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                      decoration: InputDecoration(
                         labelText: 'Patient Identifier / Screening Token *',
-                        prefixIcon: Icon(Icons.tag_rounded, size: 20),
+                        prefixIcon: const Icon(Icons.badge_outlined, size: 20, color: AppColors.laserBlue),
                         hintText: 'e.g. PT-2026-8819',
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: _ageController,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            decoration: InputDecoration(
                               labelText: 'Age (Years)',
-                              prefixIcon: Icon(Icons.calendar_today_outlined, size: 18),
+                              prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18, color: AppColors.textSecondary),
+                              hintText: 'e.g. 52',
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            initialValue: _selectedGender,
-                            decoration: const InputDecoration(
+                            value: _selectedGender,
+                            decoration: InputDecoration(
                               labelText: 'Gender',
-                              prefixIcon: Icon(Icons.wc_rounded, size: 18),
+                              prefixIcon: const Icon(Icons.wc_rounded, size: 18, color: AppColors.textSecondary),
                             ),
                             items: const [
-                              DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
-                              DropdownMenuItem(value: 'MALE', child: Text('Male')),
-                              DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+                              DropdownMenuItem(value: 'FEMALE', child: Text('Female', style: TextStyle(fontWeight: FontWeight.w600))),
+                              DropdownMenuItem(value: 'MALE', child: Text('Male', style: TextStyle(fontWeight: FontWeight.w600))),
+                              DropdownMenuItem(value: 'OTHER', child: Text('Other', style: TextStyle(fontWeight: FontWeight.w600))),
                             ],
                             onChanged: (val) {
                               if (val != null) setState(() => _selectedGender = val);
@@ -129,93 +175,151 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: _diabetesDurationController,
                       keyboardType: TextInputType.number,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                       decoration: const InputDecoration(
                         labelText: 'Known Diabetes Duration (Years, Optional)',
-                        prefixIcon: Icon(Icons.history_toggle_off_rounded, size: 20),
+                        prefixIcon: Icon(Icons.history_toggle_off_rounded, size: 20, color: AppColors.textSecondary),
+                        hintText: 'e.g. 7',
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
 
               // Eye Selection (OD / OS) Card
               ClinicalCard(
-                title: 'Select Eye for Examination',
+                title: 'EXAMINATION EYE SELECTION',
                 child: Row(
                   children: [
                     Expanded(
                       child: InkWell(
                         onTap: () => setState(() => _selectedEye = 'OD'),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                        borderRadius: BorderRadius.circular(14),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
                           decoration: BoxDecoration(
-                            color: _selectedEye == 'OD' ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
-                            borderRadius: BorderRadius.circular(10),
+                            color: _selectedEye == 'OD' ? AppColors.accentLight : AppColors.surface,
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: _selectedEye == 'OD' ? AppColors.primary : Colors.grey.shade300,
-                              width: _selectedEye == 'OD' ? 2 : 1,
+                              color: _selectedEye == 'OD' ? AppColors.laserBlue : AppColors.border,
+                              width: _selectedEye == 'OD' ? 2 : 1.2,
                             ),
+                            boxShadow: _selectedEye == 'OD'
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.laserBlue.withValues(alpha: 0.15),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : null,
                           ),
                           child: Column(
                             children: [
-                              Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: _selectedEye == 'OD' ? AppColors.primary : Colors.grey,
-                                size: 28,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.remove_red_eye_rounded,
+                                    color: _selectedEye == 'OD' ? AppColors.laserBlue : AppColors.textMuted,
+                                    size: 26,
+                                  ),
+                                  if (_selectedEye == 'OD') ...[
+                                    const SizedBox(width: 6),
+                                    const Icon(Icons.check_circle_rounded, color: AppColors.laserBlue, size: 16),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               Text(
                                 'RIGHT EYE (OD)',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 13,
-                                  color: _selectedEye == 'OD' ? AppColors.primary : Colors.black87,
+                                  color: _selectedEye == 'OD' ? AppColors.laserBlue : AppColors.textPrimary,
+                                  letterSpacing: 0.4,
                                 ),
                               ),
-                              const Text('Oculus Dexter', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Oculus Dexter',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: _selectedEye == 'OD' ? AppColors.laserBlue.withValues(alpha: 0.8) : AppColors.textMuted,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: InkWell(
                         onTap: () => setState(() => _selectedEye = 'OS'),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                        borderRadius: BorderRadius.circular(14),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
                           decoration: BoxDecoration(
-                            color: _selectedEye == 'OS' ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
-                            borderRadius: BorderRadius.circular(10),
+                            color: _selectedEye == 'OS' ? AppColors.accentLight : AppColors.surface,
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: _selectedEye == 'OS' ? AppColors.primary : Colors.grey.shade300,
-                              width: _selectedEye == 'OS' ? 2 : 1,
+                              color: _selectedEye == 'OS' ? AppColors.laserBlue : AppColors.border,
+                              width: _selectedEye == 'OS' ? 2 : 1.2,
                             ),
+                            boxShadow: _selectedEye == 'OS'
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.laserBlue.withValues(alpha: 0.15),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : null,
                           ),
                           child: Column(
                             children: [
-                              Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: _selectedEye == 'OS' ? AppColors.primary : Colors.grey,
-                                size: 28,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.remove_red_eye_rounded,
+                                    color: _selectedEye == 'OS' ? AppColors.laserBlue : AppColors.textMuted,
+                                    size: 26,
+                                  ),
+                                  if (_selectedEye == 'OS') ...[
+                                    const SizedBox(width: 6),
+                                    const Icon(Icons.check_circle_rounded, color: AppColors.laserBlue, size: 16),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               Text(
                                 'LEFT EYE (OS)',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 13,
-                                  color: _selectedEye == 'OS' ? AppColors.primary : Colors.black87,
+                                  color: _selectedEye == 'OS' ? AppColors.laserBlue : AppColors.textPrimary,
+                                  letterSpacing: 0.4,
                                 ),
                               ),
-                              const Text('Oculus Sinister', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Oculus Sinister',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: _selectedEye == 'OS' ? AppColors.laserBlue.withValues(alpha: 0.8) : AppColors.textMuted,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -224,11 +328,11 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
 
               PrimaryButton(
-                text: 'Proceed to Retinal Image Capture',
-                icon: Icons.camera_alt_rounded,
+                text: 'Initialize & Proceed to Retinal Capture',
+                icon: Icons.camera_enhance_rounded,
                 onPressed: _handleSubmit,
               ),
               const SizedBox(height: 16),

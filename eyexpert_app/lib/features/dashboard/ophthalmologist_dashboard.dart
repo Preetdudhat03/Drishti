@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
-import '../../core/utils/responsive_layout.dart';
 import '../../core/utils/formatters.dart';
-import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/status_badge.dart';
-import '../../shared/widgets/primary_button.dart';
-import '../../shared/widgets/medical_disclaimer_banner.dart';
+import '../../shared/widgets/pill_button.dart';
+import '../../shared/widgets/diagnox_stat_card.dart';
 import '../../data/models/screening_case_model.dart';
 import '../review/review_queue_provider.dart';
 import '../auth/auth_provider.dart';
@@ -31,12 +27,11 @@ class OphthalmologistDashboard extends ConsumerWidget {
     final reviewState = ref.watch(reviewQueueProvider);
     final authState = ref.watch(authProvider);
     final user = authState.user;
-    final isTabletOrDesktop = !ResponsiveLayout.isMobile(context);
 
     final pendingCases = reviewState.cases.where((c) => c.isPendingReview).toList();
-    final urgentCases = reviewState.cases.where((c) => c.prediction?.drLevel == 4 && c.isPendingReview).toList();
-    final referableCases = reviewState.cases.where((c) => c.isReferable && c.isPendingReview).toList();
     final completedCases = reviewState.cases.where((c) => c.hasReviewed).toList();
+
+    final String doctorName = user?.name.isNotEmpty == true ? user!.name : 'Dr. Smith';
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -45,335 +40,362 @@ class OphthalmologistDashboard extends ConsumerWidget {
       color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1080),
+            constraints: const BoxConstraints(maxWidth: 820),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Specialist Header Banner
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                        child: const Icon(
-                          Icons.medical_services_outlined,
-                          color: AppColors.primary,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                // 1. Header: Branding & Greeting + Doctor Avatar
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              user?.name.isNotEmpty == true ? user!.name : 'Specialist Ophthalmologist',
-                              style: AppTypography.pageHeading.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.remove_red_eye_rounded,
+                                size: 14,
+                                color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'OPHTHALMOLOGIST · ${user?.organization.toUpperCase() ?? "DISTRICT EYE CENTRE"}',
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
-                                letterSpacing: 0.5,
+                            const SizedBox(width: 8),
+                            const Text(
+                              'DiagnoX',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.3,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      if (isTabletOrDesktop) ...[
-                        ElevatedButton.icon(
-                          onPressed: onOpenReviewQueue,
-                          icon: const Icon(Icons.rate_review_outlined, size: 18),
-                          label: Text('Open Review Queue (${pendingCases.length})'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Good Morning',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.5,
+                            height: 1.15,
+                          ),
+                        ),
+                        Text(
+                          '$doctorName!',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.5,
+                            height: 1.15,
                           ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
+                    ),
 
-                // Metrics Grid
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _metricCard(
-                      context,
-                      title: 'Pending Reviews',
-                      value: pendingCases.length.toString(),
-                      subtitle: 'Awaiting clinical validation',
-                      icon: Icons.pending_actions_rounded,
-                      color: AppColors.primary,
-                      isAlert: pendingCases.isNotEmpty,
-                    ),
-                    _metricCard(
-                      context,
-                      title: 'Urgent / PDR Cases',
-                      value: urgentCases.length.toString(),
-                      subtitle: 'Level 4 Proliferative DR',
-                      icon: Icons.warning_amber_rounded,
-                      color: AppColors.statusCritical,
-                      isAlert: urgentCases.isNotEmpty,
-                    ),
-                    _metricCard(
-                      context,
-                      title: 'Referable DR Cases',
-                      value: referableCases.length.toString(),
-                      subtitle: 'Moderate / Severe / PDR',
-                      icon: Icons.health_and_safety_outlined,
-                      color: AppColors.statusBorderline,
-                      isAlert: false,
-                    ),
-                    _metricCard(
-                      context,
-                      title: 'Completed Reviews',
-                      value: completedCases.length.toString(),
-                      subtitle: 'Human-validated reports',
-                      icon: Icons.check_circle_outline,
-                      color: AppColors.statusGood,
-                      isAlert: false,
+                    // Doctor Profile Avatar
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.surface,
+                        border: Border.all(color: AppColors.border, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Container(
+                          color: const Color(0xFFE0F2FE),
+                          child: const Icon(
+                            Icons.person,
+                            size: 26,
+                            color: Color(0xFF0284C7),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
 
-                // Action Shortcuts (Mobile Viewport)
-                if (!isTabletOrDesktop) ...[
-                  PrimaryButton(
-                    text: 'Open Priority Review Queue (${pendingCases.length})',
-                    icon: Icons.rate_review_outlined,
-                    onPressed: onOpenReviewQueue,
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                const SizedBox(height: 22),
 
-                // Urgent Priority Queue Preview
-                ClinicalCard(
-                  title: 'Cases Requiring Immediate Specialist Review',
-                  titleAction: TextButton(
-                    onPressed: onOpenReviewQueue,
-                    child: Text('View All (${reviewState.cases.length})'),
-                  ),
-                  child: pendingCases.isEmpty
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          alignment: Alignment.center,
-                          child: const Column(
-                            children: [
-                              Icon(Icons.task_alt_rounded, size: 36, color: AppColors.statusGood),
-                              SizedBox(height: 8),
-                              Text(
-                                'All pending screening cases have been reviewed!',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: pendingCases.take(4).length,
-                          separatorBuilder: (_, __) => const Divider(height: 16),
-                          itemBuilder: (context, index) {
-                            final c = pendingCases[index];
-                            final pred = c.prediction;
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: CircleAvatar(
-                                backgroundColor: c.isReferable
-                                    ? AppColors.statusCritical.withValues(alpha: 0.1)
-                                    : AppColors.primary.withValues(alpha: 0.1),
-                                child: Icon(
-                                  Icons.remove_red_eye_outlined,
-                                  color: c.isReferable ? AppColors.statusCritical : AppColors.primary,
-                                  size: 20,
-                                ),
-                              ),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    c.patient.patientId,
-                                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  StatusBadge(
-                                    label: AppFormatters.formatEye(c.patient.eye),
-                                    color: AppColors.textSecondary,
-                                    backgroundColor: Colors.grey.shade100,
-                                  ),
-                                  const Spacer(),
-                                  if (pred != null) ...[
-                                    StatusBadge(
-                                      label: 'AI: Level ${pred.drLevel}',
-                                      color: c.isReferable ? AppColors.statusCritical : AppColors.statusGood,
-                                      backgroundColor: c.isReferable
-                                          ? AppColors.statusCritical.withValues(alpha: 0.15)
-                                          : AppColors.statusGood.withValues(alpha: 0.15),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              subtitle: Text(
-                                '${c.screeningId} • ${AppFormatters.formatDateTime(c.createdAt)}',
-                                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
-                              ),
-                              trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                              onTap: () {
-                                if (onSelectCase != null) {
-                                  onSelectCase!(c);
-                                } else {
-                                  onOpenReviewQueue();
-                                }
-                              },
-                            );
-                          },
-                        ),
+                // 2. Primary Action Buttons
+                PillButton(
+                  label: '+ Review Next Priority Case (${pendingCases.length})',
+                  width: double.infinity,
+                  height: 50,
+                  onPressed: () {
+                    if (onSelectCase != null && pendingCases.isNotEmpty) {
+                      onSelectCase!(pendingCases.first);
+                    } else {
+                      onOpenReviewQueue();
+                    }
+                  },
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 10),
+                PillButton(
+                  label: 'Manage Patients & Cases',
+                  icon: Icons.people_outline_rounded,
+                  variant: PillButtonVariant.secondaryOutlined,
+                  width: double.infinity,
+                  height: 48,
+                  onPressed: onViewCases,
+                ),
 
-                // Clinical Telemetry & Microservices Health Link
-                ClinicalCard(
-                  title: 'Drishti AI Inference & Cloud Infrastructure',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.cloud_done_outlined, color: AppColors.statusGood, size: 24),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'PyTorch 2.2+ ResNet-18 & Layer-4 Grad-CAM Active',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Supabase PostgreSQL Profiles & RLS Security Online',
-                              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                const SizedBox(height: 22),
+
+                // 3. Stats Metric Row (Side-by-Side Cards)
+                Row(
+                  children: [
+                    Expanded(
+                      child: DiagnoXStatCard(
+                        icon: Icons.show_chart_rounded,
+                        category: 'Today',
+                        value: (pendingCases.length + completedCases.length).toString(),
+                        subtitle: 'Cases diagnosed',
+                        iconColor: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: DiagnoXStatCard(
+                        icon: Icons.access_time_rounded,
+                        category: 'Avg Time',
+                        value: '49s',
+                        subtitle: 'Per diagnosis',
+                        iconColor: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 28),
+
+                // 4. "Recent Cases" Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Recent Cases',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: onOpenReviewQueue,
+                      borderRadius: BorderRadius.circular(6),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        child: Text(
+                          'View All',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Case Cards List
+                if (pendingCases.isEmpty && completedCases.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'No pending cases awaiting diagnosis.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: reviewState.cases.take(6).length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final c = reviewState.cases[index];
+                      final pred = c.prediction;
+                      final isHighRisk = c.isReferable || pred?.drLevel == 4 || pred?.drLevel == 3;
+                      final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
+
+                      final String patientDisplayName = 'Patient #${c.patient.patientId}';
+                      
+                      final String conditionLabel = pred != null
+                          ? '${pred.severityLabel} (${AppFormatters.formatEye(c.patient.eye)})'
+                          : 'Awaiting AI Grading';
+
+                      final String riskBadgeText = isHighRisk
+                          ? 'High'
+                          : isLowRisk
+                              ? 'Low'
+                              : 'Moderate';
+
+                      final Color riskBg = isHighRisk
+                          ? AppColors.badgeHighRiskBg
+                          : isLowRisk
+                              ? AppColors.badgeLowRiskBg
+                              : AppColors.badgeModerateBg;
+
+                      final Color riskTextColor = isHighRisk
+                          ? AppColors.badgeHighRiskText
+                          : isLowRisk
+                              ? AppColors.badgeLowRiskText
+                              : AppColors.badgeModerateText;
+
+                      final Color riskBorderColor = isHighRisk
+                          ? AppColors.badgeHighRiskBorder
+                          : isLowRisk
+                              ? AppColors.badgeLowRiskBorder
+                              : AppColors.badgeModerateBorder;
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (onSelectCase != null) {
+                                onSelectCase!(c);
+                              } else {
+                                onOpenReviewQueue();
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          patientDisplayName,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.textPrimary,
+                                            letterSpacing: -0.2,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          conditionLabel,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: riskBg,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: riskBorderColor, width: 1),
+                                    ),
+                                    child: Text(
+                                      riskBadgeText,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: riskTextColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                const SizedBox(height: 32),
+
+                // Center Floating Diagnostic Launcher Button
+                Center(
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF1E293B),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      onPressed: onOpenReviewQueue,
+                      icon: const Icon(
+                        Icons.dashboard_customize_rounded,
+                        color: Colors.white,
+                        size: 22,
                       ),
-                      OutlinedButton(
-                        onPressed: onViewSystemStatus,
-                        child: const Text('Status'),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
 
-                const MedicalDisclaimerBanner(),
+                const SizedBox(height: 20),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _metricCard(
-    BuildContext context, {
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required bool isAlert,
-  }) {
-    final width = ResponsiveLayout.isMobile(context)
-        ? (MediaQuery.of(context).size.width - 44) / 2
-        : 240.0;
-
-    return Container(
-      width: width,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isAlert ? color.withValues(alpha: 0.6) : AppColors.border,
-          width: isAlert ? 1.5 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Icon(icon, color: color, size: 20),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: isAlert ? color : AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 10.5,
-              color: AppColors.textSecondary,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }

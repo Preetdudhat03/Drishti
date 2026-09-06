@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
-import '../../core/utils/responsive_layout.dart';
 import '../../core/utils/formatters.dart';
-import '../../shared/widgets/clinical_card.dart';
-import '../../shared/widgets/status_badge.dart';
-import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/pill_button.dart';
+import '../../shared/widgets/diagnox_stat_card.dart';
 import '../../shared/widgets/offline_status_bar.dart';
-import '../../shared/widgets/medical_disclaimer_banner.dart';
-import '../../data/models/screening_case_model.dart';
 import '../review/review_queue_provider.dart';
 import '../offline/sync_queue_provider.dart';
 import '../auth/auth_provider.dart';
@@ -30,7 +25,9 @@ class HealthWorkerDashboard extends ConsumerWidget {
     final reviewState = ref.watch(reviewQueueProvider);
     final syncState = ref.watch(syncQueueProvider);
     final authState = ref.watch(authProvider);
-    final isTabletOrDesktop = !ResponsiveLayout.isMobile(context);
+    final user = authState.user;
+
+    final String workerName = user?.name.isNotEmpty == true ? user!.name : 'Health Worker';
 
     return Column(
       children: [
@@ -50,224 +47,310 @@ class HealthWorkerDashboard extends ConsumerWidget {
             color: AppColors.primary,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1080),
+                  constraints: const BoxConstraints(maxWidth: 820),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Greeting & Workstation Header
-                      ClinicalCard(
-                        backgroundColor: Colors.white,
-                        borderColor: AppColors.border,
-                        padding: const EdgeInsets.all(18),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.accentLight,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.remove_red_eye_rounded, color: AppColors.accent, size: 26),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                      // 1. Header: Branding & Greeting + Worker Avatar
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  Text(
-                                    'Good morning, ${authState.user?.name ?? "Health Worker"}',
-                                    style: AppTypography.pageHeading,
+                                  Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_enhance_rounded,
+                                      size: 14,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                  const SizedBox(height: 3),
+                                  const SizedBox(width: 8),
                                   const Text(
-                                    'AI-assisted retinal screening • Primary Health Centre Ramgarh',
-                                    style: AppTypography.bodySecondary,
+                                    'Drishti Intake',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.textPrimary,
+                                      letterSpacing: -0.3,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                            if (isTabletOrDesktop)
-                              PrimaryButton(
-                                text: '+ START NEW SCREENING',
-                                icon: Icons.add_a_photo_rounded,
-                                onPressed: onStartScreening,
+                              const SizedBox(height: 14),
+                              const Text(
+                                'Good Morning',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -0.5,
+                                  height: 1.15,
+                                ),
                               ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
+                              Text(
+                                '$workerName!',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -0.5,
+                                  height: 1.15,
+                                ),
+                              ),
+                            ],
+                          ),
 
-                      // Metrics Grid (2x2 on mobile, 4x1 on tablet/desktop)
-                      GridView.count(
-                        crossAxisCount: isTabletOrDesktop ? 4 : 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: isTabletOrDesktop ? 1.4 : 1.25,
-                        children: [
-                          _metricCard(
-                            title: "Today's Screened",
-                            value: '${reviewState.totalScreenedCount}',
-                            subtitle: 'Active session',
-                            icon: Icons.check_circle_outline_rounded,
-                            color: AppColors.primary,
-                          ),
-                          _metricCard(
-                            title: 'Pending Review',
-                            value: '${reviewState.totalPendingCount}',
-                            subtitle: 'Awaiting clinician',
-                            icon: Icons.hourglass_empty_rounded,
-                            color: AppColors.pending,
-                          ),
-                          _metricCard(
-                            title: 'Referable Cases',
-                            value: '${reviewState.referableCount}',
-                            subtitle: 'Level >= 2 (Urgent)',
-                            icon: Icons.warning_amber_rounded,
-                            color: AppColors.referableAlert,
-                          ),
-                          _metricCard(
-                            title: 'Recapture Needed',
-                            value: '${reviewState.recaptureNeededCount}',
-                            subtitle: 'Ungradable / blur',
-                            icon: Icons.replay_rounded,
-                            color: AppColors.statusUngradable,
+                          // Worker Profile Avatar
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.surface,
+                              border: Border.all(color: AppColors.border, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: Container(
+                                color: AppColors.primaryLight,
+                                child: const Icon(
+                                  Icons.medical_services_outlined,
+                                  size: 24,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
 
-                      // Large Start Screening Button on Mobile
-                      if (!isTabletOrDesktop) ...[
-                        PrimaryButton(
-                          text: '+ START NEW SCREENING',
-                          icon: Icons.camera_alt_outlined,
-                          height: 52,
-                          onPressed: onStartScreening,
-                        ),
-                        const SizedBox(height: 14),
-                      ],
+                      const SizedBox(height: 22),
 
-                      // Recent Screening Activity Table
-                      ClinicalCard(
-                        title: 'Recent Screening Sessions',
-                        titleAction: TextButton(
-                          onPressed: onViewCases,
-                          child: const Text('View All Cases', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.accent)),
-                        ),
-                        child: reviewState.cases.isEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 24),
-                                child: Center(
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.inbox_outlined, size: 36, color: Colors.grey.shade400),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'No active screening sessions yet',
-                                        style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Tap "+ START NEW SCREENING" to begin',
-                                        style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: reviewState.cases.take(4).length,
-                                separatorBuilder: (_, __) => const Divider(height: 12),
-                                itemBuilder: (context, index) {
-                                  final c = reviewState.cases[index];
-                                  final pred = c.prediction;
-                                  final isUngradable = c.quality?.isUngradable ?? false;
-                                  final isReferable = pred?.referable ?? false;
-
-                                  final subtitleText = isUngradable
-                                      ? 'Quality: UNGRADABLE • Recapture Required'
-                                      : pred != null
-                                          ? 'AI: Level ${pred.drLevel} (${pred.severityLabel}) • Prob: ${AppFormatters.formatProbability(pred.modelProbability)}'
-                                          : c.status == ScreeningStatus.awaitingImage
-                                              ? 'Awaiting retinal image capture'
-                                              : c.status == ScreeningStatus.qualityAssessment
-                                                  ? 'Quality assessment in progress'
-                                                  : 'Screening registered';
-
-                                  return ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    leading: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: isUngradable
-                                            ? AppColors.statusUngradableBg
-                                            : isReferable
-                                                ? AppColors.referableAlertBg
-                                                : AppColors.statusGoodBg,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: isUngradable
-                                              ? AppColors.statusUngradable.withValues(alpha: 0.3)
-                                              : isReferable
-                                                  ? AppColors.referableAlert.withValues(alpha: 0.3)
-                                                  : AppColors.statusGood.withValues(alpha: 0.3),
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Icon(
-                                          isUngradable
-                                              ? Icons.cancel_outlined
-                                              : isReferable
-                                                  ? Icons.warning_amber_rounded
-                                                  : Icons.check_circle_outline_rounded,
-                                          color: isUngradable
-                                              ? AppColors.statusUngradable
-                                              : isReferable
-                                                  ? AppColors.referableAlert
-                                                  : AppColors.statusGood,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Text(
-                                          c.patient.patientId,
-                                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AppColors.textPrimary),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '(${c.patient.eye})',
-                                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Text(
-                                      subtitleText,
-                                      style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
-                                    ),
-                                    trailing: isUngradable
-                                        ? StatusBadge.ungradable()
-                                        : isReferable
-                                            ? StatusBadge.referable(label: 'REFERABLE')
-                                            : c.hasReviewed
-                                                ? StatusBadge.good(label: 'VALIDATED')
-                                                : StatusBadge.pending(label: 'PENDING'),
-                                  );
-                                },
-                              ),
+                      // 2. Primary Action Buttons
+                      PillButton(
+                        label: '+ New Screening / Patient Intake',
+                        icon: Icons.camera_alt_rounded,
+                        width: double.infinity,
+                        height: 50,
+                        onPressed: onStartScreening,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 10),
+                      PillButton(
+                        label: 'View Screening Records',
+                        icon: Icons.folder_open_rounded,
+                        variant: PillButtonVariant.secondaryOutlined,
+                        width: double.infinity,
+                        height: 48,
+                        onPressed: onViewCases,
+                      ),
 
-                      const MedicalDisclaimerBanner(),
+                      const SizedBox(height: 22),
+
+                      // 3. Stats Row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DiagnoXStatCard(
+                              icon: Icons.task_alt_rounded,
+                              category: 'Today',
+                              value: '${reviewState.totalScreenedCount}',
+                              subtitle: 'Patients screened',
+                              iconColor: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: DiagnoXStatCard(
+                              icon: Icons.sync_rounded,
+                              category: 'Sync Status',
+                              value: syncState.isOnline ? 'Online' : 'Offline',
+                              subtitle: '${syncState.pendingCount} pending upload',
+                              iconColor: syncState.isOnline ? AppColors.statusGood : AppColors.badgeModerateText,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // 4. "Recent Screenings" Section
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Recent Screenings',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: onViewCases,
+                            borderRadius: BorderRadius.circular(6),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              child: Text(
+                                'View All',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      if (reviewState.cases.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(28),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'No recent screenings recorded yet today.',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: reviewState.cases.take(5).length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final c = reviewState.cases[index];
+                            final pred = c.prediction;
+                            final isHighRisk = c.isReferable || pred?.drLevel == 4 || pred?.drLevel == 3;
+                            final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
+
+                            final String patientDisplayName = 'Patient #${c.patient.patientId}';
+
+                            final String conditionLabel = pred != null
+                                ? '${pred.severityLabel} • ${AppFormatters.formatEye(c.patient.eye)}'
+                                : 'Grading in progress';
+
+                            final String riskBadgeText = isHighRisk
+                                ? 'High'
+                                : isLowRisk
+                                    ? 'Low'
+                                    : 'Moderate';
+
+                            final Color riskBg = isHighRisk
+                                ? AppColors.badgeHighRiskBg
+                                : isLowRisk
+                                    ? AppColors.badgeLowRiskBg
+                                    : AppColors.badgeModerateBg;
+
+                            final Color riskTextColor = isHighRisk
+                                ? AppColors.badgeHighRiskText
+                                : isLowRisk
+                                    ? AppColors.badgeLowRiskText
+                                    : AppColors.badgeModerateText;
+
+                            final Color riskBorderColor = isHighRisk
+                                ? AppColors.badgeHighRiskBorder
+                                : isLowRisk
+                                    ? AppColors.badgeLowRiskBorder
+                                    : AppColors.badgeModerateBorder;
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: AppColors.border),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.02),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            patientDisplayName,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textPrimary,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            conditionLabel,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: riskBg,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: riskBorderColor, width: 1),
+                                      ),
+                                      child: Text(
+                                        riskBadgeText,
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: riskTextColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -276,61 +359,6 @@ class HealthWorkerDashboard extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _metricCard({
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x060F172A),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Icon(icon, size: 18, color: color),
-            ],
-          ),
-          Text(
-            value,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, letterSpacing: -0.5),
-          ),
-          Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -7,7 +7,7 @@ enum DRSeverity {
     fullName: 'No Apparent Diabetic Retinopathy',
     description: 'No microaneurysms, hemorrhages, or retinal lesions detected.',
     isReferable: false,
-    color: Color(0xFF1B8755),
+    color: Color(0xFF71717A),
     recommendation: 'Routine annual diabetic eye screening recommended.',
   ),
   level1(
@@ -16,7 +16,7 @@ enum DRSeverity {
     fullName: 'Mild Non-Proliferative Diabetic Retinopathy',
     description: 'Microaneurysms only. Early disease stage.',
     isReferable: false,
-    color: Color(0xFF007791),
+    color: Color(0xFFEAB308),
     recommendation: 'Repeat screening in 6 to 12 months with glycemic control counseling.',
   ),
   level2(
@@ -25,7 +25,7 @@ enum DRSeverity {
     fullName: 'Moderate Non-Proliferative Diabetic Retinopathy',
     description: 'More than microaneurysms but less than severe NPDR (hard exudates/cotton wool spots).',
     isReferable: true,
-    color: Color(0xFFE67E22),
+    color: Color(0xFFF59E0B),
     recommendation: 'Ophthalmologist review and dilated fundus examination recommended within 2 to 4 months.',
   ),
   level3(
@@ -34,7 +34,7 @@ enum DRSeverity {
     fullName: 'Severe Non-Proliferative Diabetic Retinopathy',
     description: 'Significant hemorrhages, venous beading, or IRMA according to 4:2:1 clinical criteria.',
     isReferable: true,
-    color: Color(0xFFD9534F),
+    color: Color(0xFFEA580C),
     recommendation: 'Urgent ophthalmologist referral within 2 to 4 weeks for evaluation and potential intervention.',
   ),
   level4(
@@ -43,7 +43,7 @@ enum DRSeverity {
     fullName: 'Proliferative Diabetic Retinopathy',
     description: 'Neovascularization of the disc/retina and/or vitreous/preretinal hemorrhage.',
     isReferable: true,
-    color: Color(0xFFC0392B),
+    color: Color(0xFFE11D48),
     recommendation: 'High-priority urgent referral to a retina specialist for immediate panretinal photocoagulation or anti-VEGF assessment.',
   );
 

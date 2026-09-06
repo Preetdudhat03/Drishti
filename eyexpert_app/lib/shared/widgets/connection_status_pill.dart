@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/connection_provider.dart';
+import '../../core/theme/app_colors.dart';
 
 class ConnectionStatusPill extends ConsumerWidget {
   final bool isCompact;
@@ -15,11 +16,11 @@ class ConnectionStatusPill extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,55 +29,59 @@ class ConnectionStatusPill extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Network & Cloud Sync Status',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                    'AI Telemetry & Cloud Sync',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: conn.isOnline ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
-                      borderRadius: BorderRadius.circular(12),
+                      color: conn.isOnline ? AppColors.accentLight : const Color(0xFFFFF1F2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: conn.isOnline ? AppColors.accent.withValues(alpha: 0.3) : AppColors.statusCritical.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Text(
-                      conn.isOnline ? 'ONLINE' : 'OFFLINE',
+                      conn.isOnline ? 'CLOUD SYNC ACTIVE' : 'OFFLINE MODE',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.w800,
-                        color: conn.isOnline ? const Color(0xFF166534) : const Color(0xFF991B1B),
+                        letterSpacing: 0.4,
+                        color: conn.isOnline ? AppColors.accent : AppColors.statusCritical,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               _buildStatusRow(
-                'Supabase Cloud Database',
-                conn.supabaseConnected ? 'CONNECTED' : 'UNREACHABLE',
+                'Supabase Cloud Data Layer',
+                conn.supabaseConnected ? 'SYNCHRONIZED' : 'STANDALONE LOCAL',
                 conn.supabaseConnected,
               ),
               const SizedBox(height: 8),
               _buildStatusRow(
                 'Drishti PyTorch AI Engine',
-                conn.backendConnected ? 'ACTIVE' : 'OFFLINE / ASYNC',
+                conn.backendConnected ? 'ONLINE (CUDA/CPU)' : 'ASYNC BATCH QUEUE',
                 conn.backendConnected,
               ),
               if (conn.isOffline) ...[
                 const SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    color: AppColors.statusBorderlineBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.statusBorderline.withValues(alpha: 0.3)),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.wifi_off_rounded, color: Color(0xFFD97706), size: 18),
-                      SizedBox(width: 8),
+                      Icon(Icons.wifi_off_rounded, color: AppColors.statusBorderline, size: 18),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'No connection between the app and backend. Automated AI inference requires an active connection. Patient records remain securely queued on device.',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF92400E)),
+                          'Offline edge mode enabled. Retinal screenings and patient intakes remain encrypted on-device and will auto-sync once connectivity is restored.',
+                          style: TextStyle(fontSize: 11.5, color: Color(0xFF92400E), height: 1.4),
                         ),
                       ),
                     ],
@@ -92,12 +97,12 @@ class ConnectionStatusPill extends ConsumerWidget {
                     ref.read(connectionProvider.notifier).checkConnection();
                   },
                   icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('Re-test Connection Now'),
+                  label: const Text('Re-verify AI Cloud Links'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F172A),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -110,23 +115,23 @@ class ConnectionStatusPill extends ConsumerWidget {
 
   Widget _buildStatusRow(String service, String status, bool isOk) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(service, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF334155))),
+          Text(service, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           Row(
             children: [
               Container(
                 width: 7,
                 height: 7,
                 decoration: BoxDecoration(
-                  color: isOk ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                  color: isOk ? AppColors.accent : AppColors.statusCritical,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -135,8 +140,9 @@ class ConnectionStatusPill extends ConsumerWidget {
                 status,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: isOk ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
+                  color: isOk ? AppColors.accent : AppColors.statusCritical,
                 ),
               ),
             ],
@@ -159,28 +165,28 @@ class ConnectionStatusPill extends ConsumerWidget {
       bg = const Color(0xFF1E293B);
       text = const Color(0xFF94A3B8);
       dot = const Color(0xFF94A3B8);
-      label = isCompact ? '...' : 'Checking...';
+      label = isCompact ? '...' : 'Syncing...';
     } else if (conn.isOnline) {
-      bg = const Color(0xFF064E3B);
-      text = const Color(0xFF34D399);
-      dot = const Color(0xFF10B981);
-      label = isCompact ? 'Online' : 'Cloud Sync Connected';
+      bg = const Color(0xFF1E1B4B);
+      text = const Color(0xFFC7D2FE);
+      dot = const Color(0xFF818CF8);
+      label = isCompact ? 'Online' : 'Cloud Sync Active';
     } else {
-      bg = const Color(0xFF7F1D1D);
-      text = const Color(0xFFFCA5A5);
-      dot = const Color(0xFFEF4444);
-      label = isCompact ? 'Offline' : 'Offline (No Connection)';
+      bg = const Color(0xFF4C0519);
+      text = const Color(0xFFFECDD3);
+      dot = const Color(0xFFF43F5E);
+      label = isCompact ? 'Offline' : 'Offline Edge';
     }
 
     return InkWell(
       onTap: () => _showConnectionDetails(context, ref, conn),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: dot.withValues(alpha: 0.4), width: 1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: dot.withValues(alpha: 0.5), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -200,21 +206,21 @@ class ConnectionStatusPill extends ConsumerWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: dot.withValues(alpha: 0.6),
-                      blurRadius: 4,
+                      color: dot.withValues(alpha: 0.8),
+                      blurRadius: 6,
                       spreadRadius: 1,
                     ),
                   ],
                 ),
               ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 7),
             Text(
               label,
               style: TextStyle(
                 color: text,
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.3,
               ),
             ),
           ],

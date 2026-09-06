@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
-import '../../shared/widgets/drishti_logo.dart';
 import 'auth_provider.dart';
+
+import '../../data/models/user_model.dart';
+import '../../shared/widgets/ethereal_background.dart';
+import '../../shared/widgets/pill_button.dart';
+import 'widgets/retinal_visual_panel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final VoidCallback? onOpenOnboarding;
@@ -19,9 +23,10 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: 'doctor@retina.org');
+  final _passwordController = TextEditingController(text: 'eyexpert2026');
   bool _obscurePassword = true;
+  UserRole _selectedRole = UserRole.clinician;
 
   @override
   void dispose() {
@@ -38,19 +43,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  void _fillDoctorDemo() {
+    setState(() {
+      _selectedRole = UserRole.clinician;
+      _emailController.text = 'doctor@retina.org';
+      _passwordController.text = 'eyexpert2026';
+    });
+    _handleLogin();
+  }
+
+  void _fillWorkerDemo() {
+    setState(() {
+      _selectedRole = UserRole.healthWorker;
+      _emailController.text = 'worker@phc.gov.in';
+      _passwordController.text = 'eyexpert2026';
+    });
+    _handleLogin();
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width >= 960;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
-              child: _buildLoginForm(context, authState),
+      body: EtherealBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: isDesktop ? 1040 : 480),
+                child: isDesktop
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: SizedBox(
+                              height: 580,
+                              child: RetinalVisualPanel(activeRole: _selectedRole),
+                            ),
+                          ),
+                          const SizedBox(width: 32),
+                          Expanded(
+                            flex: 5,
+                            child: _buildLoginForm(context, authState),
+                          ),
+                        ],
+                      )
+                    : _buildLoginForm(context, authState),
+              ),
             ),
           ),
         ),
@@ -60,24 +105,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Widget _buildLoginForm(BuildContext context, AuthState authState) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: AppColors.border,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 24,
             offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -86,42 +126,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header: Drishti Logo + System Title
+            // Header: DiagnoX/Drishti Emblem + Branding
             Center(
               child: Column(
                 children: [
-                  const DrishtiLogo(
-                    size: 36,
-                    showText: true,
-                    textColor: AppColors.primary,
-                  ),
-                  const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
-                      color: AppColors.accentLight,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: AppColors.accent.withValues(alpha: 0.3),
-                        width: 1,
-                      ),
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Text(
-                      'CLINICAL AI WORKSTATION',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.accent,
-                        letterSpacing: 0.6,
-                      ),
+                    child: const Icon(
+                      Icons.remove_red_eye_rounded,
+                      size: 28,
+                      color: AppColors.primary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   const Text(
-                    'Explainable Retinal Intelligence & Clinical Decision Support',
+                    'Drishti AI',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.4,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Clinical AI Retinal Vision Platform',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textSecondary,
                     ),
@@ -129,14 +166,98 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 22),
+
+            // Demo Role Quick Selector Pills
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: _fillDoctorDemo,
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _selectedRole == UserRole.clinician
+                              ? Colors.white
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: _selectedRole == UserRole.clinician
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '👨‍⚕️ Doctor',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: InkWell(
+                      onTap: _fillWorkerDemo,
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _selectedRole == UserRole.healthWorker
+                              ? Colors.white
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: _selectedRole == UserRole.healthWorker
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '🩺 Health Worker',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
 
             // Work Email Field
             const Text(
               'WORK EMAIL / USERNAME',
               style: TextStyle(
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
                 color: AppColors.textSecondary,
                 letterSpacing: 0.4,
               ),
@@ -153,20 +274,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 filled: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.accent, width: 2),
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
             // Password Field
             Row(
@@ -176,7 +297,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'PASSWORD',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.textSecondary,
                     letterSpacing: 0.4,
                   ),
@@ -185,7 +306,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Please contact your facility administrator or IT desk to reset your password.'),
+                        content: Text('Demo Credentials: password is "eyexpert2026"'),
                       ),
                     );
                   },
@@ -194,7 +315,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextStyle(
                       fontSize: 11.5,
                       color: AppColors.accent,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -221,16 +342,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 filled: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.accent, width: 2),
                 ),
               ),
             ),
@@ -282,72 +403,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 20),
             ],
 
-            // Sign In Button
-            ElevatedButton(
+            // Sign In Pill Button
+            PillButton(
+              label: authState.isLoading
+                  ? (authState.authenticatingMessage ?? 'AUTHENTICATING...')
+                  : 'Enter Workstation',
+              icon: authState.isLoading ? null : Icons.arrow_forward_rounded,
+              isLoading: authState.isLoading,
+              height: 50,
               onPressed: authState.isLoading ? null : _handleLogin,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              child: authState.isLoading
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          authState.authenticatingMessage ?? 'AUTHENTICATING...',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    )
-                  : const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.login_rounded, size: 18),
-                        SizedBox(width: 8),
-                        Text(
-                          'SIGN IN',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.6,
-                          ),
-                        ),
-                      ],
-                    ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
             // Onboarding CTA
             if (widget.onOpenOnboarding != null)
-              OutlinedButton.icon(
+              PillButton(
+                label: 'Register Screener Credentials',
+                icon: Icons.how_to_reg_outlined,
+                variant: PillButtonVariant.secondaryOutlined,
+                height: 46,
                 onPressed: authState.isLoading ? null : widget.onOpenOnboarding,
-                icon: const Icon(Icons.how_to_reg_outlined, size: 18),
-                label: const Text('New to Drishti? Register & Enroll'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
               ),
             const SizedBox(height: 24),
 
@@ -356,17 +431,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 children: [
                   Text(
-                    '${AppConstants.appName.toUpperCase()} • ${AppConstants.sihProblemStatement}',
+                    '${AppConstants.appName.toUpperCase()} • SIH 2026 PROBLEM STATEMENT 26038',
                     style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
                       color: AppColors.textMuted,
                       letterSpacing: 0.6,
                     ),
                   ),
                   const SizedBox(height: 3),
                   const Text(
-                    'AI-assisted screening • Final clinical validation by an ophthalmologist.',
+                    'Autonomous AI Inference with Specialist Clinical Decision Support',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 10,

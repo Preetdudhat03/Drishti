@@ -4,8 +4,8 @@ import '../../core/utils/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/user_model.dart';
 import '../../features/auth/auth_provider.dart';
-import 'drishti_logo.dart';
 import 'connection_status_pill.dart';
+import 'ethereal_background.dart';
 
 class ResponsiveScaffold extends ConsumerWidget {
   final int currentIndex;
@@ -31,48 +31,48 @@ class ResponsiveScaffold extends ConsumerWidget {
     if (role == UserRole.clinician) {
       return const [
         NavigationDestination(
-          icon: Icon(Icons.dashboard_outlined),
-          selectedIcon: Icon(Icons.dashboard_rounded),
+          icon: Icon(Icons.speed_rounded),
+          selectedIcon: Icon(Icons.speed_rounded),
           label: 'Overview',
         ),
         NavigationDestination(
-          icon: Icon(Icons.rate_review_outlined),
-          selectedIcon: Icon(Icons.rate_review_rounded),
+          icon: Icon(Icons.fact_check_outlined),
+          selectedIcon: Icon(Icons.fact_check_rounded),
           label: 'Review Queue',
         ),
         NavigationDestination(
-          icon: Icon(Icons.folder_shared_outlined),
-          selectedIcon: Icon(Icons.folder_shared_rounded),
-          label: 'Cases',
+          icon: Icon(Icons.grid_view_rounded),
+          selectedIcon: Icon(Icons.grid_view_sharp),
+          label: 'All Cases',
         ),
         NavigationDestination(
-          icon: Icon(Icons.analytics_outlined),
-          selectedIcon: Icon(Icons.analytics_rounded),
-          label: 'Analytics',
+          icon: Icon(Icons.monitor_heart_outlined),
+          selectedIcon: Icon(Icons.monitor_heart_rounded),
+          label: 'System Status',
         ),
         NavigationDestination(
           icon: Icon(Icons.description_outlined),
           selectedIcon: Icon(Icons.description_rounded),
-          label: 'Reports',
+          label: 'Clinical Reports',
         ),
         NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Profile',
+          icon: Icon(Icons.badge_outlined),
+          selectedIcon: Icon(Icons.badge_rounded),
+          label: 'Credentials',
         ),
       ];
     }
 
     return const [
       NavigationDestination(
-        icon: Icon(Icons.dashboard_outlined),
-        selectedIcon: Icon(Icons.dashboard_rounded),
-        label: 'Home',
+        icon: Icon(Icons.space_dashboard_outlined),
+        selectedIcon: Icon(Icons.space_dashboard_rounded),
+        label: 'Dashboard',
       ),
       NavigationDestination(
         icon: Icon(Icons.camera_enhance_outlined),
         selectedIcon: Icon(Icons.camera_enhance_rounded),
-        label: 'Screening',
+        label: 'New Intake',
       ),
       NavigationDestination(
         icon: Icon(Icons.folder_shared_outlined),
@@ -80,9 +80,9 @@ class ResponsiveScaffold extends ConsumerWidget {
         label: 'Patients',
       ),
       NavigationDestination(
-        icon: Icon(Icons.cloud_sync_outlined),
-        selectedIcon: Icon(Icons.cloud_sync_rounded),
-        label: 'Sync',
+        icon: Icon(Icons.sync_rounded),
+        selectedIcon: Icon(Icons.sync_rounded),
+        label: 'Rural Sync',
       ),
       NavigationDestination(
         icon: Icon(Icons.person_outline),
@@ -98,31 +98,10 @@ class ResponsiveScaffold extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(20),
         ),
-        title: const Row(
-          children: [
-            Icon(Icons.logout_rounded, color: AppColors.statusWarning, size: 22),
-            SizedBox(width: 10),
-            Text(
-              'Sign out of Drishti?',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Your screening sessions and local cache will remain securely saved.',
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-            height: 1.45,
-          ),
-        ),
+        title: const Text('Sign Out from Workstation?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        content: const Text('Your local offline session state will be safely preserved.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
@@ -134,13 +113,14 @@ class ResponsiveScaffold extends ConsumerWidget {
               ref.read(authProvider.notifier).logout();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.statusCritical,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.badgeHighRiskBg,
+              foregroundColor: AppColors.badgeHighRiskText,
+              elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Sign Out'),
+            child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -156,124 +136,168 @@ class ResponsiveScaffold extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: AppColors.primary,
-        title: Row(
-          children: [
-            const DrishtiLogo(
-              size: 32,
-              showText: false,
-              color: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.border,
+                width: 1,
+              ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    title,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15.5,
-                      color: Colors.white,
-                      letterSpacing: -0.2,
+                  // Brand Emblem
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.remove_red_eye_rounded,
+                      color: AppColors.primary,
+                      size: 20,
                     ),
                   ),
-                  if (currentUser != null)
-                    Container(
-                      margin: const EdgeInsets.only(top: 2),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: isClinician ? AppColors.aiViolet : AppColors.statusGood,
-                              shape: BoxShape.circle,
+                  const SizedBox(width: 12),
+                  
+                  // Title & Role
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              title,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.3,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 5),
-                          Flexible(
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryLight,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'AI v2.4',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (currentUser != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              '${isClinician ? "OPHTHALMOLOGIST" : "HEALTH WORKER"} · ${currentUser!.organization.toUpperCase()}',
+                              '${isClinician ? "OPHTHALMOLOGY SPECIALIST" : "PRIMARY CARE SCREENER"} • ${currentUser!.organization.toUpperCase()}',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 10.5,
-                                color: Color(0xFF94A3B8),
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.4,
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
+                  ),
+
+                  // Actions & Status
+                  ConnectionStatusPill(isCompact: !isDesktop),
+                  if (actions != null) ...actions!,
+                  const SizedBox(width: 6),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceMuted,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.logout_rounded, color: AppColors.textSecondary, size: 18),
+                      tooltip: 'Sign Out',
+                      onPressed: () => _showLogoutDialog(context, ref),
+                    ),
+                  ),
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+      body: EtherealBackground(
+        child: Row(
+          children: [
+            if (isDesktop || isTablet)
+              NavigationRail(
+                backgroundColor: AppColors.surface,
+                selectedIndex: currentIndex.clamp(0, destinations.length - 1),
+                onDestinationSelected: onNavigationIndexChanged,
+                labelType: isDesktop
+                    ? NavigationRailLabelType.all
+                    : NavigationRailLabelType.selected,
+                unselectedIconTheme: const IconThemeData(color: AppColors.textSecondary, size: 22),
+                selectedIconTheme: const IconThemeData(
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+                indicatorColor: AppColors.primaryLight,
+                unselectedLabelTextStyle: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+                selectedLabelTextStyle: const TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                ),
+                destinations: destinations
+                    .map(
+                      (d) => NavigationRailDestination(
+                        icon: d.icon,
+                        selectedIcon: d.selectedIcon,
+                        label: Text(d.label),
+                      ),
+                    )
+                    .toList(),
+              ),
+            if (isDesktop || isTablet)
+              const VerticalDivider(thickness: 1, width: 1, color: AppColors.border),
+            Expanded(child: body),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-            child: ConnectionStatusPill(isCompact: !isDesktop),
-          ),
-          if (actions != null) ...actions!,
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.white70, size: 20),
-            tooltip: 'Sign Out',
-            onPressed: () => _showLogoutDialog(context, ref),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Row(
-        children: [
-          if (isDesktop || isTablet)
-            NavigationRail(
-              backgroundColor: AppColors.surface,
-              selectedIndex: currentIndex.clamp(0, destinations.length - 1),
-              onDestinationSelected: onNavigationIndexChanged,
-              labelType: isDesktop
-                  ? NavigationRailLabelType.all
-                  : NavigationRailLabelType.selected,
-              unselectedIconTheme: const IconThemeData(color: AppColors.textSecondary),
-              selectedIconTheme: const IconThemeData(
-                color: AppColors.accent,
-              ),
-              unselectedLabelTextStyle: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-              selectedLabelTextStyle: const TextStyle(
-                color: AppColors.accent,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-              ),
-              destinations: destinations
-                  .map(
-                    (d) => NavigationRailDestination(
-                      icon: d.icon,
-                      selectedIcon: d.selectedIcon,
-                      label: Text(d.label),
-                    ),
-                  )
-                  .toList(),
-            ),
-          if (isDesktop || isTablet)
-            const VerticalDivider(thickness: 1, width: 1, color: AppColors.border),
-          Expanded(child: body),
-        ],
       ),
       bottomNavigationBar: (!isDesktop && !isTablet)
           ? NavigationBar(
               backgroundColor: AppColors.surface,
-              indicatorColor: AppColors.accentLight,
+              indicatorColor: AppColors.primaryLight,
               selectedIndex: currentIndex.clamp(0, destinations.length - 1),
               onDestinationSelected: onNavigationIndexChanged,
               destinations: destinations,

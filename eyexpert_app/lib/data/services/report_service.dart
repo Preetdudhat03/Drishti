@@ -35,7 +35,7 @@ class ReportService {
                         style: const pw.TextStyle(
                           fontSize: 20,
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.teal900,
+                          color: PdfColors.grey900,
                         ),
                       ),
                       pw.Text(
@@ -145,9 +145,9 @@ class ReportService {
               pw.Container(
                 padding: const pw.EdgeInsets.all(10),
                 decoration: pw.BoxDecoration(
-                  color: review != null ? PdfColors.blue50 : PdfColors.amber50,
+                  color: review != null ? PdfColors.grey100 : PdfColors.amber50,
                   border: pw.Border.all(
-                      color: review != null ? PdfColors.blue300 : PdfColors.amber300),
+                      color: review != null ? PdfColors.amber700 : PdfColors.amber300),
                   borderRadius: pw.BorderRadius.circular(4),
                 ),
                 child: review != null

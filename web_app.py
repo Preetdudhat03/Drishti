@@ -922,8 +922,9 @@ HTML_PAGE = """
     <style>
         :root {
             --primary: #0f172a;
-            --primary-accent: #2563eb;
-            --sidebar-bg: #1e293b;
+            --primary-accent: #0d7c85;
+            --ai-violet: #085f67;
+            --sidebar-bg: #0f172a;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #0f172a;
@@ -1028,9 +1029,9 @@ HTML_PAGE = """
             font-weight: 700;
             margin-top: 6px;
         }
-        .status-active { background: #064e3b; color: #34d399; }
+        .status-active { background: #451a03; color: #fbbf24; }
         .status-unavail { background: #7f1d1d; color: #fca5a5; }
-        .status-supabase { background: #0c4a6e; color: #38bdf8; }
+        .status-supabase { background: #27272a; color: #f4f4f5; }
 
         /* BACKDROP FOR MOBILE SIDEBAR */
         .sidebar-backdrop {
@@ -1057,34 +1058,35 @@ HTML_PAGE = """
             width: 100%;
         }
         header {
-            background: #ffffff;
-            border-bottom: 1px solid var(--border);
+            background: #0b0f19;
+            border-bottom: 1.5px solid rgba(79, 70, 229, 0.25);
             padding: 14px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
             gap: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
         }
         .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
         .menu-toggle-btn {
             display: none;
-            background: #f1f5f9;
-            border: 1px solid var(--border-dark);
-            border-radius: 6px;
-            color: var(--primary);
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #ffffff;
             padding: 6px 10px;
             font-size: 16px;
             cursor: pointer;
             align-items: center;
             justify-content: center;
         }
-        .header-title-box h2 { font-size: 17px; font-weight: 700; color: var(--primary); }
-        .header-title-box p { font-size: 12px; color: var(--text-muted); }
+        .header-title-box h2 { font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+        .header-title-box p { font-size: 11.5px; color: #94a3b8; font-weight: 500; }
         .header-actions { display: flex; align-items: center; gap: 12px; }
         
         .content-body {
@@ -1097,8 +1099,8 @@ HTML_PAGE = """
         /* CARDS & RESPONSIVE GRIDS */
         .grid-3 { display: grid; grid-template-columns: minmax(280px, 320px) minmax(300px, 360px) 1fr; gap: 20px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); max-width: 100%; }
-        .card-header { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); padding: 20px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04); max-width: 100%; }
+        .card-header { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
 
         /* BUTTONS */
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--primary-accent); color: white; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: 0.15s; text-decoration: none; }
@@ -1284,8 +1286,8 @@ HTML_PAGE = """
                         <img id="origImg" src="" style="display: none;">
                         <img id="mainDynamicImg" src="" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
                         <span id="origPlaceholder" style="color: #64748b; font-size: 12px;">No image loaded</span>
-                        <div id="loadingOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); flex-direction:column; align-items:center; justify-content:center; color:white; border-radius:8px;">
-                            <div style="width:28px; height:28px; border:3px solid #38bdf8; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                        <div id="loadingOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(9,9,11,0.85); flex-direction:column; align-items:center; justify-content:center; color:white; border-radius:8px;">
+                            <div style="width:28px; height:28px; border:3px solid #f59e0b; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
                             <span style="font-size:11px; margin-top:8px; font-weight:600;">Running PyTorch ResNet-18 & Syncing Supabase...</span>
                         </div>
                     </div>
@@ -1658,13 +1660,13 @@ HTML_PAGE = """
 
                 <div class="provenance-box" style="margin-bottom: 15px;">
                     <div class="provenance-row"><span class="provenance-key">Supabase Cloud URL:</span><span class="provenance-val">{{ supabase_url }}</span></div>
-                    <div class="provenance-row"><span class="provenance-key">Supabase Connection:</span><span class="provenance-val" style="color: #16a34a;">{{ supabase_status }}</span></div>
+                    <div class="provenance-row"><span class="provenance-key">Supabase Connection:</span><span class="provenance-val" style="color: #f59e0b; font-weight: 700;">{{ supabase_status }}</span></div>
                     <div class="provenance-row"><span class="provenance-key">PyTorch Engine Device:</span><span class="provenance-val">{{ model_provenance.device }}</span></div>
                     <div class="provenance-row"><span class="provenance-key">Model Weights Checkpoint:</span><span class="provenance-val">{{ model_path }}</span></div>
                 </div>
 
                 <label>LATEST REST API / SUPABASE PAYLOAD LOG:</label>
-                <pre id="apiJsonInspector" style="background: #0f172a; color: #38bdf8; padding: 14px; border-radius: 8px; font-size: 11px; max-height: 250px; overflow-y: auto;">
+                <pre id="apiJsonInspector" style="background: #121215; color: #fbbf24; border: 1px solid #27272a; padding: 14px; border-radius: 8px; font-size: 11px; max-height: 250px; overflow-y: auto;">
 {
   "status": "HEALTHY",
   "database": "Supabase PostgreSQL Cloud",
@@ -1726,7 +1728,7 @@ function initChart() {
             datasets: [{
                 label: 'Model Probability',
                 data: [0, 0, 0, 0, 0],
-                backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#b91c1c']
+                backgroundColor: ['#71717a', '#eab308', '#f59e0b', '#ea580c', '#e11d48']
             }]
         },
         options: {
@@ -1934,10 +1936,10 @@ function updateScreeningUI(data) {
     // AI Classification
     const c = data.classification;
     if (c) {
-        const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#b91c1c'];
+        const colors = ['#71717a', '#eab308', '#f59e0b', '#ea580c', '#e11d48'];
         const drBadge = document.getElementById('drLevelBadge');
         drBadge.innerText = "DR LEVEL: " + c.level;
-        drBadge.style.background = colors[c.level] || '#2563eb';
+        drBadge.style.background = colors[c.level] || '#f59e0b';
         drBadge.style.color = '#fff';
 
         const refBadge = document.getElementById('referableBadge');
@@ -2522,7 +2524,7 @@ def api_view_report(id):
     <style>
     body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; background: #f8fafc; color: #0f172a; }}
     .card {{ max-width: 820px; margin: 0 auto; background: white; padding: 36px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }}
-    .header-row {{ display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px; }}
+    .header-row {{ display: flex; justify-content: space-between; border-bottom: 2px solid #0d7c85; padding-bottom: 12px; margin-bottom: 20px; }}
     h1 {{ color: #0f172a; font-size: 22px; font-weight: 800; }}
     .sec {{ background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; }}
     .sec h3 {{ font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }}

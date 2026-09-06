@@ -10,6 +10,7 @@ class PrimaryButton extends StatelessWidget {
   final bool isDestructive;
   final double? width;
   final double height;
+  final bool useGradient;
 
   const PrimaryButton({
     super.key,
@@ -21,6 +22,7 @@ class PrimaryButton extends StatelessWidget {
     this.isDestructive = false,
     this.width,
     this.height = 48,
+    this.useGradient = false,
   });
 
   @override
@@ -29,7 +31,7 @@ class PrimaryButton extends StatelessWidget {
         ? AppColors.statusUngradable
         : isSecondary
             ? Colors.white
-            : AppColors.accent; // Medical Teal
+            : AppColors.accent;
 
     final Color fgColor = isDestructive
         ? Colors.white
@@ -40,7 +42,7 @@ class PrimaryButton extends StatelessWidget {
     final Color borderColor = isDestructive
         ? AppColors.statusUngradable
         : isSecondary
-            ? AppColors.accent
+            ? AppColors.border
             : AppColors.accent;
 
     Widget child = isLoading
@@ -84,9 +86,41 @@ class PrimaryButton extends StatelessWidget {
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             foregroundColor: fgColor,
-            side: BorderSide(color: borderColor, width: 1.5),
+            side: BorderSide(color: borderColor, width: 1.2),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          child: child,
+        ),
+      );
+    }
+
+    if (useGradient && !isDestructive && onPressed != null) {
+      return Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          gradient: AppColors.brandGradient,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accent.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: fgColor,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16),
           ),
@@ -105,7 +139,7 @@ class PrimaryButton extends StatelessWidget {
           foregroundColor: fgColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),

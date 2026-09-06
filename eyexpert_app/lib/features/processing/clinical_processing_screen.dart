@@ -139,10 +139,10 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0FDF4),
+                    color: AppColors.accentLight,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFF86EFAC),
+                      color: AppColors.accent.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -152,16 +152,16 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                       Icon(
                         Icons.cloud_done_rounded,
                         size: 15,
-                        color: Color(0xFF15803D),
+                        color: AppColors.accent,
                       ),
                       SizedBox(width: 6),
                       Text(
                         'LIVE BACKEND: PYTORCH RESNET-18',
                         style: TextStyle(
                           fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.3,
-                          color: Color(0xFF166534),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.4,
+                          color: AppColors.accent,
                         ),
                       ),
                     ],

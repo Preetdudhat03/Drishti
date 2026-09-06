@@ -97,8 +97,8 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            backgroundColor: Color(0xFF166534),
-            content: Text('✓ AI screening result confirmed and validated.'),
+            backgroundColor: AppColors.accent,
+            content: Text('✓ AI diagnostic result confirmed and specialist validated.'),
           ),
         );
         widget.onReviewSubmitted();
@@ -438,26 +438,26 @@ class _ClinicianReviewScreenState extends ConsumerState<ClinicianReviewScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF86EFAC)),
+                color: AppColors.aiVioletLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.aiViolet.withValues(alpha: 0.35)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 24),
+                  const Icon(Icons.verified_rounded, color: AppColors.aiViolet, size: 24),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Clinical Review Finalized & Signed',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF15803D)),
+                          'Specialist Clinical Review Finalized & Signed',
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.aiViolet),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Signed by ${review.clinicianName ?? "Ophthalmologist"} • ${AppFormatters.formatDateTime(review.reviewedAt)}',
-                          style: const TextStyle(fontSize: 11.5, color: Color(0xFF166534)),
+                          style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
                         ),
                       ],
                     ),

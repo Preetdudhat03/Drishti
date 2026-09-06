@@ -221,52 +221,66 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
 
               // Benchmark Clinical Retinal Cases Dropdown (for Evaluator / Testing)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade200),
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.science_outlined, color: AppColors.primary, size: 20),
-                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentLight,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.biotech_rounded, color: AppColors.laserBlue, size: 18),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           isExpanded: true,
                           hint: const Text(
-                            'Load Clinical Benchmark Case (APTOS)...',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+                            'Load Clinical Benchmark Case (APTOS / Messidor)...',
+                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.laserBlue),
                           ),
                           items: const [
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_normal.png',
-                              child: Text('Level 0: Normal Retina (Non-Referable)', style: TextStyle(fontSize: 12)),
+                              child: Text('Level 0: Normal Retina (Non-Referable)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_npdr_mild.png',
-                              child: Text('Level 1: Mild NPDR (Non-Referable)', style: TextStyle(fontSize: 12)),
+                              child: Text('Level 1: Mild NPDR (Non-Referable)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_npdr_moderate.png',
-                              child: Text('Level 2: Moderate NPDR (Referable)', style: TextStyle(fontSize: 12)),
+                              child: Text('Level 2: Moderate NPDR (Referable)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_good_pdr_severe.png',
-                              child: Text('Level 4: Proliferative DR (Referable)', style: TextStyle(fontSize: 12)),
+                              child: Text('Level 4: Proliferative DR (Referable)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_borderline_illum.png',
-                              child: Text('Borderline: Low Contrast (CLAHE Target)', style: TextStyle(fontSize: 12)),
+                              child: Text('Borderline: Low Contrast (CLAHE Target)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_ungradable_blur.png',
-                              child: Text('Ungradable: Motion Blur (Safety Gate)', style: TextStyle(fontSize: 12)),
+                              child: Text('Ungradable: Motion Blur (Safety Gate)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                             DropdownMenuItem(
                               value: 'assets/sample_fundus/sample_ungradable_dark.png',
-                              child: Text('Ungradable: Underexposed (Safety Gate)', style: TextStyle(fontSize: 12)),
+                              child: Text('Ungradable: Underexposed (Safety Gate)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                           ],
                           onChanged: (val) {
@@ -278,35 +292,35 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
               // Instructions Checklist Card
               ClinicalCard(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
+                      spacing: 16,
+                      runSpacing: 10,
                       alignment: WrapAlignment.spaceAround,
                       children: [
-                        _guidanceItem(Icons.crop_free_rounded, 'Center field'),
-                        _guidanceItem(Icons.auto_fix_high_rounded, 'Sharp focus'),
-                        _guidanceItem(Icons.wb_sunny_outlined, 'Illumination'),
-                        _guidanceItem(Icons.vibration_rounded, 'Hold steady'),
+                        _guidanceItem(Icons.crop_free_rounded, 'Center FOV'),
+                        _guidanceItem(Icons.auto_fix_high_rounded, 'Sharp Focus'),
+                        _guidanceItem(Icons.wb_sunny_rounded, 'Illumination'),
+                        _guidanceItem(Icons.vibration_rounded, 'Anti-Shake'),
                       ],
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Compatible with handheld fundus cameras, ophthalmic slit-lamp smartphone adapters, and direct device uploads.',
+                      'Compatible with digital fundus cameras, slit-lamp smartphone adapters, and direct clinical imports.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 10.5, color: AppColors.textMuted, fontStyle: FontStyle.italic),
+                      style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontStyle: FontStyle.italic),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
 
               // Bottom Actions
               Row(
@@ -323,13 +337,15 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
                     onPressed: () {
                       setState(() {
                         _isCaptured = false;
+                        _selectedImagePath = null;
                       });
                     },
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Retake'),
+                    label: const Text('Reset'),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      foregroundColor: AppColors.textPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       side: const BorderSide(color: AppColors.border),
                     ),
                   ),
@@ -346,9 +362,9 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: AppColors.accent),
+        Icon(icon, size: 16, color: AppColors.laserBlue),
         const SizedBox(width: 6),
-        Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text(text, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
       ],
     );
   }
@@ -357,23 +373,35 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
 class _FundusReticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.tealAccent.withValues(alpha: 0.6)
+    final cyanPaint = Paint()
+      ..color = AppColors.cyberAzure.withValues(alpha: 0.75)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
+
+    final dashPaint = Paint()
+      ..color = AppColors.laserBlue.withValues(alpha: 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
 
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2.2;
 
-    // Circular reticle
-    canvas.drawCircle(center, radius, paint);
+    // Optical outer targeting ring
+    canvas.drawCircle(center, radius, cyanPaint);
+    canvas.drawCircle(center, radius * 0.45, dashPaint);
 
     // Crosshair ticks
-    const tickLength = 12.0;
-    canvas.drawLine(Offset(center.dx - radius - tickLength, center.dy), Offset(center.dx - radius + tickLength, center.dy), paint);
-    canvas.drawLine(Offset(center.dx + radius - tickLength, center.dy), Offset(center.dx + radius + tickLength, center.dy), paint);
-    canvas.drawLine(Offset(center.dx, center.dy - radius - tickLength), Offset(center.dx, center.dy - radius + tickLength), paint);
-    canvas.drawLine(Offset(center.dx, center.dy + radius - tickLength), Offset(center.dx, center.dy + radius + tickLength), paint);
+    const tickLength = 14.0;
+    canvas.drawLine(Offset(center.dx - radius - tickLength, center.dy), Offset(center.dx - radius + tickLength, center.dy), cyanPaint);
+    canvas.drawLine(Offset(center.dx + radius - tickLength, center.dy), Offset(center.dx + radius + tickLength, center.dy), cyanPaint);
+    canvas.drawLine(Offset(center.dx, center.dy - radius - tickLength), Offset(center.dx, center.dy - radius + tickLength), cyanPaint);
+    canvas.drawLine(Offset(center.dx, center.dy + radius - tickLength), Offset(center.dx, center.dy + radius + tickLength), cyanPaint);
+
+    // Center targeting pip
+    final dotPaint = Paint()
+      ..color = AppColors.cyberAzure
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 3.0, dotPaint);
   }
 
   @override

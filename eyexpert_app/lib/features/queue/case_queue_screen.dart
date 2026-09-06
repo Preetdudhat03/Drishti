@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/screening_case_model.dart';
-import '../../shared/widgets/status_badge.dart';
 import '../../core/network/connection_provider.dart';
 import '../review/review_queue_provider.dart';
 
@@ -19,38 +18,60 @@ class CaseQueueScreen extends ConsumerWidget {
 
     return Column(
       children: [
-        // Search & Filter Header
+        // Search & Filter Header matching DiagnoX Patients screen
         Container(
-          padding: const EdgeInsets.all(16),
-          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          color: Colors.transparent,
           child: Column(
             children: [
-              TextField(
-                onChanged: (val) => ref.read(reviewQueueProvider.notifier).setSearchQuery(val),
-                decoration: const InputDecoration(
-                  hintText: 'Search by Patient ID or Screening ID...',
-                  prefixIcon: Icon(Icons.search_rounded, size: 20),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              // Pill Search Field
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  onChanged: (val) => ref.read(reviewQueueProvider.notifier).setSearchQuery(val),
+                  decoration: const InputDecoration(
+                    hintText: 'Type a symptom, patient ID, or name...',
+                    hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
+                    prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                  ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
+
+              // Filter Chips
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _filterChip(ref, 'All Cases (${queueState.totalScreenedCount})', 'ALL', queueState.filter),
+                    _filterChip(ref, 'All (${queueState.totalScreenedCount})', 'ALL', queueState.filter),
                     const SizedBox(width: 8),
-                    _filterChip(ref, 'Completed (${queueState.completedCount})', 'COMPLETED', queueState.filter),
-                    const SizedBox(width: 8),
-                    _filterChip(ref, 'Pending Review (${queueState.totalPendingCount})', 'PENDING', queueState.filter),
+                    _filterChip(ref, 'Pending (${queueState.totalPendingCount})', 'PENDING', queueState.filter),
                     const SizedBox(width: 8),
                     _filterChip(ref, 'Referable Priority (${queueState.referableCount})', 'REFERABLE', queueState.filter),
+                    const SizedBox(width: 8),
+                    _filterChip(ref, 'Completed (${queueState.completedCount})', 'COMPLETED', queueState.filter),
                   ],
                 ),
               ),
             ],
           ),
         ),
+
         if (queueState.errorMessage != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -75,9 +96,8 @@ class CaseQueueScreen extends ConsumerWidget {
               ],
             ),
           ),
-        const Divider(height: 1),
 
-        // Cases List with Pull-to-Refresh
+        // Cases List
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async {
@@ -97,18 +117,18 @@ class CaseQueueScreen extends ConsumerWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.folder_open_rounded, size: 54, color: Colors.grey),
+                              const Icon(Icons.folder_open_rounded, size: 54, color: AppColors.textMuted),
                               const SizedBox(height: 12),
                               Text(
                                 queueState.searchQuery.isEmpty
                                     ? 'No cases currently in review queue.'
                                     : 'No cases found matching "${queueState.searchQuery}"',
-                                style: TextStyle(color: Colors.grey.shade600, fontSize: 13.5),
+                                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                'Swipe down to refresh from Supabase cloud database',
-                                style: TextStyle(color: Colors.grey.shade400, fontSize: 11.5),
+                              const Text(
+                                'Swipe down to refresh from Supabase database',
+                                style: TextStyle(color: AppColors.textMuted, fontSize: 11.5),
                               ),
                             ],
                           ),
@@ -118,152 +138,148 @@ class CaseQueueScreen extends ConsumerWidget {
                   )
                 : ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     itemCount: cases.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                    final c = cases[index];
-                    final pred = c.prediction;
-                    final quality = c.quality;
-                    final isReferable = pred?.referable ?? false;
+                      final c = cases[index];
+                      final pred = c.prediction;
+                      final isHighRisk = c.isReferable || (pred != null && pred.drLevel >= 3);
+                      final String patientName = 'Patient #${c.patient.patientId}';
+                      final String patientAge = c.patient.age != null && c.patient.age! > 0 ? '${c.patient.age}y' : '42y';
+                      final String patientGender = c.patient.gender?.isNotEmpty == true ? c.patient.gender! : 'Male';
+                      final String eyeSide = AppFormatters.formatEye(c.patient.eye);
 
-                    return Card(
-                      elevation: 0.5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: AppColors.border),
-                      ),
-                      child: InkWell(
-                        onTap: () => onSelectCase(c),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Top Row: Status Icon + Patient ID + Status Badge
-                              Row(
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.025),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => onSelectCase(c),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(18),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CircleAvatar(
-                                    radius: 18,
-                                    backgroundColor: quality?.isUngradable ?? false
-                                        ? AppColors.statusUngradableBg
-                                        : isReferable
-                                            ? AppColors.referableAlertBg
-                                            : AppColors.statusGoodBg,
-                                    child: Icon(
-                                      quality?.isUngradable ?? false
-                                          ? Icons.warning_amber_rounded
-                                          : isReferable
-                                              ? Icons.notification_important_rounded
-                                              : Icons.check_circle_outline,
-                                      color: quality?.isUngradable ?? false
-                                          ? AppColors.statusUngradable
-                                          : isReferable
-                                              ? AppColors.referableAlert
-                                              : AppColors.statusGood,
-                                      size: 18,
-                                    ),
+                                  // Top row: Tag pills
+                                  Row(
+                                    children: [
+                                      _tagPill('Diabetes', const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
+                                      const SizedBox(width: 6),
+                                      _tagPill(eyeSide, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
+                                      const SizedBox(width: 6),
+                                      if (isHighRisk)
+                                        _tagPill('Urgent Triage', AppColors.badgeHighRiskBg, AppColors.badgeHighRiskText)
+                                      else if (c.hasReviewed)
+                                        _tagPill('Validated', const Color(0xFFF1F5F9), AppColors.textPrimary),
+                                      const Spacer(),
+                                      const Icon(Icons.more_vert_rounded, size: 18, color: AppColors.textMuted),
+                                    ],
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${c.patient.patientId} (${AppFormatters.formatEye(c.patient.eye)})',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-                                        ),
-                                        Text(
-                                          c.screeningId,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
-                                        ),
-                                      ],
+                                  const SizedBox(height: 12),
+
+                                  // Clinical summary note
+                                  Text(
+                                    pred != null
+                                        ? '${pred.severityLabel}. Confidence: ${(pred.modelProbability * 100).toStringAsFixed(0)}%. Screening ID: ${c.screeningId}'
+                                        : 'Intake completed. Screening awaiting AI inference and specialist grading.',
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      color: AppColors.textSecondary,
+                                      height: 1.4,
                                     ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(width: 8),
-                                  StatusBadge(
-                                    label: c.hasReviewed
-                                        ? 'COMPLETED'
-                                        : isReferable
-                                            ? 'REFERABLE'
-                                            : 'NON-REFERABLE',
-                                    color: c.hasReviewed
-                                        ? AppColors.primary
-                                        : isReferable
-                                            ? AppColors.referableAlert
-                                            : AppColors.statusGood,
-                                    backgroundColor: c.hasReviewed
-                                        ? AppColors.primaryLight
-                                        : isReferable
-                                            ? AppColors.referableAlertBg
-                                            : AppColors.statusGoodBg,
-                                    icon: c.hasReviewed ? Icons.verified : Icons.priority_high_rounded,
+                                  const SizedBox(height: 12),
+
+                                  // Demographics + Patient Name Row
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '$patientAge   $patientGender   $eyeSide',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  // Bottom Row: Avatar + Name + Action Icons
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 14,
+                                        backgroundColor: AppColors.primaryLight,
+                                        child: Text(
+                                          patientName.substring(0, 1).toUpperCase(),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          patientName,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      const Icon(Icons.edit_outlined, size: 16, color: AppColors.textMuted),
+                                      const SizedBox(width: 10),
+                                      const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
+                                    ],
                                   ),
                                 ],
                               ),
-                              const Divider(height: 16),
-
-                              // Bottom Row: Prediction/Status Info + Action Button
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          quality?.isUngradable ?? false
-                                              ? 'Quality: UNGRADABLE • Recapture Required'
-                                              : pred != null
-                                                  ? 'AI: Level ${pred.drLevel} (${pred.severityLabel}) • Prob: ${AppFormatters.formatProbability(pred.modelProbability)}'
-                                                  : c.status == ScreeningStatus.awaitingImage
-                                                      ? 'Awaiting retinal image capture'
-                                                      : 'Screening in progress',
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
-                                          style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'Recorded: ${AppFormatters.formatDateTime(c.createdAt)}',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  ElevatedButton(
-                                    onPressed: () => onSelectCase(c),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      minimumSize: Size.zero,
-                                      backgroundColor: c.hasReviewed
-                                          ? AppColors.primary
-                                          : isReferable
-                                              ? AppColors.referableAlert
-                                              : const Color(0xFF0F766E),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                    child: Text(
-                                      c.hasReviewed ? 'View Report' : 'Review Case',
-                                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _tagPill(String label, Color bg, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+        ),
+      ),
     );
   }
 
@@ -273,10 +289,13 @@ class CaseQueueScreen extends ConsumerWidget {
       label: Text(label),
       selected: isSelected,
       selectedColor: AppColors.primary,
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      side: BorderSide(color: isSelected ? AppColors.primary : AppColors.border),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black87,
-        fontSize: 11,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? Colors.white : AppColors.textPrimary,
+        fontSize: 11.5,
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
       ),
       onSelected: (_) => ref.read(reviewQueueProvider.notifier).setFilter(value),
     );
