@@ -59,73 +59,77 @@ class HealthWorkerDashboard extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.primary,
-                                      shape: BoxShape.circle,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 26,
+                                      height: 26,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.camera_enhance_rounded,
+                                        size: 15,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.camera_enhance_rounded,
-                                      size: 14,
-                                      color: Colors.white,
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Drishti Intake',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.primary,
+                                        letterSpacing: -0.2,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Drishti Intake',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.textPrimary,
-                                      letterSpacing: -0.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 14),
-                              const Text(
-                                'Good Morning',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
-                                  letterSpacing: -0.5,
-                                  height: 1.15,
+                                  ],
                                 ),
-                              ),
-                              Text(
-                                '$workerName!',
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
-                                  letterSpacing: -0.5,
-                                  height: 1.15,
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Good Morning,',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                    letterSpacing: -0.8,
+                                    height: 1.12,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$workerName!',
+                                  style: const TextStyle(
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.primary,
+                                    letterSpacing: -0.8,
+                                    height: 1.12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 16),
 
                           // Worker Profile Avatar
                           Container(
-                            width: 44,
-                            height: 44,
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: AppColors.surface,
-                              border: Border.all(color: AppColors.border, width: 1.5),
+                              border: Border.all(color: AppColors.border, width: 2),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                                  color: AppColors.primary.withValues(alpha: 0.08),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
@@ -134,7 +138,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                 color: AppColors.primaryLight,
                                 child: const Icon(
                                   Icons.medical_services_outlined,
-                                  size: 24,
+                                  size: 26,
                                   color: AppColors.primary,
                                 ),
                               ),
@@ -143,17 +147,17 @@ class HealthWorkerDashboard extends ConsumerWidget {
                         ],
                       ),
 
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 32),
 
-                      // 2. Primary Action Buttons
+                      // 2. Primary Action Buttons (Hero Centerpiece)
                       PillButton(
                         label: '+ New Screening / Patient Intake',
                         icon: Icons.camera_alt_rounded,
                         width: double.infinity,
-                        height: 50,
+                        height: 54,
                         onPressed: onStartScreening,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       PillButton(
                         label: 'View Screening Records',
                         icon: Icons.folder_open_rounded,
