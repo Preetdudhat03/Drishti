@@ -267,7 +267,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               controller: _emailController,
               style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'worker@phc.gov.in or doctor@retina.org',
+                hintText: 'healthworker@dridshti.org or ophthalmologist@drishti.org',
                 hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                 prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textSecondary, size: 18),
                 fillColor: Colors.white,
