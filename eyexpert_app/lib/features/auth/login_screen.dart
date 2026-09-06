@@ -23,8 +23,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = InputDecoration(text: 'doctor@drishti.org');
-  final _passwordController = InputDecoration(text: 'drishti2026');
+  final _emailController = InputDecoration('doctor@drishti.org');
+  final _passwordController = InputDecoration('drishti2026');
   bool _obscurePassword = true;
   UserRole _selectedRole = UserRole.clinician;
 
