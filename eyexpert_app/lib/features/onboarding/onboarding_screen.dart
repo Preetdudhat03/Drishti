@@ -188,25 +188,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         title: Row(
           children: [
-            const DrishtiLogo(size: 26, showText: false, color: Colors.white),
-            const SizedBox(width: 10),
-            const Text(
-              'Workstation Registration & Clinical Enrollment',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+            const DrishtiLogo(size: 24, showText: false, color: Colors.white),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Clinical Enrollment',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: widget.onCancelToLogin,
-            child: const Text('Back to Login', style: TextStyle(color: Colors.white70)),
+            icon: const Icon(Icons.login_rounded, size: 16, color: Colors.white70),
+            label: const Text('Login', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 860),
@@ -215,11 +220,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   // Progress Stepper Header
                   _buildStepperHeader(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   // Step Content
                   Container(
-                    padding: const EdgeInsets.all(28),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
@@ -238,44 +243,50 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                   // Navigation Controls
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: authState.isLoading ? null : _prevStep,
-                        icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                        label: Text(_currentStep == 0 ? 'Cancel' : 'Previous Step'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: authState.isLoading ? null : _prevStep,
+                          icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                          label: Text(
+                            _currentStep == 0 ? 'Cancel' : 'Previous',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                          ),
                         ),
                       ),
-                      if (_currentStep < 4)
-                        ElevatedButton.icon(
-                          onPressed: _nextStep,
-                          icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                          label: const Text('Continue to Next Step'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                          ),
-                        )
-                      else
-                        ElevatedButton.icon(
-                          onPressed: authState.isLoading ? null : _submitEnrollment,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: authState.isLoading ? null : (_currentStep < 4 ? _nextStep : _submitEnrollment),
                           icon: authState.isLoading
                               ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
+                                  width: 16,
+                                  height: 16,
                                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                 )
-                              : const Icon(Icons.check_circle_outline_rounded, size: 18),
-                          label: Text(authState.isLoading ? 'Enrolling...' : 'Complete Enrollment & Submit'),
+                              : Icon(
+                                  _currentStep < 4 ? Icons.arrow_forward_rounded : Icons.check_circle_outline_rounded,
+                                  size: 16,
+                                ),
+                          label: Text(
+                            authState.isLoading
+                                ? 'Enrolling...'
+                                : (_currentStep < 4 ? 'Continue' : 'Complete & Submit'),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent,
+                            backgroundColor: _currentStep < 4 ? AppColors.primary : AppColors.accent,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                           ),
                         ),
+                      ),
                     ],
                   ),
                 ],
