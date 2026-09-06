@@ -180,22 +180,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
           onPressed: _prevStep,
         ),
         title: Row(
           children: [
-            const DrishtiLogo(size: 24, showText: false, color: Colors.white),
+            const DrishtiLogo(size: 24, showText: false),
             const SizedBox(width: 8),
             const Expanded(
               child: Text(
                 'Clinical Enrollment',
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
               ),
             ),
           ],
@@ -203,8 +203,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         actions: [
           TextButton.icon(
             onPressed: widget.onCancelToLogin,
-            icon: const Icon(Icons.login_rounded, size: 16, color: Colors.white70),
-            label: const Text('Login', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+            icon: const Icon(Icons.login_rounded, size: 16, color: AppColors.primary),
+            label: const Text('Login', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
           ),
           const SizedBox(width: 4),
         ],
