@@ -138,23 +138,31 @@ class ResponsiveScaffold extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       extendBody: true,
+      extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(74),
+        preferredSize: const Size.fromHeight(78),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.transparent,
+                    color: Colors.white.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColors.border.withValues(alpha: 0.8),
+                      color: AppColors.border.withValues(alpha: 0.6),
                       width: 1,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
