@@ -306,7 +306,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Demo Credentials: password is "eyexpert2026"'),
+                        content: Text('Demo Credentials: password is "drishti2026"'),
                       ),
                     );
                   },
