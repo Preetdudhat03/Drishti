@@ -300,88 +300,75 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildStepperHeader() {
     final steps = [
-      '01 ACCOUNT',
-      '02 PROFILE',
-      '03 ORGANIZATION',
-      '04 DOCUMENTS',
-      '05 REVIEW',
+      'Account',
+      'Profile',
+      'Facility',
+      'Documents',
+      'Review',
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(steps.length, (index) {
-          final isActive = index == _currentStep;
-          final isCompleted = index < _currentStep;
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: List.generate(steps.length, (index) {
+              final isActive = index == _currentStep;
+              final isCompleted = index < _currentStep;
 
-          return Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? AppColors.primary
-                          : (isCompleted ? AppColors.accentLight : Colors.transparent),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (isCompleted)
-                          const Icon(Icons.check_circle, size: 14, color: AppColors.accent)
-                        else
-                          Container(
-                            width: 16,
-                            height: 16,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isActive ? Colors.white : AppColors.border,
-                            ),
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
-                                color: isActive ? AppColors.primary : AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            steps[index],
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
-                              color: isActive
-                                  ? Colors.white
-                                  : (isCompleted ? AppColors.accent : AppColors.textSecondary),
-                            ),
-                          ),
+              return Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.primary
+                              : (isCompleted ? AppColors.primary : AppColors.surfaceMuted),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                      ],
+                      ),
                     ),
+                    if (index < steps.length - 1) const SizedBox(width: 4),
+                  ],
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  'Step ${_currentStep + 1} of 5: ${steps[_currentStep]}',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
                   ),
                 ),
-                if (index < steps.length - 1)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(Icons.chevron_right, size: 14, color: Colors.grey.shade400),
-                  ),
-              ],
-            ),
-          );
-        }),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${((_currentStep + 1) / 5 * 100).toInt()}%',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -433,7 +420,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   isSelected: _selectedRole == UserRole.healthWorker,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: _roleOptionCard(
                   role: UserRole.clinician,
@@ -517,7 +504,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       onTap: () => setState(() => _selectedRole = role),
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.accentLight : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
@@ -531,14 +518,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             Row(
               children: [
-                Icon(icon, color: isSelected ? AppColors.accent : AppColors.textSecondary, size: 22),
+                Icon(icon, color: isSelected ? AppColors.accent : AppColors.textSecondary, size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: isSelected ? AppColors.accent : AppColors.textPrimary,
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: isSelected ? AppColors.accent : AppColors.textPrimary,
+                    ),
                   ),
                 ),
               ],
@@ -546,7 +537,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             const SizedBox(height: 6),
             Text(
               subtitle,
-              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary, height: 1.35),
+              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, height: 1.3),
             ),
           ],
         ),
