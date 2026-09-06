@@ -159,22 +159,26 @@ class ConnectionStatusPill extends ConsumerWidget {
     Color bg;
     Color text;
     Color dot;
+    Color borderColor;
     String label;
 
     if (conn.isChecking) {
-      bg = const Color(0xFF1E293B);
-      text = const Color(0xFF94A3B8);
-      dot = const Color(0xFF94A3B8);
+      bg = AppColors.surfaceMuted;
+      text = AppColors.textSecondary;
+      dot = AppColors.primary;
+      borderColor = AppColors.border;
       label = isCompact ? '...' : 'Syncing...';
     } else if (conn.isOnline) {
-      bg = const Color(0xFF1E1B4B);
-      text = const Color(0xFFC7D2FE);
-      dot = const Color(0xFF818CF8);
+      bg = AppColors.primaryLight;
+      text = AppColors.primary;
+      dot = AppColors.primary;
+      borderColor = AppColors.primary.withValues(alpha: 0.3);
       label = isCompact ? 'Online' : 'Cloud Sync Active';
     } else {
-      bg = const Color(0xFF4C0519);
-      text = const Color(0xFFFECDD3);
-      dot = const Color(0xFFF43F5E);
+      bg = AppColors.badgeHighRiskBg;
+      text = AppColors.badgeHighRiskText;
+      dot = AppColors.badgeHighRiskText;
+      borderColor = AppColors.badgeHighRiskBorder;
       label = isCompact ? 'Offline' : 'Offline Edge';
     }
 
@@ -186,7 +190,7 @@ class ConnectionStatusPill extends ConsumerWidget {
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: dot.withValues(alpha: 0.5), width: 1),
+          border: Border.all(color: borderColor, width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -206,9 +210,9 @@ class ConnectionStatusPill extends ConsumerWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: dot.withValues(alpha: 0.8),
-                      blurRadius: 6,
-                      spreadRadius: 1,
+                      color: dot.withValues(alpha: 0.35),
+                      blurRadius: 4,
+                      spreadRadius: 0.5,
                     ),
                   ],
                 ),
