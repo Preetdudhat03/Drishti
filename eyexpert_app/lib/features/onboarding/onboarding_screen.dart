@@ -579,7 +579,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Row(
             children: [
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -597,8 +597,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
+                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -606,11 +607,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
                       value: _gender,
+                      isExpanded: true,
                       decoration: const InputDecoration(isDense: true),
                       items: const [
-                        DropdownMenuItem(value: 'Female', child: Text('Female')),
-                        DropdownMenuItem(value: 'Male', child: Text('Male')),
-                        DropdownMenuItem(value: 'Other', child: Text('Other')),
+                        DropdownMenuItem(value: 'Female', child: Text('Female', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'Male', child: Text('Male', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'Other', child: Text('Other', overflow: TextOverflow.ellipsis)),
                       ],
                       onChanged: (val) => setState(() => _gender = val ?? 'Female'),
                     ),
@@ -626,11 +628,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
             value: _preferredLanguage,
+            isExpanded: true,
             decoration: const InputDecoration(prefixIcon: Icon(Icons.translate, size: 20)),
             items: const [
-              DropdownMenuItem(value: 'English / Hindi', child: Text('English / Hindi (दृष्टि Bilingual)')),
-              DropdownMenuItem(value: 'English', child: Text('English (Medical Standard)')),
-              DropdownMenuItem(value: 'Hindi', child: Text('Hindi (हिन्दी)')),
+              DropdownMenuItem(value: 'English / Hindi', child: Text('English / Hindi (दृष्टि Bilingual)', overflow: TextOverflow.ellipsis)),
+              DropdownMenuItem(value: 'English', child: Text('English (Medical Standard)', overflow: TextOverflow.ellipsis)),
+              DropdownMenuItem(value: 'Hindi', child: Text('Hindi (हिन्दी)', overflow: TextOverflow.ellipsis)),
             ],
             onChanged: (val) => setState(() => _preferredLanguage = val ?? 'English / Hindi'),
           ),
@@ -649,7 +652,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
 
-          // District, State, PIN
+          // District & State
           Row(
             children: [
               Expanded(
@@ -666,7 +669,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,21 +684,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('PIN CODE *', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
-                    const SizedBox(height: 6),
-                    TextFormField(
-                      controller: _pinCodeController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(hintText: '829122'),
-                      validator: (val) => (val == null || val.trim().isEmpty) ? 'Required' : null,
-                    ),
-                  ],
-                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // PIN Code
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('PIN CODE *', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: _pinCodeController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(hintText: '829122'),
+                validator: (val) => (val == null || val.trim().isEmpty) ? 'Required' : null,
               ),
             ],
           ),
@@ -715,8 +718,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           Text(
             _selectedRole == UserRole.healthWorker
-                ? 'Step 03 — PHC Facility & Fundus Camera Information'
-                : 'Step 03 — Medical Council Credentials & Eye Hospital',
+                ? 'Step 03 — PHC Facility & Fundus Camera'
+                : 'Step 03 — Medical Credentials & Eye Hospital',
             style: AppTypography.sectionHeading,
           ),
           const SizedBox(height: 4),
@@ -758,7 +761,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -767,6 +770,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       const SizedBox(height: 6),
                       DropdownButtonFormField<FacilityType>(
                         value: _facilityType,
+                        isExpanded: true,
                         decoration: const InputDecoration(isDense: true),
                         items: FacilityType.values.map((t) {
                           return DropdownMenuItem(value: t, child: Text(t.displayName, overflow: TextOverflow.ellipsis));
@@ -794,13 +798,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.camera_alt_outlined, color: AppColors.accent, size: 20),
-                          SizedBox(width: 8),
-                          Text('FUNDUS CAMERA DEPLOYMENT', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                        ],
+                      const Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.camera_alt_outlined, color: AppColors.accent, size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'FUNDUS CAMERA DEPLOYMENT',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Switch.adaptive(
                         value: _cameraAvailable,
                         activeTrackColor: AppColors.accentLight,
@@ -850,7 +863,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -859,7 +872,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _regAuthorityController,
-                        decoration: const InputDecoration(hintText: 'NMC / State Medical Council'),
+                        decoration: const InputDecoration(hintText: 'NMC / State Council'),
                         validator: (val) => (val == null || val.trim().isEmpty) ? 'Authority is required' : null,
                       ),
                     ],
@@ -872,7 +885,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Row(
               children: [
                 Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -880,24 +893,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _qualificationController,
-                        decoration: const InputDecoration(hintText: 'e.g. MS / DNB / FRCS (Ophthalmology)'),
+                        decoration: const InputDecoration(hintText: 'e.g. MS / DNB / FRCS'),
                         validator: (val) => (val == null || val.trim().isEmpty) ? 'Qualification is required' : null,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
+                  flex: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('EXPERIENCE (YRS) *', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+                      const Text('EXP (YRS) *', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<int>(
                         value: _yearsExperience,
+                        isExpanded: true,
                         decoration: const InputDecoration(isDense: true),
                         items: List.generate(35, (i) => i + 1).map((y) {
-                          return DropdownMenuItem(value: y, child: Text('$y yrs'));
+                          return DropdownMenuItem(value: y, child: Text('$y yrs', overflow: TextOverflow.ellipsis));
                         }).toList(),
                         onChanged: (val) => setState(() => _yearsExperience = val ?? 5),
                       ),
@@ -962,7 +977,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: hasFile ? AppColors.statusGoodBg : AppColors.surface,
               borderRadius: BorderRadius.circular(10),
@@ -973,19 +988,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Icon(
                   hasFile ? Icons.check_circle_rounded : Icons.upload_file_outlined,
                   color: hasFile ? AppColors.statusGood : AppColors.accent,
-                  size: 24,
+                  size: 22,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Flexible(
+                          Expanded(
                             child: Text(
                               title,
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
                             ),
                           ),
                           if (isMandatory) ...[
@@ -996,25 +1013,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        hasFile ? '$fileName • Ready for Supabase Storage' : 'PDF, JPEG, or PNG (Max 10 MB)',
+                        hasFile ? '$fileName • Ready' : 'PDF, JPEG, or PNG (Max 10 MB)',
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 11.5,
+                          fontSize: 11,
                           color: hasFile ? AppColors.statusGood : AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 OutlinedButton.icon(
                   onPressed: () {
                     setState(() {
                       _selectedDocumentNames[type] = '${type.toLowerCase()}_verified_doc.pdf';
                     });
                   },
-                  icon: Icon(hasFile ? Icons.refresh : Icons.attach_file, size: 16),
-                  label: Text(hasFile ? 'Replace' : 'Upload'),
+                  icon: Icon(hasFile ? Icons.refresh : Icons.attach_file, size: 14),
+                  label: Text(hasFile ? 'Replace' : 'Upload', style: const TextStyle(fontSize: 11.5)),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   ),
                 ),
               ],
@@ -1103,25 +1122,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _reviewRow(String label, String value, {bool isHighlight = false, String? badge}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
-        if (badge != null)
-          StatusBadge.borderline(label: badge)
-        else
-          Flexible(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 4,
             child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w700,
-                color: isHighlight ? AppColors.accent : AppColors.textPrimary,
-              ),
+              label,
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
             ),
           ),
-      ],
+          const SizedBox(width: 8),
+          if (badge != null)
+            StatusBadge.borderline(label: badge)
+          else
+            Expanded(
+              flex: 6,
+              child: Text(
+                value.isEmpty ? '—' : value,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w700,
+                  color: isHighlight ? AppColors.accent : AppColors.textPrimary,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
