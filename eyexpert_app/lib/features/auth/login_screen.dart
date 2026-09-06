@@ -201,7 +201,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         child: const Center(
                           child: Text(
-                            '👨‍⚕️ ophthalmologist',
+                            '👨‍⚕️ Ophthalmologist',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
