@@ -55,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _fillWorkerDemo() {
     setState(() {
       _selectedRole = UserRole.healthWorker;
-      _emailController.text = 'healthworker@phc.gov.in';
+      _emailController.text = 'healthworker@drishti.org';
       _passwordController.text = 'HealthWorker@2026!';
     });
     _handleLogin();
