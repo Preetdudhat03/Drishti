@@ -92,22 +92,22 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                 const Text(
                                   'Good Morning,',
                                   style: TextStyle(
-                                    fontSize: 32,
+                                    fontSize: 36,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.textPrimary,
-                                    letterSpacing: -0.8,
-                                    height: 1.12,
+                                    letterSpacing: -0.9,
+                                    height: 1.1,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '$workerName!',
                                   style: const TextStyle(
-                                    fontSize: 34,
+                                    fontSize: 38,
                                     fontWeight: FontWeight.w900,
                                     color: AppColors.primary,
-                                    letterSpacing: -0.8,
-                                    height: 1.12,
+                                    letterSpacing: -0.9,
+                                    height: 1.1,
                                   ),
                                 ),
                               ],
