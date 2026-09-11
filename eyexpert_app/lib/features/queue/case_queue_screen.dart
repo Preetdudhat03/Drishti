@@ -145,7 +145,9 @@ class CaseQueueScreen extends ConsumerWidget {
                       final c = cases[index];
                       final pred = c.prediction;
                       final isHighRisk = c.isReferable || (pred != null && pred.drLevel >= 3);
-                      final String patientName = 'Patient #${c.patient.patientId}';
+                      final String patientName = c.patient.patientId.startsWith('PT-')
+                          ? c.patient.patientId
+                          : 'Patient #${c.patient.patientId}';
                       final String patientAge = c.patient.age != null && c.patient.age! > 0 ? '${c.patient.age}y' : '42y';
                       final String patientGender = c.patient.gender?.isNotEmpty == true ? c.patient.gender! : 'Male';
                       final String eyeSide = AppFormatters.formatEye(c.patient.eye);
