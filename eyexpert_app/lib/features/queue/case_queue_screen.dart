@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive_layout.dart';
 import '../../data/models/screening_case_model.dart';
 import '../../core/network/connection_provider.dart';
 import '../review/review_queue_provider.dart';
@@ -20,7 +21,7 @@ class CaseQueueScreen extends ConsumerWidget {
       children: [
         // Search & Filter Header matching DiagnoX Patients screen
         Container(
-          padding: const EdgeInsets.fromLTRB(20, 96, 20, 8),
+          padding: EdgeInsets.fromLTRB(20, ResponsiveLayout.topBarClearance(context), 20, 8),
           color: Colors.transparent,
           child: Column(
             children: [
