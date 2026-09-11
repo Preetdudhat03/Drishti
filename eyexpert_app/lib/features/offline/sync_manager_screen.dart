@@ -27,6 +27,8 @@ class SyncManagerScreen extends ConsumerWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Network Status Banner & Simulator Toggle
                 ClinicalCard(
