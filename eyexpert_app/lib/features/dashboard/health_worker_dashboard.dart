@@ -29,32 +29,29 @@ class HealthWorkerDashboard extends ConsumerWidget {
 
     final String workerName = user?.name.isNotEmpty == true ? user!.name : 'Health Worker';
 
-    return Column(
-      children: [
-        OfflineStatusBar(
-          isOnline: syncState.isOnline,
-          pendingCount: syncState.pendingCount,
-          onTap: () => ref.read(syncQueueProvider.notifier).syncNow(),
-        ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await Future.wait([
-                ref.read(connectionProvider.notifier).checkConnection(),
-                ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
-              ]);
-            },
-            color: AppColors.primary,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 820),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1. Header: Branding & Greeting + Worker Avatar
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Future.wait([
+          ref.read(connectionProvider.notifier).checkConnection(),
+          ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+        ]);
+      },
+      color: AppColors.primary,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 820),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                OfflineStatusBar(
+                  isOnline: syncState.isOnline,
+                  pendingCount: syncState.pendingCount,
+                  onTap: () => ref.read(syncQueueProvider.notifier).syncNow(),
+                ),
+                // 1. Header: Branding & Greeting + Worker Avatar
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
