@@ -91,7 +91,8 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
     final patient = session.patient;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 760),
