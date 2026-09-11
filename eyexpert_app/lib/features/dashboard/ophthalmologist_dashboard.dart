@@ -88,7 +88,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                           const Text(
                             'Good Morning,',
                             style: TextStyle(
-                              fontSize: 40,
+                              fontSize: 80,
                               fontWeight: FontWeight.w800,
                               color: AppColors.textPrimary,
                               letterSpacing: -0.8,
