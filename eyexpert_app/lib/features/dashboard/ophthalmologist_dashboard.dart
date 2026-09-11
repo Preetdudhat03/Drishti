@@ -88,22 +88,22 @@ class OphthalmologistDashboard extends ConsumerWidget {
                           const Text(
                             'Good Morning,',
                             style: TextStyle(
-                              fontSize: 44,
+                              fontSize: 54,
                               fontWeight: FontWeight.w800,
                               color: AppColors.textPrimary,
-                              letterSpacing: -1.2,
-                              height: 1.08,
+                              letterSpacing: -1.5,
+                              height: 1.05,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '$doctorName!',
                             style: const TextStyle(
-                              fontSize: 48,
+                              fontSize: 60,
                               fontWeight: FontWeight.w900,
                               color: AppColors.primary,
-                              letterSpacing: -1.2,
-                              height: 1.08,
+                              letterSpacing: -1.5,
+                              height: 1.05,
                             ),
                           ),
                         ],
