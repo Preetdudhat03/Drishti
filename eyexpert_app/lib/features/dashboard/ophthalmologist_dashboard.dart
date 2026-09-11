@@ -48,6 +48,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 8),
                 // 1. Header: Branding & Greeting + Doctor Avatar
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -84,7 +85,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 24),
                           const Text(
                             'Good Morning,',
                             style: TextStyle(
