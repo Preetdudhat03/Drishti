@@ -51,19 +51,23 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Image Quality Assessment',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        'Screening ID: ${session.screeningId ?? "N/A"} • Eye: ${session.patient?.eye ?? "OD"}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Image Quality Assessment',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Screening ID: ${session.screeningId ?? "N/A"} • Eye: ${session.patient?.eye ?? "OD"}',
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   if (quality != null)
                     quality.isUngradable
                         ? StatusBadge.ungradable(isLarge: true)
