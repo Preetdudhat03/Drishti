@@ -103,19 +103,23 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Retinal Fundus Image Acquisition',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary),
-                      ),
-                      Text(
-                        'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • ID: ${session.screeningId ?? "Pending"}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Retinal Fundus Image Acquisition',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.primary),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Patient: ${patient?.patientId ?? "N/A"} • Eye: ${patient?.eye ?? "OD"} • ID: ${session.screeningId ?? "Pending"}',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 10),
                   OutlinedButton(
                     onPressed: widget.onCancel,
                     style: OutlinedButton.styleFrom(
