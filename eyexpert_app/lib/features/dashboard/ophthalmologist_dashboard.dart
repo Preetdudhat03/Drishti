@@ -257,7 +257,9 @@ class OphthalmologistDashboard extends ConsumerWidget {
                       final isHighRisk = c.isReferable || pred?.drLevel == 4 || pred?.drLevel == 3;
                       final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
 
-                      final String patientDisplayName = 'Patient #${c.patient.patientId}';
+                      final String patientDisplayName = c.patient.patientId.startsWith('PT-')
+                          ? c.patient.patientId
+                          : 'Patient #${c.patient.patientId}';
                       
                       final String conditionLabel = pred != null
                           ? '${pred.severityLabel} (${AppFormatters.formatEye(c.patient.eye)})'
