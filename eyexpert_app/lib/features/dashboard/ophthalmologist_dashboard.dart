@@ -99,7 +99,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                           Text(
                             '$doctorName!',
                             style: const TextStyle(
-                              fontSize: 34,
+                              fontSize: 40,
                               fontWeight: FontWeight.w900,
                               color: AppColors.primary,
                               letterSpacing: -0.8,
