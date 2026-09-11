@@ -52,7 +52,8 @@ class AiResultScreen extends ConsumerWidget {
         final isReferable = pred.referable;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 920),
