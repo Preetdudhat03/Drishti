@@ -651,7 +651,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
+      padding: ResponsiveLayout.pagePadding(context),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 860),
