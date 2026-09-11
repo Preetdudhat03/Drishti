@@ -73,59 +73,6 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Screen Header Banner
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppColors.primary, AppColors.laserBlue],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.28),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Patient Intake & Initialization',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        const Text(
-                          'Initialize screening token and demographics for AI retinal pipeline',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
               // Intake Form Card
               ClinicalCard(
                 title: 'PATIENT DEMOGRAPHICS',
@@ -135,24 +82,27 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                     TextField(
                       controller: _patientIdController,
                       style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Patient Identifier / Screening Token *',
-                        prefixIcon: const Icon(Icons.badge_outlined, size: 20, color: AppColors.laserBlue),
+                        prefixIcon: Icon(Icons.badge_outlined, size: 20, color: AppColors.laserBlue),
                         hintText: 'e.g. PT-2026-8819',
+                        isDense: true,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: TextField(
                             controller: _ageController,
                             keyboardType: TextInputType.number,
                             style: const TextStyle(fontWeight: FontWeight.w600),
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Age (Years)',
-                              prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18, color: AppColors.textSecondary),
+                              prefixIcon: Icon(Icons.calendar_today_rounded, size: 18, color: AppColors.textSecondary),
                               hintText: 'e.g. 52',
+                              isDense: true,
                             ),
                           ),
                         ),
@@ -160,9 +110,10 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             value: _selectedGender,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Gender',
-                              prefixIcon: const Icon(Icons.wc_rounded, size: 18, color: AppColors.textSecondary),
+                              prefixIcon: Icon(Icons.wc_rounded, size: 18, color: AppColors.textSecondary),
+                              isDense: true,
                             ),
                             items: const [
                               DropdownMenuItem(value: 'FEMALE', child: Text('Female', style: TextStyle(fontWeight: FontWeight.w600))),
@@ -182,9 +133,10 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
                       keyboardType: TextInputType.number,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                       decoration: const InputDecoration(
-                        labelText: 'Known Diabetes Duration (Years, Optional)',
+                        labelText: 'Diabetes Duration (Years)',
                         prefixIcon: Icon(Icons.history_toggle_off_rounded, size: 20, color: AppColors.textSecondary),
-                        hintText: 'e.g. 7',
+                        hintText: 'e.g. 7 (Optional)',
+                        isDense: true,
                       ),
                     ),
                   ],
