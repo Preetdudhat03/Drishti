@@ -25,22 +25,22 @@ class ResponsiveLayout extends StatelessWidget {
   /// Top clearance for content so it sits cleanly below the floating glassmorphic top bar,
   /// while allowing smooth scrolling underneath it.
   static double topBarClearance(BuildContext context) {
-    return MediaQuery.paddingOf(context).top + 96.0;
+    return MediaQuery.paddingOf(context).top + 68.0;
   }
 
   /// Bottom clearance for content so it is not obscured by the floating bottom navigation bar.
   static double bottomBarClearance(BuildContext context) {
     final isDesktopOrTablet = isDesktop(context) || isTablet(context);
-    if (isDesktopOrTablet) return 36.0;
-    return MediaQuery.paddingOf(context).bottom + 110.0;
+    if (isDesktopOrTablet) return 24.0;
+    return MediaQuery.paddingOf(context).bottom + 84.0;
   }
 
   /// Standard responsive page padding for full-screen scrollable views inside ResponsiveScaffold.
   static EdgeInsets pagePadding(BuildContext context) {
     return EdgeInsets.fromLTRB(
-      20.0,
+      16.0,
       topBarClearance(context),
-      20.0,
+      16.0,
       bottomBarClearance(context),
     );
   }
