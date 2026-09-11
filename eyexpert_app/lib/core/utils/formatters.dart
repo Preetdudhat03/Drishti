@@ -34,4 +34,16 @@ class AppFormatters {
         return eye;
     }
   }
+
+  /// Returns a time-appropriate greeting (Good Morning, Good Afternoon, Good Evening)
+  static String getGreeting([DateTime? time]) {
+    final hour = (time ?? DateTime.now()).hour;
+    if (hour >= 5 && hour < 12) {
+      return 'Good Morning,';
+    } else if (hour >= 12 && hour < 17) {
+      return 'Good Afternoon,';
+    } else {
+      return 'Good Evening,';
+    }
+  }
 }
