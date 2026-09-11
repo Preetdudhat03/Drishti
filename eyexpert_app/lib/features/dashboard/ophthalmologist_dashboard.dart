@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive_layout.dart';
 import '../../shared/widgets/pill_button.dart';
 import '../../shared/widgets/diagnox_stat_card.dart';
 import '../../data/models/screening_case_model.dart';
