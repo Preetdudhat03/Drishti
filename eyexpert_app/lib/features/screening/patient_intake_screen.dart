@@ -67,7 +67,7 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
+      padding: ResponsiveLayout.pagePadding(context),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
