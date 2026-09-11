@@ -20,7 +20,7 @@ class CaseQueueScreen extends ConsumerWidget {
       children: [
         // Search & Filter Header matching DiagnoX Patients screen
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(20, 96, 20, 8),
           color: Colors.transparent,
           child: Column(
             children: [
