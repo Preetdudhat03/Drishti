@@ -29,20 +29,7 @@ class SyncManagerScreen extends ConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 800),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header
-                const Text(
-                  'Rural Network Synchronization Manager',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Manages localized fundus photographs captured during intermittent rural connectivity.',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(height: 14),
-
-              // Network Status Banner & Simulator Toggle
+                // Network Status Banner & Simulator Toggle
               ClinicalCard(
                 backgroundColor: syncState.isOnline
                     ? AppColors.statusGoodBg.withValues(alpha: 0.4)
