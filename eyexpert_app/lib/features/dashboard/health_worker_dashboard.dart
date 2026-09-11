@@ -145,27 +145,27 @@ class HealthWorkerDashboard extends ConsumerWidget {
                         ],
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 18),
 
                       // 2. Primary Action Buttons (Hero Centerpiece)
                       PillButton(
                         label: '+ New Screening / Patient Intake',
                         icon: Icons.camera_alt_rounded,
                         width: double.infinity,
-                        height: 54,
+                        height: 52,
                         onPressed: onStartScreening,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       PillButton(
                         label: 'View Screening Records',
                         icon: Icons.folder_open_rounded,
                         variant: PillButtonVariant.secondaryOutlined,
                         width: double.infinity,
-                        height: 48,
+                        height: 46,
                         onPressed: onViewCases,
                       ),
 
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 16),
 
                       // 3. Stats Row
                       Row(
@@ -179,7 +179,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                               iconColor: AppColors.primary,
                             ),
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: DiagnoXStatCard(
                               icon: Icons.sync_rounded,
@@ -192,7 +192,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 18),
 
                       // 4. "Recent Screenings" Section
                       Row(
@@ -201,7 +201,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                           const Text(
                             'Recent Screenings',
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                               color: AppColors.textPrimary,
                               letterSpacing: -0.3,
@@ -215,7 +215,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                               child: Text(
                                 'View All',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.textSecondary,
                                 ),
@@ -224,14 +224,14 @@ class HealthWorkerDashboard extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
                       if (reviewState.cases.isEmpty)
                         Container(
-                          padding: const EdgeInsets.all(28),
+                          padding: const EdgeInsets.all(22),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                           ),
                           child: const Center(
@@ -246,17 +246,119 @@ class HealthWorkerDashboard extends ConsumerWidget {
                         )
                       else ...[
                         for (int index = 0; index < reviewState.cases.take(5).length; index++) ...[
-                          if (index > 0) const SizedBox(height: 10),
+                          if (index > 0) const SizedBox(height: 8),
                           _buildRecentScreeningCard(reviewState.cases[index]),
                         ],
                       ],
 
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
               ),
             ),
           );
+  }
+
+  Widget _buildRecentScreeningCard(dynamic c) {
+    final pred = c.prediction;
+    final isHighRisk = c.isReferable || pred?.drLevel == 4 || pred?.drLevel == 3;
+    final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
+
+    final String patientDisplayName = c.patient.patientId.startsWith('PT-')
+        ? c.patient.patientId
+        : 'Patient #${c.patient.patientId}';
+
+    final String conditionLabel = pred != null
+        ? '${pred.severityLabel} • ${AppFormatters.formatEye(c.patient.eye)}'
+        : 'Grading in progress';
+
+    final String riskBadgeText = isHighRisk
+        ? 'High'
+        : isLowRisk
+            ? 'Low'
+            : 'Moderate';
+
+    final Color riskBg = isHighRisk
+        ? AppColors.badgeHighRiskBg
+        : isLowRisk
+            ? AppColors.badgeLowRiskBg
+            : AppColors.badgeModerateBg;
+
+    final Color riskTextColor = isHighRisk
+        ? AppColors.badgeHighRiskText
+        : isLowRisk
+            ? AppColors.badgeLowRiskText
+            : AppColors.badgeModerateText;
+
+    final Color riskBorderColor = isHighRisk
+        ? AppColors.badgeHighRiskBorder
+        : isLowRisk
+            ? AppColors.badgeLowRiskBorder
+            : AppColors.badgeModerateBorder;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    patientDisplayName,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    conditionLabel,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: riskBg,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: riskBorderColor, width: 1),
+              ),
+              child: Text(
+                riskBadgeText,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: riskTextColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
