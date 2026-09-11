@@ -92,7 +92,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                               fontWeight: FontWeight.w800,
                               color: AppColors.textPrimary,
                               letterSpacing: -0.8,
-                              height: 1.12,
+                              height: 4.12, //1.12
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -103,7 +103,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                               fontWeight: FontWeight.w900,
                               color: AppColors.primary,
                               letterSpacing: -0.8,
-                              height: 1.12,
+                              height: 4.12,
                             ),
                           ),
                         ],
