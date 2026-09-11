@@ -95,13 +95,17 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
         ? '${pred!.severityLabel} (Level ${pred.drLevel})'
         : 'Moderate NPDR (Level 2)';
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Navigation Topbar matching DiagnoX "AI Diagnosis"
               Row(
@@ -332,22 +336,58 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _metaColumn('Patient ID', c.patient.patientId),
-                        _metaColumn('Age / Sex', '${c.patient.age}y / ${c.patient.gender}'),
-                        _metaColumn('Examined Eye', AppFormatters.formatEye(c.patient.eye)),
-                        _metaColumn('Quality', quality?.status.label.toUpperCase() ?? 'VERIFIED'),
-                      ],
-                    ),
-                    const Divider(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _metaColumn('Screening Ref', c.screeningId),
-                        _metaColumn('Recorded Time', AppFormatters.formatDateTime(c.createdAt)),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isNarrow = constraints.maxWidth < 420;
+                        if (isNarrow) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(child: _metaColumn('Patient ID', c.patient.patientId)),
+                                  Expanded(child: _metaColumn('Age / Sex', '${c.patient.age}y / ${c.patient.gender}')),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(child: _metaColumn('Examined Eye', AppFormatters.formatEye(c.patient.eye))),
+                                  Expanded(child: _metaColumn('Quality', quality?.status.label.toUpperCase() ?? 'VERIFIED')),
+                                ],
+                              ),
+                              const Divider(height: 24),
+                              Row(
+                                children: [
+                                  Expanded(child: _metaColumn('Screening Ref', c.screeningId)),
+                                  Expanded(child: _metaColumn('Recorded Time', AppFormatters.formatDateTime(c.createdAt))),
+                                ],
+                              ),
+                            ],
+                          );
+                        }
+                        return Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: _metaColumn('Patient ID', c.patient.patientId)),
+                                Expanded(child: _metaColumn('Age / Sex', '${c.patient.age}y / ${c.patient.gender}')),
+                                Expanded(child: _metaColumn('Examined Eye', AppFormatters.formatEye(c.patient.eye))),
+                                Expanded(child: _metaColumn('Quality', quality?.status.label.toUpperCase() ?? 'VERIFIED')),
+                              ],
+                            ),
+                            const Divider(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: _metaColumn('Screening Ref', c.screeningId)),
+                                Expanded(child: _metaColumn('Recorded Time', AppFormatters.formatDateTime(c.createdAt))),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -412,7 +452,9 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _metaColumn(String label, String value) {
