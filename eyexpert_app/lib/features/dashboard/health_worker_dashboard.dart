@@ -90,9 +90,9 @@ class HealthWorkerDashboard extends ConsumerWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 24),
-                                const Text(
-                                  'Good Morning,',
-                                  style: TextStyle(
+                                Text(
+                                  AppFormatters.getGreeting(),
+                                  style: const TextStyle(
                                     fontSize: 54,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.textPrimary,
