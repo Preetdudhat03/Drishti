@@ -244,115 +244,12 @@ class HealthWorkerDashboard extends ConsumerWidget {
                             ),
                           ),
                         )
-                      else
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: reviewState.cases.take(5).length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final c = reviewState.cases[index];
-                            final pred = c.prediction;
-                            final isHighRisk = c.isReferable || pred?.drLevel == 4 || pred?.drLevel == 3;
-                            final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
-
-                            final String patientDisplayName = c.patient.patientId.startsWith('PT-')
-                                ? c.patient.patientId
-                                : 'Patient #${c.patient.patientId}';
-
-                            final String conditionLabel = pred != null
-                                ? '${pred.severityLabel} • ${AppFormatters.formatEye(c.patient.eye)}'
-                                : 'Grading in progress';
-
-                            final String riskBadgeText = isHighRisk
-                                ? 'High'
-                                : isLowRisk
-                                    ? 'Low'
-                                    : 'Moderate';
-
-                            final Color riskBg = isHighRisk
-                                ? AppColors.badgeHighRiskBg
-                                : isLowRisk
-                                    ? AppColors.badgeLowRiskBg
-                                    : AppColors.badgeModerateBg;
-
-                            final Color riskTextColor = isHighRisk
-                                ? AppColors.badgeHighRiskText
-                                : isLowRisk
-                                    ? AppColors.badgeLowRiskText
-                                    : AppColors.badgeModerateText;
-
-                            final Color riskBorderColor = isHighRisk
-                                ? AppColors.badgeHighRiskBorder
-                                : isLowRisk
-                                    ? AppColors.badgeLowRiskBorder
-                                    : AppColors.badgeModerateBorder;
-
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppColors.border),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.02),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            patientDisplayName,
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textPrimary,
-                                              letterSpacing: -0.2,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            conditionLabel,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: riskBg,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: riskBorderColor, width: 1),
-                                      ),
-                                      child: Text(
-                                        riskBadgeText,
-                                        style: TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: riskTextColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                      else ...[
+                        for (int index = 0; index < reviewState.cases.take(5).length; index++) ...[
+                          if (index > 0) const SizedBox(height: 10),
+                          _buildRecentScreeningCard(reviewState.cases[index]),
+                        ],
+                      ],
 
                       const SizedBox(height: 30),
                     ],
