@@ -139,7 +139,7 @@ class CaseQueueScreen extends ConsumerWidget {
                   )
                 : ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                    padding: EdgeInsets.fromLTRB(20, 8, 20, ResponsiveLayout.bottomBarClearance(context)),
                     itemCount: cases.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
