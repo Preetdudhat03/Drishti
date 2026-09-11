@@ -23,28 +23,6 @@ class SystemStatusScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Drishti System & Microservices Health',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        'Real-time microservices status & AI model telemetry',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                  StatusBadge.good(label: 'SYSTEM HEALTHY'),
-                ],
-              ),
-              const SizedBox(height: 14),
-
               statusAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, _) => ClinicalCard(
@@ -57,6 +35,7 @@ class SystemStatusScreen extends ConsumerWidget {
                       // Microservices Health Card
                       ClinicalCard(
                         title: 'Backend Microservices Architecture Status',
+                        titleAction: StatusBadge.good(label: 'SYSTEM HEALTHY'),
                         child: Column(
                           children: [
                             _serviceRow(
