@@ -85,7 +85,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 50),
                           const Text(
                             'Good Morning,',
                             style: TextStyle(
