@@ -359,9 +359,6 @@ class HealthWorkerDashboard extends ConsumerWidget {
                 ),
               ),
             ),
-          ),
-        ),
-      ],
-    );
+          );
   }
 }
