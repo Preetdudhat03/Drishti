@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive_layout.dart';
 import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/status_badge.dart';
@@ -23,7 +24,7 @@ class SyncManagerScreen extends ConsumerWidget {
       color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
+        padding: ResponsiveLayout.pagePadding(context),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
