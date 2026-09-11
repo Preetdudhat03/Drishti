@@ -52,7 +52,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                   pendingCount: syncState.pendingCount,
                   onTap: () => ref.read(syncQueueProvider.notifier).syncNow(),
                 ),
-                const SizedBox(height: 58),
+                const SizedBox(height: 8),
                 // 1. Header: Branding & Greeting + Worker Avatar
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
