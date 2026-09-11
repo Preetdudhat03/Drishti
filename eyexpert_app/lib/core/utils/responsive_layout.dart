@@ -32,7 +32,7 @@ class ResponsiveLayout extends StatelessWidget {
   static double bottomBarClearance(BuildContext context) {
     final isDesktopOrTablet = isDesktop(context) || isTablet(context);
     if (isDesktopOrTablet) return 24.0;
-    return MediaQuery.paddingOf(context).bottom + 84.0;
+    return MediaQuery.paddingOf(context).bottom + 5.0;
   }
 
   /// Standard responsive page padding for full-screen scrollable views inside ResponsiveScaffold.
