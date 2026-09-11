@@ -236,7 +236,8 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
     );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 96, 20, 100),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1080),
