@@ -25,7 +25,7 @@ class ResponsiveLayout extends StatelessWidget {
   /// Top clearance for content so it sits cleanly below the floating glassmorphic top bar,
   /// while allowing smooth scrolling underneath it.
   static double topBarClearance(BuildContext context) {
-    return MediaQuery.paddingOf(context).top + 20.0;
+    return MediaQuery.paddingOf(context).top + 15.0;
   }
 
   /// Bottom clearance for content so it is not obscured by the floating bottom navigation bar.
