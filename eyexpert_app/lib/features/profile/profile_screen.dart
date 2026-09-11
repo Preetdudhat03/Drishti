@@ -933,8 +933,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const Divider(height: 16),
                     _dataRow('Account Status', user.isActive ? 'ACTIVE' : 'INACTIVE', badge: user.isActive ? 'ACTIVE' : 'DISABLED'),
                     const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         OutlinedButton.icon(
                           onPressed: _showChangePasswordDialog,
@@ -968,20 +971,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _dataRow(String label, String value, {bool isRestricted = false, String? badge}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
-            if (isRestricted) ...[
-              const SizedBox(width: 6),
-              const Icon(Icons.lock_outline, size: 13, color: AppColors.statusWarning),
+        Flexible(
+          flex: 4,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                ),
+              ),
+              if (isRestricted) ...[
+                const SizedBox(width: 6),
+                const Icon(Icons.lock_outline, size: 13, color: AppColors.statusWarning),
+              ],
             ],
-          ],
+          ),
         ),
+        const SizedBox(width: 8),
         if (badge != null)
           StatusBadge.good(label: badge)
         else
           Flexible(
+            flex: 5,
             child: Text(
               value,
               textAlign: TextAlign.right,
