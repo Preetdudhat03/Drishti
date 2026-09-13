@@ -249,11 +249,10 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       state = state.copyWith(
         prediction: pred,
         explainability: exp,
-        status: ScreeningStatus.readyForReview,
+        status: ScreeningStatus.aiCompleted,
         isProcessing: false,
       );
 
-      // Automatically register to clinician review queue and sync to Supabase
       final newCase = state.toScreeningCase();
       if (newCase != null) {
         _ref.read(reviewQueueProvider.notifier).addCase(newCase);
@@ -267,6 +266,18 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
         status: ScreeningStatus.processingFailed,
         errorMessage: e.toString(),
       );
+    }
+  }
+
+  Future<void> submitForClinicianReview() async {
+    if (state.screeningId == null) return;
+    state = state.copyWith(status: ScreeningStatus.reviewPending);
+    final updatedCase = state.toScreeningCase();
+    if (updatedCase != null) {
+      _ref.read(reviewQueueProvider.notifier).addCase(updatedCase);
+      if (SupabaseService.isInitialized) {
+        await _supabaseService.saveScreeningCase(updatedCase);
+      }
     }
   }
 
