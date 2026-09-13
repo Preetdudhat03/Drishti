@@ -2656,12 +2656,16 @@ def api_v1_login():
         }
     }), 200
 
+@app.route('/health')
+@app.route('/api/v1/health')
 @app.route('/api/v1/system/status')
 def api_v1_status():
     return jsonify({
         "status": "HEALTHY",
         "engine": "PyTorch",
         "model_status": MODEL_STATUS,
+        "model_ready": (MODEL_STATUS == "ACTIVE"),
+        "device": str(DEVICE),
         "supabase_status": SUPABASE_STATUS,
         "provenance": MODEL_PROVENANCE
     })
@@ -2699,9 +2703,9 @@ def api_v1_create_screening():
 
 @app.route('/api/v1/screenings/<id>/image', methods=['POST'])
 def api_v1_upload_image(id):
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part in request"}), 400
-    file = request.files['file']
+    file = request.files.get('file') or request.files.get('image')
+    if not file:
+        return jsonify({"error": "No file or image part in request"}), 400
     if file.filename == '':
         return jsonify({"error": "No file selected"}), 400
     
