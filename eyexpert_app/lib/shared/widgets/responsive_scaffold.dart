@@ -32,11 +32,6 @@ class ResponsiveScaffold extends ConsumerWidget {
     if (role == UserRole.clinician) {
       return const [
         NavigationDestination(
-          icon: Icon(Icons.speed_rounded),
-          selectedIcon: Icon(Icons.speed_rounded),
-          label: 'Overview',
-        ),
-        NavigationDestination(
           icon: Icon(Icons.fact_check_outlined),
           selectedIcon: Icon(Icons.fact_check_rounded),
           label: 'Review Queue',
@@ -47,19 +42,19 @@ class ResponsiveScaffold extends ConsumerWidget {
           label: 'All Cases',
         ),
         NavigationDestination(
-          icon: Icon(Icons.monitor_heart_outlined),
-          selectedIcon: Icon(Icons.monitor_heart_rounded),
-          label: 'System Status',
+          icon: Icon(Icons.speed_rounded),
+          selectedIcon: Icon(Icons.speed_rounded),
+          label: 'Overview',
         ),
         NavigationDestination(
           icon: Icon(Icons.description_outlined),
           selectedIcon: Icon(Icons.description_rounded),
-          label: 'Clinical Reports',
+          label: 'Reports',
         ),
         NavigationDestination(
-          icon: Icon(Icons.badge_outlined),
-          selectedIcon: Icon(Icons.badge_rounded),
-          label: 'Credentials',
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person_rounded),
+          label: 'Profile',
         ),
       ];
     }
