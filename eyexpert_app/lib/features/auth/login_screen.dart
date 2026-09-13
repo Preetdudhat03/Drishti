@@ -40,6 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     await ref.read(authProvider.notifier).login(
       username: _emailController.text.trim(),
       password: _passwordController.text,
+      roleRequested: _selectedRole,
     );
   }
 
