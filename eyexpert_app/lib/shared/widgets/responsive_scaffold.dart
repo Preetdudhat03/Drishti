@@ -237,62 +237,6 @@ class ResponsiveScaffold extends ConsumerWidget {
 
                         // Actions & Status
                         ConnectionStatusPill(isCompact: !isDesktop),
-                        const SizedBox(width: 6),
-
-                        // Instant Role Switcher Pill (Health Worker <-> Ophthalmologist)
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              final nextRole = isClinician ? UserRole.healthWorker : UserRole.clinician;
-                              ref.read(authProvider.notifier).switchWorkspaceRole(nextRole);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    nextRole == UserRole.clinician
-                                        ? 'Switched to Ophthalmologist Specialist Workspace'
-                                        : 'Switched to PHC Health Worker Screening Workspace',
-                                  ),
-                                  duration: const Duration(seconds: 2),
-                                  backgroundColor: AppColors.primary,
-                                ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: isClinician ? const Color(0xFFE0F2FE) : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isClinician ? const Color(0xFF0284C7).withValues(alpha: 0.3) : AppColors.border,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    isClinician ? Icons.medical_services_rounded : Icons.health_and_safety_rounded,
-                                    size: 14,
-                                    color: isClinician ? const Color(0xFF0284C7) : AppColors.textPrimary,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    isClinician ? 'Specialist' : 'Health Worker',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: isClinician ? const Color(0xFF0284C7) : AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 2),
-                                  const Icon(Icons.sync_alt_rounded, size: 12, color: AppColors.textSecondary),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
                         if (actions != null) ...actions!,
                         const SizedBox(width: 6),
                         Container(
