@@ -8,6 +8,7 @@ import 'package:drishti_app/shared/widgets/responsive_scaffold.dart';
 import 'package:drishti_app/features/dashboard/ophthalmologist_dashboard.dart';
 import 'package:drishti_app/features/dashboard/health_worker_dashboard.dart';
 import 'package:drishti_app/features/queue/case_queue_screen.dart';
+import 'package:drishti_app/core/network/connection_provider.dart';
 
 void main() {
   group('Role-Based Navigation & UI Separation Tests', () {
