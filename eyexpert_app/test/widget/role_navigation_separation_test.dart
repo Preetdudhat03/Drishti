@@ -95,10 +95,13 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authProvider.overrideWith((ref) => AuthNotifier(null)..state = const AuthState(
-              isAuthenticated: true,
-              user: ophthalmologistUser,
-            )),
+            authProvider.overrideWith((ref) {
+              final notifier = AuthNotifier(AuthService());
+              notifier.state = const AuthState(
+                user: ophthalmologistUser,
+              );
+              return notifier;
+            }),
           ],
           child: MaterialApp(
             home: Scaffold(
