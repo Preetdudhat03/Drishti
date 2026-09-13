@@ -2421,8 +2421,21 @@ def api_review_case(id):
         except Exception:
             final_dr_level = None
     clinical_notes = data.get('clinical_notes', '')
-    clinician_name = data.get('clinician_name', 'Dr. Rajesh Kumar, MD')
-    
+    # Enforce role permission: Only Ophthalmologists & Admins can sign off clinical reviews
+    actor_role = (
+        request.headers.get('X-User-Role') or 
+        data.get('reviewer_role') or 
+        data.get('role') or 
+        'OPHTHALMOLOGIST'
+    ).strip().upper()
+
+    if actor_role in ('HEALTH_WORKER', 'PHC_WORKER', 'NURSE'):
+        return jsonify({
+            "error": "ROLE_NOT_PERMITTED",
+            "message": "PHC Health Workers cannot validate, override, or finalize clinical diagnoses. Clinical decisions must be signed off by a qualified Ophthalmologist.",
+            "role": actor_role
+        }), 403
+
     if action == "REJECT_RECAPTURE":
         clinical_decision = "CLINICALLY_UNGRADABLE"
         new_status = "RECAPTURE_REQUIRED"
