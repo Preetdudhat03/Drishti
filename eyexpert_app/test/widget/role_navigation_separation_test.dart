@@ -15,6 +15,7 @@ void main() {
       name: 'Dr. Sharma',
       email: 'clinician@drishti.org',
       role: UserRole.clinician,
+      organization: 'District Eye Hospital',
       facilityId: 'DISTRICT-EYE-HOSPITAL',
       professionalId: 'MCI-88291',
     );
@@ -24,6 +25,7 @@ void main() {
       name: 'Sunita Sharma',
       email: 'healthworker@drishti.org',
       role: UserRole.healthWorker,
+      organization: 'PHC Ramgarh',
       facilityId: 'PHC-RAMGARH-01',
     );
 
