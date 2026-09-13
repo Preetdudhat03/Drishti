@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drishti_app/data/models/dr_prediction_model.dart';
-import 'package:drishti_app/data/models/screening_case_model.dart';
-import 'package:drishti_app/data/models/patient_model.dart';
 import 'package:drishti_app/features/results/ai_result_screen.dart';
 import 'package:drishti_app/features/screening/screening_session_provider.dart';
 
