@@ -2967,9 +2967,18 @@ def api_v1_claim_case(id):
     reviewer_name = data.get('reviewer_name', 'Dr. Rajesh Kumar')
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
     
+    # Check in-memory store for collision
+    record = SCREENING_STORE.get(id, {})
+    if record.get('assigned_reviewer_id') and record.get('assigned_reviewer_id') != reviewer_id:
+        return jsonify({
+            "error": "CASE_ALREADY_CLAIMED",
+            "message": f"Screening case {id} is already claimed by another reviewer.",
+            "claimed_by": record.get('assigned_reviewer_id')
+        }), 409
+
     if supabase_client:
         try:
-            # Check if case is already claimed
+            # Check if case is already claimed in Supabase
             res = supabase_client.table('screenings').select('assigned_reviewer_id, claimed_at').eq('screening_id', id).maybe_single().execute()
             if res.data and res.data.get('assigned_reviewer_id') and res.data.get('assigned_reviewer_id') != reviewer_id:
                 return jsonify({
@@ -2985,9 +2994,15 @@ def api_v1_claim_case(id):
                 "updated_at": now_iso
             }).eq('screening_id', id).execute()
         except Exception as e:
+            try:
+                supabase_client.table('screenings').update({
+                    "status": "OPHTHALMOLOGIST_REVIEW",
+                    "updated_at": now_iso
+                }).eq('screening_id', id).execute()
+            except Exception:
+                pass
             print(f"[Drishti Engine] Supabase claim notice: {e}")
 
-    record = SCREENING_STORE.get(id, {})
     record["assigned_reviewer_id"] = reviewer_id
     record["claimed_at"] = now_iso
     record["status"] = "OPHTHALMOLOGIST_REVIEW"
@@ -2996,6 +3011,7 @@ def api_v1_claim_case(id):
     return jsonify({
         "screening_id": id,
         "claimed_by": reviewer_id,
+        "assigned_reviewer_id": reviewer_id,
         "reviewer_name": reviewer_name,
         "claimed_at": now_iso,
         "status": "OPHTHALMOLOGIST_REVIEW"
