@@ -49,16 +49,18 @@ class ConnectionStateModel {
 class ConnectionNotifier extends StateNotifier<ConnectionStateModel> {
   Timer? _periodicTimer;
 
-  ConnectionNotifier()
+  ConnectionNotifier({bool enablePeriodicTimer = true})
       : super(ConnectionStateModel(
           status: ConnectionStatus.checking,
           lastChecked: DateTime.now(),
         )) {
-    checkConnection();
-    // Re-check connectivity every 30 seconds
-    _periodicTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+    if (enablePeriodicTimer) {
       checkConnection();
-    });
+      // Re-check connectivity every 30 seconds
+      _periodicTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        checkConnection();
+      });
+    }
   }
 
   @override
