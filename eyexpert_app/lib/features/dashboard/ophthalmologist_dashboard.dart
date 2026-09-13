@@ -63,7 +63,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                               Container(
                                 width: 26,
                                 height: 26,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
                                 ),
@@ -75,7 +75,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                               ),
                               const SizedBox(width: 8),
                               const Text(
-                                'DiagnoX',
+                                'Drishti Specialist',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
@@ -144,9 +144,10 @@ class OphthalmologistDashboard extends ConsumerWidget {
 
                 const SizedBox(height: 32),
 
-                // 2. Primary Action Buttons
+                // 2. Primary Action Buttons — REVIEW NEXT CASE
                 PillButton(
-                  label: '+ Review Next Priority Case (${pendingCases.length})',
+                  label: 'REVIEW NEXT CASE (${pendingCases.length} Pending)',
+                  icon: Icons.assignment_turned_in_rounded,
                   width: double.infinity,
                   height: 54,
                   onPressed: () {
@@ -159,36 +160,36 @@ class OphthalmologistDashboard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 PillButton(
-                  label: 'Manage Patients & Cases',
-                  icon: Icons.people_outline_rounded,
+                  label: 'Open Full Clinical Review Queue',
+                  icon: Icons.checklist_rtl_rounded,
                   variant: PillButtonVariant.secondaryOutlined,
                   width: double.infinity,
                   height: 48,
-                  onPressed: onViewCases,
+                  onPressed: onOpenReviewQueue,
                 ),
 
                 const SizedBox(height: 22),
 
-                // 3. Stats Metric Row (Side-by-Side Cards)
+                // 3. Review Queue Priority Triage Strip
                 Row(
                   children: [
                     Expanded(
                       child: DiagnoXStatCard(
-                        icon: Icons.show_chart_rounded,
-                        category: 'Today',
-                        value: (pendingCases.length + completedCases.length).toString(),
-                        subtitle: 'Cases diagnosed',
-                        iconColor: AppColors.primary,
+                        icon: Icons.warning_rounded,
+                        category: 'Urgent Referrals',
+                        value: '${reviewState.pendingReferableCount}',
+                        subtitle: 'P(L>=2) >= 30%',
+                        iconColor: AppColors.statusCritical,
                       ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: DiagnoXStatCard(
-                        icon: Icons.access_time_rounded,
-                        category: 'Avg Time',
-                        value: '49s',
-                        subtitle: 'Per diagnosis',
-                        iconColor: AppColors.textSecondary,
+                        icon: Icons.check_circle_outline_rounded,
+                        category: 'Completed',
+                        value: '${reviewState.completedCount}',
+                        subtitle: 'Specialist validated',
+                        iconColor: AppColors.statusGood,
                       ),
                     ),
                   ],
