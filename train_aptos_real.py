@@ -157,22 +157,16 @@ def main():
     # 4. PRE-RESIZED IMAGE CACHING & FAST DATA LOADING
     print("\n[STEP 4/7] PREPARING PREPROCESSED IMAGE CACHE FOR FAST TRAINING")
     cache_dir = os.path.join(data_dir, "preprocessed_224")
-    os.makedirs(cache_dir, exist_ok=True)
+    from preprocessing.fundus_pipeline import crop_retina_bounding_box
 
     def get_preprocessed_path(raw_path):
         fname = os.path.basename(raw_path)
         cached_p = os.path.join(cache_dir, fname)
         if not os.path.exists(cached_p):
             im = Image.open(raw_path).convert('RGB')
-            # Auto-crop black border
-            im_gray = np.array(im.convert('L'))
-            mask = im_gray > 15
-            coords = np.argwhere(mask)
-            if coords.size > 0:
-                y0, x0 = coords.min(axis=0)
-                y1, x1 = coords.max(axis=0) + 1
-                im = im.crop((x0, y0, x1, y1))
-            im_resized = im.resize((224, 224), Image.Resampling.BILINEAR)
+            # Canonical auto-crop black border using shared fundus_pipeline
+            _, cropped_im = crop_retina_bounding_box(im)
+            im_resized = cropped_im.resize((224, 224), Image.Resampling.BILINEAR)
             im_resized.save(cached_p)
         return cached_p
 
