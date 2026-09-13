@@ -297,39 +297,59 @@ class AiResultScreen extends ConsumerWidget {
                   ],
                   const SizedBox(height: 18),
 
-                  // Action Buttons
+                  // Primary Action: Submit for Specialist Review
+                  PrimaryButton(
+                    text: 'SUBMIT FOR OPHTHALMOLOGIST REVIEW',
+                    icon: Icons.send_rounded,
+                    useGradient: true,
+                    onPressed: () async {
+                      await ref.read(screeningSessionProvider.notifier).submitForClinicianReview();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            backgroundColor: AppColors.statusGood,
+                            content: Text('✓ Screening case submitted to Ophthalmologist Review Queue.'),
+                          ),
+                        );
+                        onNewScreening();
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Secondary Actions Strip
                   Row(
                     children: [
                       Expanded(
-                        child: PrimaryButton(
-                          text: 'Inspect Grad-CAM Evidence',
-                          icon: Icons.biotech_outlined,
-                          useGradient: true,
+                        child: OutlinedButton.icon(
                           onPressed: onViewExplainability,
+                          icon: const Icon(Icons.biotech_outlined, size: 18),
+                          label: const Text('Inspect Grad-CAM'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: PrimaryButton(
-                          text: 'View Screening Report',
-                          icon: Icons.description_outlined,
-                          isSecondary: true,
+                        child: OutlinedButton.icon(
                           onPressed: onViewReport,
+                          icon: const Icon(Icons.description_outlined, size: 18),
+                          label: const Text('Screening Summary'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  OutlinedButton.icon(
+                  TextButton.icon(
                     onPressed: onNewScreening,
-                    icon: const Icon(Icons.add_circle_outline_rounded),
-                    label: const Text('Complete & Start Next Patient Scan'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                    icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                    label: const Text('New Patient Scan'),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
 
                   const MedicalDisclaimerBanner(),
                 ],
