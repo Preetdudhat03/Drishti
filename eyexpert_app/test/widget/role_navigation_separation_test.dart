@@ -34,6 +34,9 @@ void main() {
     testWidgets('Ophthalmologist ResponsiveScaffold contains ZERO intake/screening creation triggers', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            connectionProvider.overrideWith((ref) => ConnectionNotifier(enablePeriodicTimer: false)),
+          ],
           child: MaterialApp(
             home: ResponsiveScaffold(
               currentIndex: 0,
@@ -67,6 +70,9 @@ void main() {
     testWidgets('PHC Health Worker ResponsiveScaffold retains New Intake navigation item', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            connectionProvider.overrideWith((ref) => ConnectionNotifier(enablePeriodicTimer: false)),
+          ],
           child: MaterialApp(
             home: ResponsiveScaffold(
               currentIndex: 0,
