@@ -435,11 +435,11 @@ class _ScreeningReportScreenState extends ConsumerState<ScreeningReportScreen> {
               const SizedBox(height: 18),
 
               // Medical Disclaimer Footer
-              Center(
+              const Center(
                 child: Text(
                   AppConstants.standardDisclaimer,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     color: AppColors.textMuted,
                     height: 1.4,
