@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drishti_app/data/models/user_model.dart';
 import 'package:drishti_app/features/auth/auth_provider.dart';
+import 'package:drishti_app/data/services/auth_service.dart';
 import 'package:drishti_app/shared/widgets/responsive_scaffold.dart';
 import 'package:drishti_app/features/dashboard/ophthalmologist_dashboard.dart';
 import 'package:drishti_app/features/dashboard/health_worker_dashboard.dart';
