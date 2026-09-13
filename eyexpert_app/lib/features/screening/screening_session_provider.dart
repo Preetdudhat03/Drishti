@@ -157,6 +157,13 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
     );
   }
 
+  void setPrediction(DRPredictionModel pred) {
+    state = state.copyWith(
+      prediction: pred,
+      status: ScreeningStatus.aiCompleted,
+    );
+  }
+
   Future<void> runQualityAssessment() async {
     if (state.screeningId == null || state.imagePath == null) return;
 
