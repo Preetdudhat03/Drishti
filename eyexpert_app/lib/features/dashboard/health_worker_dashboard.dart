@@ -150,7 +150,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
 
                       // 2. Primary Action Buttons (Hero Centerpiece)
                       PillButton(
-                        label: '+ New Screening / Patient Intake',
+                        label: '+ START NEW SCREENING',
                         icon: Icons.camera_alt_rounded,
                         width: double.infinity,
                         height: 52,
@@ -158,7 +158,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 10),
                       PillButton(
-                        label: 'View Screening Records',
+                        label: 'View Patient Screening Records',
                         icon: Icons.folder_open_rounded,
                         variant: PillButtonVariant.secondaryOutlined,
                         width: double.infinity,
@@ -168,26 +168,50 @@ class HealthWorkerDashboard extends ConsumerWidget {
 
                       const SizedBox(height: 16),
 
-                      // 3. Stats Row
+                      // 3. Stats Rows (Four PHC Metrics)
                       Row(
                         children: [
                           Expanded(
                             child: DiagnoXStatCard(
-                              icon: Icons.task_alt_rounded,
-                              category: 'Today',
+                              icon: Icons.people_alt_rounded,
+                              category: 'Screened',
                               value: '${reviewState.totalScreenedCount}',
-                              subtitle: 'Patients screened',
+                              subtitle: 'Total patients intake',
                               iconColor: AppColors.primary,
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: DiagnoXStatCard(
-                              icon: Icons.sync_rounded,
-                              category: 'Sync Status',
-                              value: syncState.isOnline ? 'Online' : 'Offline',
-                              subtitle: '${syncState.pendingCount} pending upload',
-                              iconColor: syncState.isOnline ? AppColors.statusGood : AppColors.badgeModerateText,
+                              icon: Icons.warning_amber_rounded,
+                              category: 'AI Referable',
+                              value: '${reviewState.referableCount}',
+                              subtitle: 'Flagged for doctor',
+                              iconColor: AppColors.statusCritical,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DiagnoXStatCard(
+                              icon: Icons.pending_actions_rounded,
+                              category: 'Awaiting Review',
+                              value: '${reviewState.totalPendingCount}',
+                              subtitle: 'In specialist queue',
+                              iconColor: AppColors.statusBorderline,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DiagnoXStatCard(
+                              icon: Icons.verified_rounded,
+                              category: 'Completed',
+                              value: '${reviewState.completedCount}',
+                              subtitle: 'Diagnoses finalized',
+                              iconColor: AppColors.statusGood,
                             ),
                           ),
                         ],
