@@ -2421,6 +2421,7 @@ def api_review_case(id):
         except Exception:
             final_dr_level = None
     clinical_notes = data.get('clinical_notes', '')
+    clinician_name = data.get('clinician_name', 'Dr. Rajesh Kumar, MD')
     # Enforce role permission: Only Ophthalmologists & Admins can sign off clinical reviews
     actor_role = (
         request.headers.get('X-User-Role') or 
