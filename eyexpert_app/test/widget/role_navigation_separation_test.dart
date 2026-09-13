@@ -39,7 +39,7 @@ void main() {
               onNavigationIndexChanged: (_) {},
               title: 'Ophthalmologist Workspace',
               currentUser: ophthalmologistUser,
-              body: CaseQueueScreen(onSelectCase: (_) {}),
+              body: const SizedBox(),
             ),
           ),
         ),
