@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:crypto/crypto.dart';
 import '../api/api_client.dart';
 import '../api/api_endpoints.dart';
 import '../models/patient_model.dart';
