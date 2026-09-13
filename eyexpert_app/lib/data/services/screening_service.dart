@@ -153,9 +153,15 @@ class ScreeningService {
 
     // 3. Real Image Quality Assessment (Live PyTorch / OpenCV Backend with Edge Fallback)
     try {
+      String? clientSha256;
+      if (rawBytes != null && rawBytes.isNotEmpty) {
+        clientSha256 = sha256.convert(rawBytes).toString();
+      }
+
       final uploadRes = await _apiClient.uploadMultipart(
         ApiEndpoints.screeningImage(screeningId),
         filePath: imagePath,
+        fields: clientSha256 != null ? {'client_sha256': clientSha256} : null,
       );
 
       if (uploadRes != null && uploadRes is Map && uploadRes.containsKey('quality')) {
