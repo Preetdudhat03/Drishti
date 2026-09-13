@@ -8,11 +8,14 @@ enum ScreeningStatus {
   created,
   awaitingImage,
   imageReceived,
-  qualityAssessment,
+  qualityCheck,
   borderlineEnhancement,
   aiProcessing,
+  aiCompleted,
+  reviewPending,
   readyForReview,
   pendingClinicianReview,
+  ophthalmologistReview,
   ungradable,
   recaptureRequired,
   clinicianValidated,
@@ -28,16 +31,22 @@ enum ScreeningStatus {
         return 'AWAITING_IMAGE';
       case ScreeningStatus.imageReceived:
         return 'IMAGE_RECEIVED';
-      case ScreeningStatus.qualityAssessment:
-        return 'QUALITY_ASSESSMENT';
+      case ScreeningStatus.qualityCheck:
+        return 'QUALITY_CHECK';
       case ScreeningStatus.borderlineEnhancement:
         return 'BORDERLINE_ENHANCEMENT';
       case ScreeningStatus.aiProcessing:
         return 'AI_PROCESSING';
+      case ScreeningStatus.aiCompleted:
+        return 'AI_COMPLETED';
+      case ScreeningStatus.reviewPending:
+        return 'REVIEW_PENDING';
       case ScreeningStatus.readyForReview:
         return 'READY_FOR_REVIEW';
       case ScreeningStatus.pendingClinicianReview:
         return 'PENDING_REVIEW';
+      case ScreeningStatus.ophthalmologistReview:
+        return 'OPHTHALMOLOGIST_REVIEW';
       case ScreeningStatus.ungradable:
         return 'UNGRADABLE';
       case ScreeningStatus.recaptureRequired:
@@ -59,17 +68,24 @@ enum ScreeningStatus {
         return ScreeningStatus.awaitingImage;
       case 'IMAGE_RECEIVED':
         return ScreeningStatus.imageReceived;
+      case 'QUALITY_CHECK':
       case 'QUALITY_ASSESSMENT':
-        return ScreeningStatus.qualityAssessment;
+        return ScreeningStatus.qualityCheck;
       case 'BORDERLINE_ENHANCEMENT':
         return ScreeningStatus.borderlineEnhancement;
       case 'AI_PROCESSING':
         return ScreeningStatus.aiProcessing;
+      case 'AI_COMPLETED':
+        return ScreeningStatus.aiCompleted;
+      case 'REVIEW_PENDING':
+        return ScreeningStatus.reviewPending;
       case 'READY_FOR_REVIEW':
         return ScreeningStatus.readyForReview;
       case 'PENDING_REVIEW':
       case 'PENDING_CLINICIAN_REVIEW':
         return ScreeningStatus.pendingClinicianReview;
+      case 'OPHTHALMOLOGIST_REVIEW':
+        return ScreeningStatus.ophthalmologistReview;
       case 'UNGRADABLE':
         return ScreeningStatus.ungradable;
       case 'RECAPTURE_REQUIRED':
