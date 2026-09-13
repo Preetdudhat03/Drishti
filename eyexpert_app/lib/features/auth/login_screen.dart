@@ -50,7 +50,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _emailController.text = 'ophthalmologist@drishti.org';
       _passwordController.text = 'RetinaSpecialist@2026!';
     });
-    _handleLogin();
+    ref.read(authProvider.notifier).clearError();
+    ref.read(authProvider.notifier).login(
+      username: 'ophthalmologist@drishti.org',
+      password: 'RetinaSpecialist@2026!',
+      roleRequested: UserRole.clinician,
+    );
   }
 
   void _fillWorkerDemo() {
@@ -59,7 +64,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _emailController.text = 'healthworker@drishti.org';
       _passwordController.text = 'HealthWorker@2026!';
     });
-    _handleLogin();
+    ref.read(authProvider.notifier).clearError();
+    ref.read(authProvider.notifier).login(
+      username: 'healthworker@drishti.org',
+      password: 'HealthWorker@2026!',
+      roleRequested: UserRole.healthWorker,
+    );
   }
 
   @override
