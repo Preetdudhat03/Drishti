@@ -2420,6 +2420,16 @@ def api_review_case(id):
     clinical_notes = data.get('clinical_notes', '')
     clinician_name = data.get('clinician_name', 'Dr. Rajesh Kumar, MD')
     
+    if action == "REJECT_RECAPTURE":
+        clinical_decision = "CLINICALLY_UNGRADABLE"
+        new_status = "RECAPTURE_REQUIRED"
+    elif action in ("OVERRIDE_GRADE", "OVERRIDE"):
+        clinical_decision = "AI_OVERRIDDEN"
+        new_status = "COMPLETED"
+    else:
+        clinical_decision = "AI_VALIDATED"
+        new_status = "COMPLETED"
+
     success = db_save_clinician_review(
         sid=id,
         action=action,
@@ -2430,11 +2440,18 @@ def api_review_case(id):
     
     # Update in-memory cache as well
     if id in SCREENING_STORE:
-        SCREENING_STORE[id]['status'] = "CLINICIAN_VALIDATED" if action != 'REJECT_RECAPTURE' else "RECAPTURE_REQUIRED"
+        SCREENING_STORE[id]['status'] = new_status
+        SCREENING_STORE[id]['clinical_decision'] = clinical_decision
         SCREENING_STORE[id]['reviewer'] = clinician_name
         SCREENING_STORE[id]['review_notes'] = clinical_notes
 
-    return jsonify({"success": success, "screening_id": id, "action": action}), 200
+    return jsonify({
+        "success": success,
+        "screening_id": id,
+        "action": action,
+        "status": new_status,
+        "clinical_decision": clinical_decision
+    }), 200
 
 @app.route('/api/screenings/<id>/submit_queue', methods=['POST'])
 def api_submit_case_queue(id):
