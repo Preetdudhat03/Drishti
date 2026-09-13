@@ -162,7 +162,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
 
     state = state.copyWith(
       isProcessing: true,
-      status: ScreeningStatus.qualityAssessment,
+      status: ScreeningStatus.qualityCheck,
       processingStep: 1,
       processingStepLabel: 'Step 1/4: Automated Image Quality & Focus Assessment...',
       errorMessage: null,
