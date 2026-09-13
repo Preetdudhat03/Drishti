@@ -212,7 +212,7 @@ class _ConfidenceSliderCardState extends State<ConfidenceSliderCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Why this diagnosis?',
                     style: TextStyle(
                       fontSize: 13,
