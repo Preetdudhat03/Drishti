@@ -79,10 +79,10 @@ class AuthService {
               UserModel(
                 id: supaUser.id,
                 email: supaUser.email ?? trimmedEmail,
-                name: supaUser.userMetadata?['full_name'] ?? 'Medical Officer',
-                role: roleRequested,
-                organization: supaUser.userMetadata?['facility_id'] ?? 'PHC Tele-Screening Unit',
-                facilityId: supaUser.userMetadata?['facility_id'] ?? 'PHC-RAMGARH-01',
+                name: supaUser.userMetadata?['full_name'] ?? (effectiveRole == UserRole.clinician ? 'Dr. Rajesh Mehta' : 'Rajesh Mehta'),
+                role: effectiveRole,
+                organization: supaUser.userMetadata?['facility_id'] ?? (effectiveRole == UserRole.clinician ? 'District Eye Hospital' : 'PHC Tele-Screening Unit'),
+                facilityId: supaUser.userMetadata?['facility_id'] ?? (effectiveRole == UserRole.clinician ? 'FAC-DISTRICT-EYE' : 'PHC-RAMGARH-01'),
                 isActive: true,
               );
 
@@ -141,7 +141,7 @@ class AuthService {
         body: {
           'username': trimmedEmail,
           'password': password,
-          'role_requested': roleRequested.code,
+          'role_requested': effectiveRole.code,
           if (medicalRegistrationId != null && medicalRegistrationId.isNotEmpty)
             'medical_registration_id': medicalRegistrationId,
         },
