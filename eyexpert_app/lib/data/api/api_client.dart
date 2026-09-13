@@ -100,13 +100,14 @@ class ApiClient {
 
     if (body != null && body is Map && body.containsKey('error')) {
       final err = body['error'];
-      final String code = err['code'] ?? 'UNKNOWN_ERROR';
-      final String msg = err['message'] ?? 'An error occurred';
-      if (code == 'IMAGE_UNGRADABLE') {
-        throw UngradableImageException(msg, code: code, details: err['details']);
-      } else if (code == 'MODEL_UNAVAILABLE') {
+      final String code = err is Map ? (err['code'] ?? 'UNKNOWN_ERROR') : err.toString();
+      final String msg = err is Map ? (err['message'] ?? 'An error occurred') : (body['message']?.toString() ?? err.toString());
+      final details = err is Map ? err['details'] : body['recapture_feedback'];
+      if (code == 'IMAGE_UNGRADABLE' || response.statusCode == 422) {
+        throw UngradableImageException(msg, code: code, details: details);
+      } else if (code == 'MODEL_UNAVAILABLE' || response.statusCode == 503) {
         throw ModelUnavailableException(msg, code: code);
-      } else if (code == 'INVALID_CREDENTIALS' || code == 'UNAUTHORIZED') {
+      } else if (code == 'INVALID_CREDENTIALS' || code == 'UNAUTHORIZED' || response.statusCode == 401) {
         throw AuthException(msg, code: code);
       } else {
         throw AppException(msg, code: code);
