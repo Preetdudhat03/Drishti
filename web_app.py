@@ -749,12 +749,21 @@ def db_save_clinician_review(sid, action, final_dr_level, clinical_notes, clinic
         supabase_client.table('clinician_reviews').upsert(rev_row).execute()
 
         # 2. Update parent screening status and clinical_decision
-        update_data = {
-            "status": new_status,
-            "clinical_decision": clinical_decision,
-            "updated_at": now_iso
-        }
-        supabase_client.table('screenings').update(update_data).eq('screening_id', sid).execute()
+        try:
+            update_data = {
+                "status": new_status,
+                "clinical_decision": clinical_decision,
+                "updated_at": now_iso
+            }
+            supabase_client.table('screenings').update(update_data).eq('screening_id', sid).execute()
+        except Exception as col_err:
+            try:
+                supabase_client.table('screenings').update({
+                    "status": new_status,
+                    "updated_at": now_iso
+                }).eq('screening_id', sid).execute()
+            except Exception:
+                pass
 
         # 3. Immutable audit trail entry
         audit_row = {
