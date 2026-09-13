@@ -189,8 +189,13 @@ CREATE TABLE IF NOT EXISTS public.screenings (
     hba1c NUMERIC(4, 2),
     eye TEXT NOT NULL CHECK (eye IN ('OD', 'OS', 'OD (Right Eye)', 'OS (Left Eye)')),
     facility_id TEXT NOT NULL DEFAULT 'PHC-RAMGARH-01',
-    status TEXT NOT NULL DEFAULT 'AWAITING_IMAGE' 
-        CHECK (status IN ('AWAITING_IMAGE', 'IMAGE_RECEIVED', 'QUALITY_ASSESSMENT', 'AI_PROCESSING', 'READY_FOR_REVIEW', 'COMPLETED', 'UNGRADABLE', 'RECAPTURE_REQUIRED', 'SYNCED')),
+    status TEXT NOT NULL DEFAULT 'AWAITING_IMAGE',
+    clinical_decision TEXT DEFAULT 'PENDING',
+    server_sha256 TEXT,
+    client_sha256 TEXT,
+    image_dimensions JSONB DEFAULT '[512, 512]'::jsonb,
+    assigned_reviewer_id TEXT,
+    claimed_at TIMESTAMPTZ,
     image_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -200,6 +205,8 @@ CREATE TABLE IF NOT EXISTS public.screenings (
 CREATE INDEX IF NOT EXISTS idx_screenings_patient_id ON public.screenings(patient_id);
 CREATE INDEX IF NOT EXISTS idx_screenings_facility_id ON public.screenings(facility_id);
 CREATE INDEX IF NOT EXISTS idx_screenings_status ON public.screenings(status);
+CREATE INDEX IF NOT EXISTS idx_screenings_clinical_decision ON public.screenings(clinical_decision);
+CREATE INDEX IF NOT EXISTS idx_screenings_assigned_reviewer ON public.screenings(assigned_reviewer_id);
 CREATE INDEX IF NOT EXISTS idx_screenings_created_at ON public.screenings(created_at DESC);
 
 -- ----------------------------------------------------------------------------
@@ -227,12 +234,17 @@ CREATE INDEX IF NOT EXISTS idx_quality_screening_id ON public.quality_assessment
 CREATE TABLE IF NOT EXISTS public.ai_predictions (
     id BIGSERIAL PRIMARY KEY,
     screening_id TEXT NOT NULL REFERENCES public.screenings(screening_id) ON DELETE CASCADE,
+    inference_id TEXT,
+    server_sha256 TEXT,
+    crop_box JSONB,
+    preprocessing_version TEXT DEFAULT 'fundus-v1',
     dr_level INT NOT NULL CHECK (dr_level >= 0 AND dr_level <= 4),
     severity_label TEXT NOT NULL,
     referable BOOLEAN NOT NULL,
     model_probability NUMERIC(5, 4) NOT NULL,
     calibrated_confidence NUMERIC(5, 4),
     class_probabilities JSONB, -- [P(L0), P(L1), P(L2), P(L3), P(L4)]
+    raw_logits JSONB,          -- [logit(L0), logit(L1), logit(L2), logit(L3), logit(L4)]
     review_priority TEXT DEFAULT 'NORMAL' CHECK (review_priority IN ('LOW', 'NORMAL', 'HIGH', 'URGENT')),
     recommendation TEXT,
     model_version TEXT DEFAULT 'EyeXpert_ResNet18_v1.0',
