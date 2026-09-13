@@ -380,7 +380,7 @@ class ResponsiveScaffold extends ConsumerWidget {
               ),
             )
           : null,
-      floatingActionButton: floatingActionButton,
+      floatingActionButton: isClinician ? null : floatingActionButton,
     );
   }
 }
