@@ -155,6 +155,11 @@ class ScreeningCaseModel {
   final String? clientRequestId;
   final PatientModel patient;
   final ScreeningStatus status;
+  final String clinicalDecision; // PENDING, AI_VALIDATED, AI_OVERRIDDEN, CLINICALLY_UNGRADABLE
+  final String? serverSha256;
+  final String? inferenceId;
+  final String? assignedReviewerId;
+  final DateTime? claimedAt;
   final FundusImageData? image;
   final QualityAssessmentModel? quality;
   final DRPredictionModel? prediction;
@@ -168,6 +173,11 @@ class ScreeningCaseModel {
     this.clientRequestId,
     required this.patient,
     required this.status,
+    this.clinicalDecision = 'PENDING',
+    this.serverSha256,
+    this.inferenceId,
+    this.assignedReviewerId,
+    this.claimedAt,
     this.image,
     this.quality,
     this.prediction,
@@ -188,15 +198,20 @@ class ScreeningCaseModel {
   }
   bool get hasReviewed =>
       review != null ||
+      clinicalDecision == 'AI_VALIDATED' ||
+      clinicalDecision == 'AI_OVERRIDDEN' ||
       status == ScreeningStatus.completed ||
       status == ScreeningStatus.clinicianValidated ||
       status == ScreeningStatus.clinicianOverridden;
   bool get isPendingReview =>
       !hasReviewed &&
-      (status == ScreeningStatus.readyForReview ||
+      (status == ScreeningStatus.reviewPending ||
+       status == ScreeningStatus.ophthalmologistReview ||
+       status == ScreeningStatus.aiCompleted ||
+       status == ScreeningStatus.readyForReview ||
        status == ScreeningStatus.pendingClinicianReview ||
        status == ScreeningStatus.aiProcessing ||
-       status == ScreeningStatus.qualityAssessment ||
+       status == ScreeningStatus.qualityCheck ||
        status == ScreeningStatus.imageReceived ||
        status == ScreeningStatus.created);
 
@@ -213,6 +228,11 @@ class ScreeningCaseModel {
               createdAt: DateTime.now(),
             ),
       status: ScreeningStatus.fromString(json['status']),
+      clinicalDecision: json['clinical_decision'] ?? 'PENDING',
+      serverSha256: json['server_sha256'],
+      inferenceId: json['inference_id'],
+      assignedReviewerId: json['assigned_reviewer_id'],
+      claimedAt: json['claimed_at'] != null ? DateTime.tryParse(json['claimed_at']) : null,
       image: json['image'] != null ? FundusImageData.fromJson(json['image']) : null,
       quality: json['quality'] != null
           ? QualityAssessmentModel.fromJson(json['quality'])
@@ -242,6 +262,11 @@ class ScreeningCaseModel {
       'client_request_id': clientRequestId,
       'patient': patient.toJson(),
       'status': status.label,
+      'clinical_decision': clinicalDecision,
+      'server_sha256': serverSha256,
+      'inference_id': inferenceId,
+      'assigned_reviewer_id': assignedReviewerId,
+      'claimed_at': claimedAt?.toIso8601String(),
       'image': image?.toJson(),
       'quality': quality?.toJson(),
       'prediction': prediction?.toJson(),
@@ -257,6 +282,11 @@ class ScreeningCaseModel {
     String? clientRequestId,
     PatientModel? patient,
     ScreeningStatus? status,
+    String? clinicalDecision,
+    String? serverSha256,
+    String? inferenceId,
+    String? assignedReviewerId,
+    DateTime? claimedAt,
     FundusImageData? image,
     QualityAssessmentModel? quality,
     DRPredictionModel? prediction,
@@ -270,6 +300,11 @@ class ScreeningCaseModel {
       clientRequestId: clientRequestId ?? this.clientRequestId,
       patient: patient ?? this.patient,
       status: status ?? this.status,
+      clinicalDecision: clinicalDecision ?? this.clinicalDecision,
+      serverSha256: serverSha256 ?? this.serverSha256,
+      inferenceId: inferenceId ?? this.inferenceId,
+      assignedReviewerId: assignedReviewerId ?? this.assignedReviewerId,
+      claimedAt: claimedAt ?? this.claimedAt,
       image: image ?? this.image,
       quality: quality ?? this.quality,
       prediction: prediction ?? this.prediction,
