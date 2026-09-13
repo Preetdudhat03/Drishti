@@ -705,7 +705,10 @@ def db_fetch_case(sid):
                     "camImgB64": cam_b64,
                     "overlayImgB64": overlay_b64,
                     "reviewer": rev.get('clinician_name', 'Pending Review') if rev else 'Pending Review',
-                    "review_notes": rev.get('clinical_notes', '') if rev else ''
+                    "review_notes": rev.get('clinical_notes', '') if rev else '',
+                    "assigned_reviewer_id": row.get('assigned_reviewer_id') or (cached.get('assigned_reviewer_id') if cached else None),
+                    "claimed_at": row.get('claimed_at') or (cached.get('claimed_at') if cached else None),
+                    "clinical_decision": row.get('clinical_decision', 'PENDING') or (cached.get('clinical_decision', 'PENDING') if cached else 'PENDING')
                 }
                 store_case_record(sid, case_obj)
                 return case_obj
