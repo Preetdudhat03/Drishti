@@ -258,35 +258,6 @@ class OphthalmologistDashboard extends ConsumerWidget {
                     ),
                   ],
 
-                const SizedBox(height: 24),
-
-                // Center Floating Diagnostic Launcher Button
-                Center(
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF1E293B),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.18),
-                          blurRadius: 14,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      onPressed: onOpenReviewQueue,
-                      icon: const Icon(
-                        Icons.dashboard_customize_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 20),
               ],
             ),
