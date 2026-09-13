@@ -482,21 +482,17 @@ def db_save_screening(screening_id, patient_meta, q_result, class_result, orig_b
 
         eye_val = str((patient_meta or {}).get('eye', 'OD'))
         clean_eye = 'OS' if ('OS' in eye_val or 'Left' in eye_val) else 'OD'
+        img_to_store = orig_b64 or (patient_meta or {}).get('image_url')
+        clean_eye = 'OS' if 'OS' in str((patient_meta or {}).get('eye', 'OD')) else 'OD'
+        status_val = (patient_meta or {}).get('status', 'READY_FOR_REVIEW')
 
-        status_val = "READY_FOR_REVIEW" if (class_result and q_result and q_result.get('status') != 'UNGRADABLE') else (
-            "UNGRADABLE" if (q_result and q_result.get('status') == 'UNGRADABLE') else "AWAITING_IMAGE"
-        )
-
-        img_to_store = orig_b64 if orig_b64 else ((patient_meta or {}).get('image_url') or (patient_meta or {}).get('originalImgB64'))
+        # 1. Upsert Screening Master Record
         screening_row = {
             "screening_id": screening_id,
-            "client_request_id": screening_id,
-            "patient_id": (patient_meta or {}).get('patient_id', 'PT-NEW'),
+            "patient_id": (patient_meta or {}).get('patient_id', 'PT-DEMO'),
             "patient_name": (patient_meta or {}).get('patient_name', 'Patient'),
-            "age": age_int,
-            "gender": (patient_meta or {}).get('gender', 'MALE'),
-            "diabetes_duration_years": dur_int,
-            "hba1c": hba1c_num,
+            "age": int((patient_meta or {}).get('age', 55)),
+            "gender": (patient_meta or {}).get('gender', 'OTHER'),
             "eye": clean_eye,
             "facility_id": (patient_meta or {}).get('facility_id', 'PHC-RAMGARH-01'),
             "status": status_val,
@@ -509,14 +505,14 @@ def db_save_screening(screening_id, patient_meta, q_result, class_result, orig_b
         if q_result:
             qa_row = {
                 "screening_id": screening_id,
-                "quality_score": float(q_result.get('overallScore', 0.9)),
+                "quality_score": safe_extract_metric(q_result, ['overall_score', 'overallScore', 'quality_score'], 0.9),
                 "status": q_result.get('status', 'GOOD'),
-                "sharpness_score": float(q_result.get('sharpness', 0.85)),
-                "illumination_score": float(q_result.get('illumination', 0.88)),
-                "fov_score": float(q_result.get('fov', 0.92)),
-                "mean_intensity": float(q_result.get('meanIntensity', 100.0)),
-                "clahe_applied": bool(q_result.get('status') == 'BORDERLINE'),
-                "feedback_messages": q_result.get('recaptureFeedback', []),
+                "sharpness_score": safe_extract_metric(q_result, ['sharpness_score', 'sharpness'], 0.85),
+                "illumination_score": safe_extract_metric(q_result, ['illumination_score', 'illumination'], 0.88),
+                "fov_score": safe_extract_metric(q_result, ['fov_score', 'fov', 'field_of_view'], 0.92),
+                "mean_intensity": safe_extract_metric(q_result, ['mean_intensity', 'meanIntensity'], 100.0),
+                "clahe_applied": bool(q_result.get('status') == 'BORDERLINE' or q_result.get('enhancement_applied')),
+                "feedback_messages": q_result.get('recaptureFeedback') or q_result.get('feedback_messages', []),
                 "evaluated_at": now_iso
             }
             supabase_client.table('quality_assessments').delete().eq('screening_id', screening_id).execute()
