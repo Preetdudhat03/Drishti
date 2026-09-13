@@ -181,42 +181,43 @@ class _RootScreenState extends ConsumerState<RootScreen> {
     // 3. OPHTHALMOLOGIST WORKSPACE
     // -------------------------------------------------------------
     if (user.role == UserRole.clinician) {
+      // Security Guard: Prevent any screening intake state from leaking into clinician workspace
+      if (_screeningStep != 0) {
+        _resetScreeningFlow();
+      }
+
       Widget body;
       String title = 'Ophthalmologist Workspace';
 
       switch (_navIndex) {
         case 0:
-          title = 'Specialist Overview';
-          body = OphthalmologistDashboard(
-            onOpenReviewQueue: () => setState(() => _navIndex = 1),
-            onViewCases: () => setState(() => _navIndex = 2),
-            onViewSystemStatus: () => setState(() => _navIndex = 3),
-            onSelectCase: (c) => setState(() => _activeCaseReview = c),
-          );
-          break;
-        case 1:
           title = 'Priority Review Queue';
           body = CaseQueueScreen(
             onSelectCase: (c) => setState(() => _activeCaseReview = c),
           );
           break;
-        case 2:
+        case 1:
           title = 'All Screening Cases';
           body = CaseQueueScreen(
             onSelectCase: (c) => setState(() => _activeCaseReview = c),
           );
           break;
-        case 3:
-          title = 'System & Microservices';
-          body = const SystemStatusScreen();
+        case 2:
+          title = 'Specialist Overview';
+          body = OphthalmologistDashboard(
+            onOpenReviewQueue: () => setState(() => _navIndex = 0),
+            onViewCases: () => setState(() => _navIndex = 1),
+            onViewSystemStatus: () => setState(() => _navIndex = 0),
+            onSelectCase: (c) => setState(() => _activeCaseReview = c),
+          );
           break;
-        case 4:
+        case 3:
           title = 'Clinical Reports';
           body = CaseQueueScreen(
             onSelectCase: (c) => setState(() => _activeReportView = c),
           );
           break;
-        case 5:
+        case 4:
         default:
           title = 'Clinician Profile & Verification';
           body = const ProfileScreen();
