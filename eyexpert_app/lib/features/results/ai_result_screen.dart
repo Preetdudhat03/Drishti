@@ -70,7 +70,7 @@ class AiResultScreen extends ConsumerWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          StatusBadge.aiBadge(label: 'AI DIAGNOSTIC RESULT'),
+                          StatusBadge.aiBadge(label: 'AI PRELIMINARY ASSESSMENT'),
                           const SizedBox(width: 8),
                           Text(
                             'ID: ${session.screeningId ?? "Pending"}',
