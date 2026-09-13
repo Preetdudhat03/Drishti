@@ -39,6 +39,16 @@ class AuthService {
       );
     }
 
+    // Infer role from email if user used clinician email patterns
+    var effectiveRole = roleRequested;
+    final lowerEmail = trimmedEmail.toLowerCase();
+    if (lowerEmail.contains('ophthalmologist') ||
+        lowerEmail.contains('doctor') ||
+        lowerEmail.contains('clinician') ||
+        lowerEmail.contains('retinaspecialist')) {
+      effectiveRole = UserRole.clinician;
+    }
+
     // -------------------------------------------------------------
     // 2. Production Supabase Authentication Layer
     // -------------------------------------------------------------
