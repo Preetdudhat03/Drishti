@@ -49,7 +49,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // Verify permitted Ophthalmologist navigation items
       expect(find.text('Review Queue'), findsWidgets);
@@ -88,7 +88,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // Verify permitted PHC Worker intake items
       expect(find.text('Dashboard'), findsWidgets);
