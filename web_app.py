@@ -2711,7 +2711,23 @@ def api_v1_status():
 
 @app.route('/api/v1/screenings', methods=['POST'])
 def api_v1_create_screening():
-    body = request.get_json() or {}
+    body = request.get_json(silent=True) or request.form or {}
+    
+    # Enforce role permission: Only PHC Health Workers & Admins can create screenings
+    actor_role = (
+        request.headers.get('X-User-Role') or 
+        body.get('user_role') or 
+        body.get('role') or 
+        'HEALTH_WORKER'
+    ).strip().upper()
+
+    if actor_role in ('OPHTHALMOLOGIST', 'CLINICIAN', 'SPECIALIST'):
+        return jsonify({
+            "error": "ROLE_NOT_PERMITTED",
+            "message": "Ophthalmologists and Clinicians cannot initiate primary screenings. Screening intake is strictly reserved for PHC Health Workers and Nurses.",
+            "role": actor_role
+        }), 403
+
     screening_id = f"EX-2026-{uuid.uuid4().hex[:6].upper()}"
     record = {
         "screening_id": screening_id,
