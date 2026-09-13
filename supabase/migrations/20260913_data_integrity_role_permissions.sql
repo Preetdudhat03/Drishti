@@ -36,6 +36,9 @@ BEGIN
     END IF;
 END $$;
 
+-- Drop outdated status check constraint so newer workflow statuses (AI_COMPLETED, REVIEW_PENDING, OPHTHALMOLOGIST_REVIEW) are accepted
+ALTER TABLE public.screenings DROP CONSTRAINT IF EXISTS screenings_status_check;
+
 -- 2. Safely add Inference Metadata to public.ai_predictions
 DO $$
 BEGIN
