@@ -1,7 +1,7 @@
 # Drishti (EyeXpert) — Real APTOS 2019 Validation Report
 
 **Dataset**: APTOS 2019 Blindness Detection (Kaggle)  
-**Evaluation Timestamp**: 2026-09-01 20:20:18  
+**Evaluation Timestamp**: 2026-09-13 10:29:25  
 **Model Architecture**: ResNet-18 Transfer Learning  
 **Final Status**: `REAL_APTOS_VALIDATED_SIH_TARGETS_MET`
 

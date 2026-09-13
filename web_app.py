@@ -22,6 +22,15 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 import cv2
 
+from preprocessing.fundus_pipeline import (
+    preprocess_fundus_v1,
+    generate_gradcam_and_overlay,
+    compute_sha256,
+    crop_retina_bounding_box,
+    PREPROCESSING_VERSION,
+    MODEL_VERSION,
+)
+
 # Optimize CPU memory for cloud free tier (Render 512MB RAM)
 torch.set_num_threads(1)
 try:
@@ -365,29 +374,15 @@ def get_clinical_triage(level):
     return table.get(level, table[0])
 
 # ----------------- REAL PYTORCH GRAD-CAM & INFERENCE -----------------
-def execute_model_inference(pil_img):
+def execute_model_inference(pil_img, image_id="IMG-UNKNOWN", screening_id="SCR-UNKNOWN"):
     """
-    Executes PyTorch ResNet-18 forward pass and Grad-CAM backpropagation on layer4[1].conv2.
-    Memory-optimized for cloud 512MB RAM environments.
+    Executes PyTorch ResNet-18 forward pass and Grad-CAM backpropagation on layer4[1].conv2
+    using the canonical 'fundus-v1' versioned preprocessing pipeline.
     """
     if REAL_MODEL is None or MODEL_STATUS != "ACTIVE":
         raise RuntimeError("Real PyTorch model is unavailable. Mock inference is strictly disabled.")
 
-    # Downsample high-res inputs for memory safety (<512px)
-    max_d = 512
-    w_orig, h_orig = pil_img.size
-    if max(w_orig, h_orig) > max_d:
-        scale = max_d / float(max(w_orig, h_orig))
-        pil_img_proc = pil_img.resize((int(w_orig * scale), int(h_orig * scale)), Image.Resampling.BILINEAR)
-    else:
-        pil_img_proc = pil_img
-
-    eval_tfm = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    tensor_img = eval_tfm(pil_img_proc).unsqueeze(0).to(DEVICE)
+    tensor_img, crop_box, cropped_pil, proc_pil = preprocess_fundus_v1(pil_img, max_dim=512)
 
     # Register Grad-CAM hooks
     features = []
@@ -404,7 +399,7 @@ def execute_model_inference(pil_img):
     h_b = last_conv.register_full_backward_hook(backward_hook)
 
     REAL_MODEL.eval()
-    logits = REAL_MODEL(tensor_img)
+    logits = REAL_MODEL(tensor_img.to(DEVICE))
     soft_probs = torch.softmax(logits, dim=1).detach().cpu().numpy()[0]
     pred_level = int(np.argmax(soft_probs))
 
@@ -416,41 +411,32 @@ def execute_model_inference(pil_img):
     h_f.remove()
     h_b.remove()
 
-    # Generate Grad-CAM activation map
-    f = features[0][0].detach().cpu().numpy()
-    g = grads[0][0].detach().cpu().numpy()
-    weights = np.mean(g, axis=(1, 2), dtype=np.float32)
-    cam = np.zeros(f.shape[1:], dtype=np.float32)
-    for idx, w in enumerate(weights):
-        cam += w * f[idx]
-    cam = np.maximum(0, cam)
-    if np.max(cam) > 0:
-        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam) + 1e-8)
+    cam_result = generate_gradcam_and_overlay(
+        REAL_MODEL, tensor_img, proc_pil, crop_box, pred_level, device=DEVICE
+    )
 
-    # Resize CAM to safe display dimension using OpenCV
-    w_disp, h_disp = pil_img_proc.size
-    cam_resized = cv2.resize(cam, (w_disp, h_disp), interpolation=cv2.INTER_LINEAR)
-    cam_resized = np.clip(cam_resized, 0.0, 1.0).astype(np.float32)
+    inference_id = f"INF-{uuid.uuid4().hex[:8].upper()}"
 
-    # Colorize with turbo colormap using OpenCV
-    cam_uint8 = (cam_resized * 255).astype(np.uint8)
-    cam_colored_bgr = cv2.applyColorMap(cam_uint8, cv2.COLORMAP_TURBO)
-    cam_colored = cv2.cvtColor(cam_colored_bgr, cv2.COLOR_BGR2RGB)
+    raw_logits_list = [round(float(l), 4) for l in logits.detach().cpu().numpy()[0]]
+    probabilities_list = [round(float(p), 4) for p in soft_probs]
 
-    # Fast float32 alpha blend
-    orig_np = np.array(pil_img_proc.convert('RGB'), dtype=np.float32)
-    alpha = (cam_resized[:, :, np.newaxis] * 0.45)
-    overlay_np = np.clip((1.0 - alpha) * orig_np + alpha * cam_colored.astype(np.float32), 0, 255).astype(np.uint8)
-
-    del features, grads, tensor_img, logits, f, g, orig_np, cam_resized, cam_colored_bgr
+    del features, grads, tensor_img, logits
     gc.collect()
 
     return {
+        "inference_id": inference_id,
+        "screening_id": screening_id,
+        "image_id": image_id,
+        "crop_box": crop_box,
+        "original_dimensions": [pil_img.size[0], pil_img.size[1]],
+        "preprocessing_version": PREPROCESSING_VERSION,
+        "model_version": MODEL_VERSION,
         "pred_level": pred_level,
-        "probabilities": [round(float(p), 4) for p in soft_probs],
+        "probabilities": probabilities_list,
+        "raw_logits": raw_logits_list,
         "model_probability": round(float(soft_probs[pred_level]), 4),
-        "cam_colored": Image.fromarray(cam_colored),
-        "overlay_img": Image.fromarray(overlay_np),
+        "cam_colored": cam_result["cam_colored"],
+        "overlay_img": cam_result["overlay_img"],
     }
 
 # ----------------- SUPABASE PERSISTENCE & CACHING LAYER -----------------
@@ -721,7 +707,7 @@ def db_fetch_case(sid):
 def db_save_clinician_review(sid, action, final_dr_level, clinical_notes, clinician_name="Dr. Rajesh Kumar", reviewer_id=None):
     """
     Persists clinician review decision into Supabase 'clinician_reviews',
-    updates 'screenings' status, and creates an audit event.
+    updates 'screenings' status and clinical_decision, and creates an audit event.
     """
     if not supabase_client:
         return False
@@ -729,6 +715,17 @@ def db_save_clinician_review(sid, action, final_dr_level, clinical_notes, clinic
         now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
         final_ref = (final_dr_level >= 2) if final_dr_level is not None else None
         
+        # Determine clinical outcome vs workflow status
+        if action == "REJECT_RECAPTURE":
+            clinical_decision = "CLINICALLY_UNGRADABLE"
+            new_status = "RECAPTURE_REQUIRED"
+        elif action in ("OVERRIDE_GRADE", "OVERRIDE"):
+            clinical_decision = "AI_OVERRIDDEN"
+            new_status = "COMPLETED"
+        else:
+            clinical_decision = "AI_VALIDATED"
+            new_status = "COMPLETED"
+
         # 1. Upsert clinician_reviews
         rev_row = {
             "screening_id": sid,
@@ -741,12 +738,13 @@ def db_save_clinician_review(sid, action, final_dr_level, clinical_notes, clinic
         }
         supabase_client.table('clinician_reviews').upsert(rev_row).execute()
 
-        # 2. Update parent screening status
-        new_status = "RECAPTURE_REQUIRED" if action == "REJECT_RECAPTURE" else "COMPLETED"
-        supabase_client.table('screenings').update({
+        # 2. Update parent screening status and clinical_decision
+        update_data = {
             "status": new_status,
+            "clinical_decision": clinical_decision,
             "updated_at": now_iso
-        }).eq('screening_id', sid).execute()
+        }
+        supabase_client.table('screenings').update(update_data).eq('screening_id', sid).execute()
 
         # 3. Immutable audit trail entry
         audit_row = {
@@ -2707,7 +2705,16 @@ def api_v1_upload_image(id):
     if file.filename == '':
         return jsonify({"error": "No file selected"}), 400
     
-    img = load_and_downsample_image(file.stream, max_dim=512)
+    file_bytes = file.read()
+    if not file_bytes:
+        return jsonify({"error": "Uploaded file is empty"}), 400
+
+    server_sha256 = compute_sha256(file_bytes)
+    client_sha256 = request.form.get('client_sha256', '').strip()
+    
+    stream = io.BytesIO(file_bytes)
+    img = load_and_downsample_image(stream, max_dim=512)
+    orig_w, orig_h = img.size
     orig_b64 = pil_to_b64(img)
     q_result = assess_image_quality(img)
     enhanced_img = enhance_fundus_image(img) if q_result.get('status') == 'BORDERLINE' else img
@@ -2736,12 +2743,17 @@ def api_v1_upload_image(id):
         "evaluated_at": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
     }
     
+    workflow_status = "RECAPTURE_REQUIRED" if q_result.get("status") == "UNGRADABLE" else "QUALITY_CHECK"
+    
     record = SCREENING_STORE.get(id, {})
     record["screening_id"] = id
+    record["server_sha256"] = server_sha256
+    record["client_sha256"] = client_sha256
+    record["image_dimensions"] = [orig_w, orig_h]
     record["image_b64"] = orig_b64
     record["enhanced_b64"] = pil_to_b64(enhanced_img)
     record["quality"] = quality_payload
-    record["status"] = "IMAGE_RECEIVED"
+    record["status"] = workflow_status
     store_case_record(id, record)
     
     # Sync with Supabase
@@ -2757,14 +2769,17 @@ def api_v1_upload_image(id):
     return jsonify({
         "screening_id": id,
         "image_id": f"IMG-{id.replace('EX-', '')}",
-        "status": "IMAGE_RECEIVED",
+        "server_sha256": server_sha256,
+        "client_sha256": client_sha256,
+        "dimensions": [orig_w, orig_h],
+        "status": workflow_status,
         "quality": quality_payload
     }), 200
 
 @app.route('/api/v1/screenings/<id>/quality', methods=['GET'])
 def api_v1_get_quality(id):
     case = db_fetch_case(id)
-    if case and "quality" in case:
+    if case and "quality" in case and case["quality"] is not None:
         q = case["quality"]
         return jsonify({
             "screening_id": id,
@@ -2779,24 +2794,35 @@ def api_v1_get_quality(id):
         })
     
     return jsonify({
-        "screening_id": id,
-        "overall_score": 0.92,
-        "status": "GOOD",
-        "sharpness": {"score": 0.89, "status": "GOOD", "metric_name": "Laplacian Focus & Sharpness"},
-        "illumination": {"score": 0.94, "status": "GOOD", "metric_name": "Illumination & Exposure"},
-        "field_of_view": {"score": 0.93, "status": "ADEQUATE", "metric_name": "Retinal Mask Field of View"},
-        "enhancement_applied": False,
-        "feedback_messages": ["Optimal focus, exposure, and field coverage confirmed."],
-        "evaluated_at": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-    })
+        "error": "QUALITY_NOT_FOUND",
+        "message": f"No image quality assessment found for screening {id}. Please upload an image first."
+    }), 404
 
 @app.route('/api/v1/screenings/<id>/analyze', methods=['POST'])
 def api_v1_analyze(id):
+    if REAL_MODEL is None or MODEL_STATUS != "ACTIVE":
+        return jsonify({
+            "error": "MODEL_UNAVAILABLE",
+            "message": "Real PyTorch ResNet-18 model weights are not loaded or engine is offline. Fallback/mock inference is strictly disabled."
+        }), 503
+
     record = SCREENING_STORE.get(id, {})
+    q_data = record.get("quality")
+    if not q_data:
+        case = db_fetch_case(id)
+        if case and "quality" in case:
+            q_data = case["quality"]
+
+    # Safety Gate: Ungradable images strictly rejected
+    if q_data and q_data.get("status") == "UNGRADABLE":
+        return jsonify({
+            "error": "IMAGE_UNGRADABLE",
+            "message": "Automated DR screening is blocked because the retinal photograph was evaluated as UNGRADABLE. A clear recapture is required for patient safety.",
+            "recapture_feedback": q_data.get("feedback_messages", [])
+        }), 422
+
     img_b64 = record.get("image_b64") or record.get("originalImgB64")
-    
     if not img_b64:
-        # Check if stored in Supabase
         case = db_fetch_case(id)
         if case:
             img_b64 = case.get("originalImgB64")
@@ -2809,11 +2835,21 @@ def api_v1_analyze(id):
     
     clean_b64 = img_b64.split(',', 1)[1] if ',' in img_b64 else img_b64
     img_bytes = base64.b64decode(clean_b64)
+    server_sha256 = record.get("server_sha256") or compute_sha256(img_bytes)
+    
     img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
     del img_bytes
-    infer_out = execute_model_inference(img)
-    del img
     
+    try:
+        infer_out = execute_model_inference(img, image_id=f"IMG-{id.replace('EX-', '')}", screening_id=id)
+    except Exception as exc:
+        return jsonify({
+            "error": "INFERENCE_FAILED",
+            "message": str(exc)
+        }), 500
+    finally:
+        del img
+
     level = infer_out['pred_level']
     triage = get_clinical_triage(level)
     
@@ -2837,7 +2873,11 @@ def api_v1_analyze(id):
     record["dr_level"] = level
     record["cam_b64"] = cam_b64
     record["overlay_b64"] = overlay_b64
-    record["status"] = "READY_FOR_REVIEW"
+    record["status"] = "AI_COMPLETED"
+    record["clinical_decision"] = "PENDING"
+    record["server_sha256"] = server_sha256
+    record["inference_id"] = infer_out["inference_id"]
+    record["crop_box"] = infer_out["crop_box"]
     record["classification"] = class_result
     store_case_record(id, record)
 
@@ -2845,7 +2885,7 @@ def api_v1_analyze(id):
     db_save_screening(
         screening_id=id,
         patient_meta=record,
-        q_result=record.get('quality') or {"status": "GOOD", "overallScore": 0.92, "sharpness": 0.88, "illumination": 0.90, "fov": 0.94},
+        q_result=q_data or {"status": "GOOD", "overallScore": 0.92, "sharpness": 0.88, "illumination": 0.90, "fov": 0.94},
         class_result=class_result,
         orig_b64=img_b64,
         cam_b64=cam_b64,
@@ -2856,18 +2896,70 @@ def api_v1_analyze(id):
     
     return jsonify({
         "screening_id": id,
+        "inference_id": infer_out["inference_id"],
+        "server_sha256": server_sha256,
+        "client_sha256": record.get("client_sha256", ""),
+        "crop_box": infer_out["crop_box"],
+        "model_version": MODEL_VERSION,
+        "preprocessing_version": PREPROCESSING_VERSION,
         "dr_level": level,
         "severity_label": triage['name'],
         "severity_code": triage['code'],
         "referable": triage['referable'],
         "model_probability": infer_out['model_probability'],
-        "calibrated_confidence": None,
         "class_probabilities": probs_dict,
+        "raw_logits": infer_out["raw_logits"],
         "review_priority": "HIGH" if triage['referable'] else "NORMAL",
         "recommendation": triage['recommendation'],
         "provenance": MODEL_PROVENANCE,
+        "workflow_status": "AI_COMPLETED",
+        "clinical_decision": "PENDING",
         "analyzed_at": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
     })
+
+@app.route('/api/v1/screenings/<id>/claim', methods=['POST'])
+def api_v1_claim_case(id):
+    """
+    Atomically claims a screening case for an ophthalmologist reviewer to prevent race conditions.
+    """
+    data = request.get_json(silent=True) or request.form or {}
+    reviewer_id = data.get('reviewer_id', 'USR-CLINICIAN-01')
+    reviewer_name = data.get('reviewer_name', 'Dr. Rajesh Kumar')
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    
+    if supabase_client:
+        try:
+            # Check if case is already claimed
+            res = supabase_client.table('screenings').select('assigned_reviewer_id, claimed_at').eq('screening_id', id).maybe_single().execute()
+            if res.data and res.data.get('assigned_reviewer_id') and res.data.get('assigned_reviewer_id') != reviewer_id:
+                return jsonify({
+                    "error": "CASE_ALREADY_CLAIMED",
+                    "message": f"Screening case {id} is already claimed by another reviewer.",
+                    "claimed_by": res.data.get('assigned_reviewer_id')
+                }), 409
+            
+            supabase_client.table('screenings').update({
+                "assigned_reviewer_id": reviewer_id,
+                "claimed_at": now_iso,
+                "status": "OPHTHALMOLOGIST_REVIEW",
+                "updated_at": now_iso
+            }).eq('screening_id', id).execute()
+        except Exception as e:
+            print(f"[Drishti Engine] Supabase claim notice: {e}")
+
+    record = SCREENING_STORE.get(id, {})
+    record["assigned_reviewer_id"] = reviewer_id
+    record["claimed_at"] = now_iso
+    record["status"] = "OPHTHALMOLOGIST_REVIEW"
+    store_case_record(id, record)
+
+    return jsonify({
+        "screening_id": id,
+        "claimed_by": reviewer_id,
+        "reviewer_name": reviewer_name,
+        "claimed_at": now_iso,
+        "status": "OPHTHALMOLOGIST_REVIEW"
+    }), 200
 
 @app.route('/api/v1/screenings/<id>/explainability', methods=['GET'])
 def api_v1_explainability(id):
@@ -2886,7 +2978,29 @@ def api_v1_explainability(id):
         "disclaimer": "Highlighted regions represent areas contributing to the model prediction (Interpretability tool — not a definitive lesion diagnosis)."
     })
 
+@app.route('/api/v1/screenings/<id>/submit_queue', methods=['POST'])
+def api_v1_submit_case_queue(id):
+    """
+    Submits a completed screening from PHC Health Worker for Ophthalmologist review.
+    Moves workflow status to REVIEW_PENDING.
+    """
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    if supabase_client:
+        try:
+            supabase_client.table('screenings').update({
+                "status": "REVIEW_PENDING",
+                "updated_at": now_iso
+            }).eq('screening_id', id).execute()
+        except Exception as e:
+            print(f"[Drishti Engine] Submit queue notice: {e}")
+
+    if id in SCREENING_STORE:
+        SCREENING_STORE[id]['status'] = "REVIEW_PENDING"
+        
+    return jsonify({"success": True, "screening_id": id, "status": "REVIEW_PENDING"}), 200
+
 @app.route('/api/v1/screenings/<id>/review', methods=['POST'])
+@app.route('/api/v1/reviews/<id>/submit', methods=['POST'])
 def api_v1_review(id):
     return api_review_case(id)
 

@@ -55,6 +55,7 @@ class PermissionService {
   }
 
   // Quick helper getters
+  bool get canCreateScreening => role == UserRole.healthWorker || role == UserRole.admin;
   bool get canRegisterPatient => hasPermission(AppPermission.patientRegistration);
   bool get canSubmitCase => hasPermission(AppPermission.submitScreeningCase);
   bool get canAccessReviewQueue => hasPermission(AppPermission.accessReviewQueue);
