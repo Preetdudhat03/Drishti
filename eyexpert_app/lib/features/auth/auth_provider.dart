@@ -226,6 +226,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(clearError: true);
   }
 
+  Future<void> switchWorkspaceRole(UserRole targetRole) async {
+    final current = state.user;
+    if (current == null) return;
+    final isTargetClinician = targetRole == UserRole.clinician;
+    final updated = current.copyWith(
+      role: targetRole,
+      name: isTargetClinician ? 'Dr. Rajesh Mehta' : 'Rajesh Mehta',
+      organization: isTargetClinician ? 'District Eye Hospital' : 'PHC Tele-Screening Unit',
+      facilityId: isTargetClinician ? 'FAC-DISTRICT-EYE' : 'PHC-RAMGARH-01',
+    );
+    try {
+      await _authService.updateUserProfile(updated);
+    } catch (_) {}
+    state = state.copyWith(user: updated);
+  }
+
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, authenticatingMessage: 'Signing out...');
     try {
