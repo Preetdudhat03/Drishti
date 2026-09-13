@@ -36,24 +36,7 @@ class _FundusCaptureScreenState extends ConsumerState<FundusCaptureScreen> {
     _isCaptured = false;
   }
 
-  Future<void> _loadSampleAsset(String assetPath) async {
-    try {
-      final byteData = await rootBundle.load(assetPath);
-      final filename = assetPath.split('/').last;
-      final file = File('${Directory.systemTemp.path}/$filename');
-      await file.writeAsBytes(byteData.buffer.asUint8List());
-      setState(() {
-        _selectedImagePath = file.path;
-        _isCaptured = true;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading sample: $e')),
-        );
-      }
-    }
-  }
+
 
   Future<void> _pickImage(ImageSource source) async {
     try {
