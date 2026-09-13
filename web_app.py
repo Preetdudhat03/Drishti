@@ -451,6 +451,20 @@ def store_case_record(sid, record):
     SCREENING_STORE[sid] = record
     trim_memory()
 
+def safe_extract_metric(data, keys, default=0.9):
+    if not isinstance(data, dict):
+        return default
+    for k in keys:
+        if k in data:
+            val = data[k]
+            if isinstance(val, dict):
+                return safe_extract_metric(val, ['score', 'val', 'value'], default)
+            try:
+                return float(val) if val is not None else default
+            except (ValueError, TypeError):
+                continue
+    return default
+
 def db_save_screening(screening_id, patient_meta, q_result, class_result, orig_b64=None, enhanced_b64=None, cam_b64=None, overlay_b64=None):
     """
     Persists screening session, optical quality metrics, AI prediction, and Grad-CAM explainability
