@@ -5,7 +5,8 @@ import 'verification_document_model.dart';
 enum UserRole {
   healthWorker,
   clinician,
-  admin;
+  admin,
+  unknown;
 
   String get displayName {
     switch (this) {
@@ -15,6 +16,8 @@ enum UserRole {
         return 'Ophthalmologist';
       case UserRole.admin:
         return 'Administrator';
+      case UserRole.unknown:
+        return 'Unknown Role';
     }
   }
 
@@ -26,21 +29,38 @@ enum UserRole {
         return 'OPHTHALMOLOGIST';
       case UserRole.admin:
         return 'ADMIN';
+      case UserRole.unknown:
+        return 'UNKNOWN';
     }
   }
 
   static UserRole fromString(String? role) {
-    if (role == null) return UserRole.healthWorker;
+    if (role == null) return UserRole.unknown;
     final normalized = role.trim().toUpperCase();
+    if (normalized.isEmpty) return UserRole.unknown;
+
     if (normalized.contains('CLINICIAN') ||
         normalized.contains('OPHTHALMOLOGIST') ||
-        normalized == 'DOCTOR') {
+        normalized == 'DOCTOR' ||
+        normalized.contains('SPECIALIST') ||
+        normalized.contains('SURGEON') ||
+        normalized.contains('RETINA')) {
       return UserRole.clinician;
     }
     if (normalized.contains('ADMIN')) {
       return UserRole.admin;
     }
-    return UserRole.healthWorker;
+    if (normalized.contains('HEALTH_WORKER') ||
+        normalized.contains('PHC_WORKER') ||
+        normalized.contains('HEALTH WORKER') ||
+        normalized.contains('PHC WORKER') ||
+        normalized.contains('NURSE') ||
+        normalized.contains('ASHA') ||
+        normalized.contains('OPERATOR') ||
+        normalized == 'HW') {
+      return UserRole.healthWorker;
+    }
+    return UserRole.unknown;
   }
 }
 
