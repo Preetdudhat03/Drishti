@@ -26,15 +26,16 @@ class PermissionService {
 
   const PermissionService(this.user);
 
-  UserRole get role => user?.role ?? UserRole.healthWorker;
+  UserRole get role => user?.role ?? UserRole.unknown;
 
   bool hasPermission(AppPermission permission) {
-    if (user == null) return false;
+    if (user == null || role == UserRole.unknown) return false;
 
     switch (permission) {
       case AppPermission.login:
-      case AppPermission.viewAiResult:
         return true;
+      case AppPermission.viewAiResult:
+        return role == UserRole.healthWorker || role == UserRole.clinician || role == UserRole.admin;
 
       // PHC Health Worker Actions (Ophthalmologists strictly excluded)
       case AppPermission.patientRegistration:
