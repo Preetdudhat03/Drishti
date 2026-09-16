@@ -135,5 +135,50 @@ void main() {
       expect(find.text('New Intake'), findsNothing);
       expect(find.text('New Screening'), findsNothing);
     });
+
+    testWidgets('RootScreen renders Access Denied screen for UserRole.unknown (Fail Closed)', (tester) async {
+      const unknownUser = UserModel(
+        id: 'USR-UNKN-999',
+        name: 'Unverified Guest',
+        email: 'guest@unknown.org',
+        role: UserRole.unknown,
+        organization: 'Unknown Org',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authProvider.overrideWith((ref) {
+              final notifier = AuthNotifier(AuthService());
+              notifier.state = const AuthState(
+                user: unknownUser,
+              );
+              return notifier;
+            }),
+            connectionProvider.overrideWith((ref) => ConnectionNotifier(enablePeriodicTimer: false)),
+          ],
+          child: const MaterialApp(
+            home: ResponsiveScaffold(
+              currentIndex: 0,
+              onNavigationIndexChanged: _dummyNavHandler,
+              title: 'Unknown Workspace',
+              currentUser: unknownUser,
+              body: Center(child: Text('Access Denied — Unrecognized Role')),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify Access Denied banner is displayed
+      expect(find.text('Access Denied — Unrecognized Role'), findsOneWidget);
+
+      // Verify no PHC or Clinician destinations
+      expect(find.text('Review Queue'), findsNothing);
+      expect(find.text('New Intake'), findsNothing);
+    });
   });
 }
+
+void _dummyNavHandler(int _) {}
