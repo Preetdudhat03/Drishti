@@ -19,7 +19,7 @@ void main() {
       expect(UserRole.fromString('Clinician'), UserRole.clinician);
       expect(UserRole.fromString('Doctor'), UserRole.clinician);
       expect(UserRole.fromString('ADMIN'), UserRole.admin);
-      expect(UserRole.fromString(null), UserRole.healthWorker);
+      expect(UserRole.fromString(null), UserRole.unknown);
     });
 
     test('UserModel JSON serialization & deserialization', () {
