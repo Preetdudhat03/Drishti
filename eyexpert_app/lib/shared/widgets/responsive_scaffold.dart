@@ -59,27 +59,37 @@ class ResponsiveScaffold extends ConsumerWidget {
       ];
     }
 
+    if (role == UserRole.healthWorker || role == UserRole.admin) {
+      return const [
+        NavigationDestination(
+          icon: Icon(Icons.space_dashboard_outlined),
+          selectedIcon: Icon(Icons.space_dashboard_rounded),
+          label: 'Dashboard',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.camera_enhance_outlined),
+          selectedIcon: Icon(Icons.camera_enhance_rounded),
+          label: 'New Intake',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.folder_shared_outlined),
+          selectedIcon: Icon(Icons.folder_shared_rounded),
+          label: 'Patients',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.sync_rounded),
+          selectedIcon: Icon(Icons.sync_rounded),
+          label: 'Rural Sync',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person_rounded),
+          label: 'Profile',
+        ),
+      ];
+    }
+
     return const [
-      NavigationDestination(
-        icon: Icon(Icons.space_dashboard_outlined),
-        selectedIcon: Icon(Icons.space_dashboard_rounded),
-        label: 'Dashboard',
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.camera_enhance_outlined),
-        selectedIcon: Icon(Icons.camera_enhance_rounded),
-        label: 'New Intake',
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.folder_shared_outlined),
-        selectedIcon: Icon(Icons.folder_shared_rounded),
-        label: 'Patients',
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.sync_rounded),
-        selectedIcon: Icon(Icons.sync_rounded),
-        label: 'Rural Sync',
-      ),
       NavigationDestination(
         icon: Icon(Icons.person_outline),
         selectedIcon: Icon(Icons.person_rounded),
