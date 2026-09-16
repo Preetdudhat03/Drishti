@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_colors.dart';
 import 'core/constants/app_constants.dart';
 import 'core/permissions/permission_service.dart';
 import 'data/models/user_model.dart';
 import 'data/models/screening_case_model.dart';
 import 'data/services/supabase_service.dart';
 import 'shared/widgets/responsive_scaffold.dart';
+import 'shared/widgets/pill_button.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
@@ -63,6 +65,10 @@ class _RootScreenState extends ConsumerState<RootScreen> {
   int _navIndex = 0;
   bool _showOnboarding = false;
 
+  // Track authenticated user context to detect login/logout/switch and prevent state leakage
+  String? _lastUserId;
+  UserRole? _lastUserRole;
+
   // Screening sub-flow state for Health Worker
   // 0: Intake, 1: Capture, 2: Quality, 3: Processing, 4: Result, 5: Explainability, 6: Report
   int _screeningStep = 0;
@@ -76,6 +82,75 @@ class _RootScreenState extends ConsumerState<RootScreen> {
       _screeningStep = 0;
     });
     ref.read(screeningSessionProvider.notifier).resetSession();
+  }
+
+  Widget _buildUnknownRoleScreen(BuildContext context, UserModel user) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(32),
+          constraints: const BoxConstraints(maxWidth: 480),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.red.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.lock_outline_rounded, size: 36, color: Colors.red.shade700),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Access Denied — Unrecognized Role',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                  letterSpacing: -0.3,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'The role assigned to account "${user.email.isNotEmpty ? user.email : user.id}" is not recognized or lacks required permissions.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: Colors.grey.shade700,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              PillButton(
+                label: 'Sign Out & Return to Login',
+                icon: Icons.logout_rounded,
+                width: double.infinity,
+                onPressed: () {
+                  ref.read(authProvider.notifier).logout();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAccessRestrictedBanner(BuildContext context) {
@@ -140,6 +215,16 @@ class _RootScreenState extends ConsumerState<RootScreen> {
     final authState = ref.watch(authProvider);
     final user = authState.user;
 
+    // Detect session logout/login/switch and reset workspace state
+    if (user?.id != _lastUserId || user?.role != _lastUserRole) {
+      _lastUserId = user?.id;
+      _lastUserRole = user?.role;
+      _navIndex = 0;
+      _screeningStep = 0;
+      _activeCaseReview = null;
+      _activeReportView = null;
+    }
+
     // 1. If not authenticated, display Onboarding or LoginScreen
     if (!authState.isAuthenticated || user == null) {
       if (_showOnboarding) {
@@ -150,6 +235,11 @@ class _RootScreenState extends ConsumerState<RootScreen> {
       return LoginScreen(
         onOpenOnboarding: () => setState(() => _showOnboarding = true),
       );
+    }
+
+    // 2. Handle Unknown / Unmapped Roles (Fail Closed)
+    if (user.role == UserRole.unknown) {
+      return _buildUnknownRoleScreen(context, user);
     }
 
     final permissions = PermissionService(user);
