@@ -8,6 +8,7 @@ import 'package:drishti_app/shared/widgets/responsive_scaffold.dart';
 import 'package:drishti_app/features/dashboard/ophthalmologist_dashboard.dart';
 import 'package:drishti_app/features/dashboard/health_worker_dashboard.dart';
 import 'package:drishti_app/core/network/connection_provider.dart';
+import 'package:drishti_app/main.dart';
 
 void main() {
   group('Role-Based Navigation & UI Separation Tests', () {
@@ -28,6 +29,14 @@ void main() {
       role: UserRole.healthWorker,
       organization: 'PHC Ramgarh',
       facilityId: 'PHC-RAMGARH-01',
+    );
+
+    const unknownUser = UserModel(
+      id: 'USR-UNKN-999',
+      name: 'Unverified Guest',
+      email: 'guest@unknown.org',
+      role: UserRole.unknown,
+      organization: 'Unknown Org',
     );
 
     testWidgets('Ophthalmologist ResponsiveScaffold contains ZERO intake/screening creation triggers', (tester) async {
@@ -123,7 +132,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // Verify primary CTA is reviewing cases
       expect(find.textContaining('REVIEW NEXT CASE'), findsOneWidget);
@@ -137,14 +146,6 @@ void main() {
     });
 
     testWidgets('RootScreen renders Access Denied screen for UserRole.unknown (Fail Closed)', (tester) async {
-      const unknownUser = UserModel(
-        id: 'USR-UNKN-999',
-        name: 'Unverified Guest',
-        email: 'guest@unknown.org',
-        role: UserRole.unknown,
-        organization: 'Unknown Org',
-      );
-
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -158,27 +159,77 @@ void main() {
             connectionProvider.overrideWith((ref) => ConnectionNotifier(enablePeriodicTimer: false)),
           ],
           child: const MaterialApp(
-            home: ResponsiveScaffold(
-              currentIndex: 0,
-              onNavigationIndexChanged: _dummyNavHandler,
-              title: 'Unknown Workspace',
-              currentUser: unknownUser,
-              body: Center(child: Text('Access Denied — Unrecognized Role')),
-            ),
+            home: RootScreen(),
           ),
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // Verify Access Denied banner is displayed
       expect(find.text('Access Denied — Unrecognized Role'), findsOneWidget);
+      expect(find.text('Sign Out & Return to Login'), findsOneWidget);
 
-      // Verify no PHC or Clinician destinations
-      expect(find.text('Review Queue'), findsNothing);
-      expect(find.text('New Intake'), findsNothing);
+      // Verify neither PHC nor Clinician workspace is rendered
+      expect(find.text('+ START NEW SCREENING'), findsNothing);
+      expect(find.text('Priority Review Queue'), findsNothing);
+    });
+
+    testWidgets('RootScreen renders PHC Screening Workspace for Health Worker', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authProvider.overrideWith((ref) {
+              final notifier = AuthNotifier(AuthService());
+              notifier.state = const AuthState(
+                user: healthWorkerUser,
+              );
+              return notifier;
+            }),
+            connectionProvider.overrideWith((ref) => ConnectionNotifier(enablePeriodicTimer: false)),
+          ],
+          child: const MaterialApp(
+            home: RootScreen(),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      // Verify PHC primary actions are present
+      expect(find.text('+ START NEW SCREENING'), findsOneWidget);
+      expect(find.text('Screening Dashboard'), findsWidgets);
+
+      // Verify Clinician review queue is absent
+      expect(find.text('Priority Review Queue'), findsNothing);
+    });
+
+    testWidgets('RootScreen renders Ophthalmologist Workspace for Clinician', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authProvider.overrideWith((ref) {
+              final notifier = AuthNotifier(AuthService());
+              notifier.state = const AuthState(
+                user: ophthalmologistUser,
+              );
+              return notifier;
+            }),
+            connectionProvider.overrideWith((ref) => ConnectionNotifier(enablePeriodicTimer: false)),
+          ],
+          child: const MaterialApp(
+            home: RootScreen(),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      // Verify Clinician workspace header is present
+      expect(find.text('Priority Review Queue'), findsWidgets);
+
+      // Verify PHC new screening button is NOT present
+      expect(find.text('+ START NEW SCREENING'), findsNothing);
     });
   });
 }
-
-void _dummyNavHandler(int _) {}
