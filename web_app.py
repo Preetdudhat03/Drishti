@@ -2427,13 +2427,13 @@ def api_review_case(id):
         request.headers.get('X-User-Role') or 
         data.get('reviewer_role') or 
         data.get('role') or 
-        'OPHTHALMOLOGIST'
+        ''
     ).strip().upper()
 
-    if actor_role in ('HEALTH_WORKER', 'PHC_WORKER', 'NURSE'):
+    if actor_role in ('HEALTH_WORKER', 'PHC_WORKER', 'NURSE', 'ASHA', 'OPERATOR', 'HW') or actor_role == 'UNKNOWN':
         return jsonify({
             "error": "ROLE_NOT_PERMITTED",
-            "message": "PHC Health Workers cannot validate, override, or finalize clinical diagnoses. Clinical decisions must be signed off by a qualified Ophthalmologist.",
+            "message": "PHC Health Workers and unverified roles cannot validate, override, or finalize clinical diagnoses. Clinical decisions must be signed off by a qualified Ophthalmologist.",
             "role": actor_role
         }), 403
 
