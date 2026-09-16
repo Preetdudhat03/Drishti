@@ -109,32 +109,32 @@ void main() {
       expect(permissions.hasPermission(AppPermission.login), isFalse);
     });
 
-    test('UserModel.fromString strict mapping and fail-closed resolution', () {
+    test('UserRole.fromString strict mapping and fail-closed resolution', () {
       // Clinician mappings
-      expect(UserModel.fromString('CLINICIAN'), equals(UserRole.clinician));
-      expect(UserModel.fromString('Ophthalmologist'), equals(UserRole.clinician));
-      expect(UserModel.fromString('Doctor'), equals(UserRole.clinician));
-      expect(UserModel.fromString('Retina Specialist'), equals(UserRole.clinician));
-      expect(UserModel.fromString('Eye Surgeon'), equals(UserRole.clinician));
+      expect(UserRole.fromString('CLINICIAN'), equals(UserRole.clinician));
+      expect(UserRole.fromString('Ophthalmologist'), equals(UserRole.clinician));
+      expect(UserRole.fromString('Doctor'), equals(UserRole.clinician));
+      expect(UserRole.fromString('Retina Specialist'), equals(UserRole.clinician));
+      expect(UserRole.fromString('Eye Surgeon'), equals(UserRole.clinician));
 
       // Health Worker mappings
-      expect(UserModel.fromString('HEALTH_WORKER'), equals(UserRole.healthWorker));
-      expect(UserModel.fromString('phc_worker'), equals(UserRole.healthWorker));
-      expect(UserModel.fromString('PHC Worker'), equals(UserRole.healthWorker));
-      expect(UserModel.fromString('Nurse'), equals(UserRole.healthWorker));
-      expect(UserModel.fromString('ASHA'), equals(UserRole.healthWorker));
-      expect(UserModel.fromString('Operator'), equals(UserRole.healthWorker));
+      expect(UserRole.fromString('HEALTH_WORKER'), equals(UserRole.healthWorker));
+      expect(UserRole.fromString('phc_worker'), equals(UserRole.healthWorker));
+      expect(UserRole.fromString('PHC Worker'), equals(UserRole.healthWorker));
+      expect(UserRole.fromString('Nurse'), equals(UserRole.healthWorker));
+      expect(UserRole.fromString('ASHA'), equals(UserRole.healthWorker));
+      expect(UserRole.fromString('Operator'), equals(UserRole.healthWorker));
 
       // Admin mappings
-      expect(UserModel.fromString('ADMIN'), equals(UserRole.admin));
-      expect(UserModel.fromString('Administrator'), equals(UserRole.admin));
+      expect(UserRole.fromString('ADMIN'), equals(UserRole.admin));
+      expect(UserRole.fromString('Administrator'), equals(UserRole.admin));
 
       // Fail closed / Unknown mappings
-      expect(UserModel.fromString(null), equals(UserRole.unknown));
-      expect(UserModel.fromString(''), equals(UserRole.unknown));
-      expect(UserModel.fromString('GUEST'), equals(UserRole.unknown));
-      expect(UserModel.fromString('PATIENT'), equals(UserRole.unknown));
-      expect(UserModel.fromString('RANDOM_STRING_123'), equals(UserRole.unknown));
+      expect(UserRole.fromString(null), equals(UserRole.unknown));
+      expect(UserRole.fromString(''), equals(UserRole.unknown));
+      expect(UserRole.fromString('GUEST'), equals(UserRole.unknown));
+      expect(UserRole.fromString('PATIENT'), equals(UserRole.unknown));
+      expect(UserRole.fromString('RANDOM_STRING_123'), equals(UserRole.unknown));
     });
   });
 }
