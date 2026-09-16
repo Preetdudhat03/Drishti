@@ -67,6 +67,72 @@ void main() {
       expect(permissions.canTriggerAiScreening, isFalse);
       expect(permissions.canRegisterPatient, isFalse);
       expect(permissions.canSubmitCase, isFalse);
+    const unknownUser = UserModel(
+      id: 'UNKN-001',
+      name: 'Unknown Operator',
+      role: UserRole.unknown,
+      organization: 'Unverified Center',
+      facilityId: 'UNKN-01',
+    );
+
+    test('Unknown / Unverified Role permissions (Fail Closed)', () {
+      const permissions = PermissionService(unknownUser);
+
+      // Verify fail-closed behavior: NO permissions granted
+      expect(permissions.canCreateScreening, isFalse);
+      expect(permissions.canCaptureFundus, isFalse);
+      expect(permissions.canRunQualityCheck, isFalse);
+      expect(permissions.canTriggerAiScreening, isFalse);
+      expect(permissions.canRegisterPatient, isFalse);
+      expect(permissions.canSubmitCase, isFalse);
+
+      expect(permissions.canAccessReviewQueue, isFalse);
+      expect(permissions.canClaimCase, isFalse);
+      expect(permissions.canViewGradCam, isFalse);
+      expect(permissions.canValidateAi, isFalse);
+      expect(permissions.canOverrideDrLevel, isFalse);
+      expect(permissions.canMakeFinalDecision, isFalse);
+      expect(permissions.canFinalizeReport, isFalse);
+      expect(permissions.canViewAllReports, isFalse);
+
+      expect(permissions.hasPermission(AppPermission.login), isFalse);
+      expect(permissions.hasPermission(AppPermission.systemAdministration), isFalse);
+    });
+
+    test('Null User permissions evaluate to false', () {
+      const permissions = PermissionService(null);
+      expect(permissions.role, equals(UserRole.unknown));
+      expect(permissions.canCreateScreening, isFalse);
+      expect(permissions.canAccessReviewQueue, isFalse);
+      expect(permissions.hasPermission(AppPermission.login), isFalse);
+    });
+
+    test('UserModel.fromString strict mapping and fail-closed resolution', () {
+      // Clinician mappings
+      expect(UserModel.fromString('CLINICIAN'), equals(UserRole.clinician));
+      expect(UserModel.fromString('Ophthalmologist'), equals(UserRole.clinician));
+      expect(UserModel.fromString('Doctor'), equals(UserRole.clinician));
+      expect(UserModel.fromString('Retina Specialist'), equals(UserRole.clinician));
+      expect(UserModel.fromString('Eye Surgeon'), equals(UserRole.clinician));
+
+      // Health Worker mappings
+      expect(UserModel.fromString('HEALTH_WORKER'), equals(UserRole.healthWorker));
+      expect(UserModel.fromString('phc_worker'), equals(UserRole.healthWorker));
+      expect(UserModel.fromString('PHC Worker'), equals(UserRole.healthWorker));
+      expect(UserModel.fromString('Nurse'), equals(UserRole.healthWorker));
+      expect(UserModel.fromString('ASHA'), equals(UserRole.healthWorker));
+      expect(UserModel.fromString('Operator'), equals(UserRole.healthWorker));
+
+      // Admin mappings
+      expect(UserModel.fromString('ADMIN'), equals(UserRole.admin));
+      expect(UserModel.fromString('Administrator'), equals(UserRole.admin));
+
+      // Fail closed / Unknown mappings
+      expect(UserModel.fromString(null), equals(UserRole.unknown));
+      expect(UserModel.fromString(''), equals(UserRole.unknown));
+      expect(UserModel.fromString('GUEST'), equals(UserRole.unknown));
+      expect(UserModel.fromString('PATIENT'), equals(UserRole.unknown));
+      expect(UserModel.fromString('RANDOM_STRING_123'), equals(UserRole.unknown));
     });
   });
 }
