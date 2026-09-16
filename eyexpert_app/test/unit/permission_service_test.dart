@@ -67,6 +67,8 @@ void main() {
       expect(permissions.canTriggerAiScreening, isFalse);
       expect(permissions.canRegisterPatient, isFalse);
       expect(permissions.canSubmitCase, isFalse);
+    });
+
     const unknownUser = UserModel(
       id: 'UNKN-001',
       name: 'Unknown Operator',
