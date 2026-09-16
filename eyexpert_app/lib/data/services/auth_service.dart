@@ -39,15 +39,8 @@ class AuthService {
       );
     }
 
-    // Infer role from email if user used clinician email patterns
-    var effectiveRole = roleRequested;
-    final lowerEmail = trimmedEmail.toLowerCase();
-    if (lowerEmail.contains('ophthalmologist') ||
-        lowerEmail.contains('doctor') ||
-        lowerEmail.contains('clinician') ||
-        lowerEmail.contains('retinaspecialist')) {
-      effectiveRole = UserRole.clinician;
-    }
+    // Role is strictly derived from verified profile in Supabase/backend database
+    final effectiveRole = roleRequested;
 
     // -------------------------------------------------------------
     // 2. Production Supabase Authentication Layer
@@ -79,7 +72,7 @@ class AuthService {
               UserModel(
                 id: supaUser.id,
                 email: supaUser.email ?? trimmedEmail,
-                name: supaUser.userMetadata?['full_name'] ?? (effectiveRole == UserRole.clinician ? 'Dr. Rajesh Mehta' : 'Rajesh Mehta'),
+                name: supaUser.userMetadata?['full_name'] ?? (effectiveRole == UserRole.clinician ? 'Dr. Rajesh Mehta' : (effectiveRole == UserRole.healthWorker ? 'Sunita Sharma' : 'Clinical User')),
                 role: effectiveRole,
                 organization: supaUser.userMetadata?['facility_id'] ?? (effectiveRole == UserRole.clinician ? 'District Eye Hospital' : 'PHC Tele-Screening Unit'),
                 facilityId: supaUser.userMetadata?['facility_id'] ?? (effectiveRole == UserRole.clinician ? 'FAC-DISTRICT-EYE' : 'PHC-RAMGARH-01'),
