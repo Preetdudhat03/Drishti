@@ -2669,31 +2669,56 @@ def api_v1_login():
     data = request.get_json(silent=True) or request.form or {}
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
-    role_req = data.get('role_requested', 'HEALTH_WORKER').upper()
+    role_req = data.get('role_requested', '').strip().upper()
 
-    user_name = "Sunita Sharma"
-    user_role = "healthWorker"
-    user_id = "USR-2026-HW01"
+    user_name = "User"
+    user_role = "unknown"
+    user_id = f"USR-2026-{uuid.uuid4().hex[:6].upper()}"
     facility = "PHC-RAMGARH-01"
 
     # Match user profile against Supabase profiles if connected
+    prof_found = False
     if supabase_client and username:
         try:
             prof = supabase_client.table('profiles').select('*').eq('email', username).maybe_single().execute()
             if prof.data:
-                user_name = prof.data.get('name', user_name)
-                role_db = prof.data.get('role', '')
-                user_role = 'clinician' if 'Clinician' in role_db or 'Ophthalmologist' in role_db else ('administrator' if 'Admin' in role_db else 'healthWorker')
+                prof_found = True
+                user_name = prof.data.get('name') or prof.data.get('full_name', 'Medical Staff')
+                role_db = (prof.data.get('role') or '').upper()
+                if any(x in role_db for x in ('CLINICIAN', 'OPHTHALMOLOGIST', 'DOCTOR', 'SPECIALIST', 'SURGEON')):
+                    user_role = 'clinician'
+                elif 'ADMIN' in role_db:
+                    user_role = 'admin'
+                elif any(x in role_db for x in ('HEALTH_WORKER', 'PHC_WORKER', 'NURSE', 'ASHA', 'OPERATOR')):
+                    user_role = 'healthWorker'
+                else:
+                    user_role = 'unknown'
                 user_id = prof.data.get('id', user_id)
                 facility = prof.data.get('facility_id', facility)
         except Exception as e:
             print(f"[Drishti Engine] Supabase profile query notice: {e}")
 
-    if 'clinician' in username.lower() or 'ophthalmologist' in role_req or 'CLINICIAN' in role_req:
-        user_role = 'clinician'
-        user_name = 'Dr. Rajesh Kumar'
-        user_id = 'USR-2026-CLIN01'
-        facility = 'DISTRICT-EYE-HOSPITAL'
+    if not prof_found:
+        if any(x in role_req for x in ('CLINICIAN', 'OPHTHALMOLOGIST', 'DOCTOR', 'SPECIALIST', 'SURGEON')):
+            user_role = 'clinician'
+            user_name = 'Dr. Rajesh Kumar'
+            user_id = 'USR-2026-CLIN01'
+            facility = 'DISTRICT-EYE-HOSPITAL'
+        elif any(x in role_req for x in ('HEALTH_WORKER', 'PHC_WORKER', 'NURSE', 'ASHA', 'OPERATOR')):
+            user_role = 'healthWorker'
+            user_name = 'Sunita Sharma'
+            user_id = 'USR-2026-HW01'
+            facility = 'PHC-RAMGARH-01'
+        elif 'ADMIN' in role_req:
+            user_role = 'admin'
+            user_name = 'Administrator'
+            user_id = 'USR-2026-ADM01'
+            facility = 'HQ-ADMIN-01'
+        else:
+            user_role = 'unknown'
+            user_name = 'Unverified User'
+            user_id = 'USR-2026-UNKN01'
+            facility = 'UNASSIGNED'
 
     token = f"drishti_jwt_{uuid.uuid4().hex}"
 
@@ -2732,13 +2757,13 @@ def api_v1_create_screening():
         request.headers.get('X-User-Role') or 
         body.get('user_role') or 
         body.get('role') or 
-        'HEALTH_WORKER'
+        ''
     ).strip().upper()
 
-    if actor_role in ('OPHTHALMOLOGIST', 'CLINICIAN', 'SPECIALIST'):
+    if actor_role in ('OPHTHALMOLOGIST', 'CLINICIAN', 'SPECIALIST', 'DOCTOR', 'SURGEON', 'RETINA') or actor_role == 'UNKNOWN':
         return jsonify({
             "error": "ROLE_NOT_PERMITTED",
-            "message": "Ophthalmologists and Clinicians cannot initiate primary screenings. Screening intake is strictly reserved for PHC Health Workers and Nurses.",
+            "message": "Ophthalmologists, Clinicians, and unverified roles cannot initiate primary screenings. Screening intake is strictly reserved for PHC Health Workers and Nurses.",
             "role": actor_role
         }), 403
 
