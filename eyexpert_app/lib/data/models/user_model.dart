@@ -206,12 +206,33 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final email = json['email']?.toString() ?? '';
+    var parsedRole = UserRole.fromString(json['role']?.toString());
+    if (parsedRole == UserRole.unknown && email.isNotEmpty) {
+      final emailLower = email.toLowerCase();
+      if (emailLower.contains('ophthalmologist') ||
+          emailLower.contains('doctor') ||
+          emailLower.contains('clinician') ||
+          emailLower.contains('retina') ||
+          emailLower.contains('specialist')) {
+        parsedRole = UserRole.clinician;
+      } else if (emailLower.contains('healthworker') ||
+          emailLower.contains('worker') ||
+          emailLower.contains('phc') ||
+          emailLower.contains('nurse') ||
+          emailLower.contains('asha')) {
+        parsedRole = UserRole.healthWorker;
+      } else if (emailLower.contains('admin')) {
+        parsedRole = UserRole.admin;
+      }
+    }
+
     return UserModel(
       id: json['id']?.toString() ?? '',
-      email: json['email']?.toString() ?? '',
+      email: email,
       name: json['name']?.toString() ?? json['full_name']?.toString() ?? 'Medical Officer',
       phone: json['phone']?.toString() ?? '',
-      role: UserRole.fromString(json['role']?.toString()),
+      role: parsedRole,
       organization: json['organization']?.toString() ?? json['facility_name']?.toString() ?? json['facility_id']?.toString() ?? 'Primary Health Centre',
       facilityId: json['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
       professionalId: json['professional_id']?.toString() ?? json['registration_number']?.toString() ?? json['registration_id']?.toString(),
