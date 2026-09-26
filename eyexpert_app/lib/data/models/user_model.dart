@@ -36,27 +36,38 @@ enum UserRole {
 
   static UserRole fromString(String? role) {
     if (role == null) return UserRole.unknown;
-    final normalized = role.trim().toUpperCase();
-    if (normalized.isEmpty) return UserRole.unknown;
+    final raw = role.trim().toUpperCase();
+    if (raw.isEmpty) return UserRole.unknown;
+
+    final normalized = raw.replaceAll('_', '').replaceAll(' ', '').replaceAll('/', '').replaceAll('-', '');
 
     if (normalized.contains('CLINICIAN') ||
         normalized.contains('OPHTHALMOLOGIST') ||
-        normalized == 'DOCTOR' ||
+        normalized.contains('OPHTHALMOLOGY') ||
+        normalized.contains('DOCTOR') ||
+        normalized.contains('PHYSICIAN') ||
         normalized.contains('SPECIALIST') ||
         normalized.contains('SURGEON') ||
-        normalized.contains('RETINA')) {
+        normalized.contains('RETINA') ||
+        normalized.contains('OPTOMETR') ||
+        normalized == 'DR') {
       return UserRole.clinician;
     }
-    if (normalized.contains('ADMIN')) {
+    if (normalized.contains('ADMIN') ||
+        normalized.contains('SUPERUSER') ||
+        normalized.contains('ROOT')) {
       return UserRole.admin;
     }
-    if (normalized.contains('HEALTH_WORKER') ||
-        normalized.contains('PHC_WORKER') ||
-        normalized.contains('HEALTH WORKER') ||
-        normalized.contains('PHC WORKER') ||
+    if (normalized.contains('HEALTHWORKER') ||
+        normalized.contains('PHCWORKER') ||
+        normalized.contains('HEALTH') ||
+        normalized.contains('WORKER') ||
+        normalized.contains('PHC') ||
         normalized.contains('NURSE') ||
         normalized.contains('ASHA') ||
         normalized.contains('OPERATOR') ||
+        normalized.contains('SCREENER') ||
+        normalized.contains('CHW') ||
         normalized == 'HW') {
       return UserRole.healthWorker;
     }
