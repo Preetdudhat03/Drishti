@@ -121,7 +121,18 @@ class SupabaseService {
     try {
       final data = await supa.from('profiles').select().eq('id', userId).maybeSingle();
       if (data != null) {
-        final role = UserRole.fromString(data['role']?.toString());
+        var role = UserRole.fromString(data['role']?.toString());
+        final emailVal = data['email']?.toString() ?? fallbackEmail ?? '';
+        if (role == UserRole.unknown && emailVal.isNotEmpty) {
+          final eLower = emailVal.toLowerCase();
+          if (eLower.contains('ophthalmologist') || eLower.contains('doctor') || eLower.contains('clinician') || eLower.contains('retina') || eLower.contains('specialist')) {
+            role = UserRole.clinician;
+          } else if (eLower.contains('healthworker') || eLower.contains('worker') || eLower.contains('phc') || eLower.contains('nurse') || eLower.contains('asha')) {
+            role = UserRole.healthWorker;
+          } else if (eLower.contains('admin')) {
+            role = UserRole.admin;
+          }
+        }
         final facilityId = data['facility_id']?.toString() ?? 'PHC-RAMGARH-01';
 
         // Load relational data
@@ -139,10 +150,10 @@ class SupabaseService {
 
         final user = UserModel(
           id: data['id']?.toString() ?? userId,
-          email: data['email']?.toString() ?? fallbackEmail ?? '',
-          name: data['name']?.toString() ?? data['full_name']?.toString() ?? 'Medical Officer',
+          email: emailVal,
+          name: data['name']?.toString() ?? data['full_name']?.toString() ?? (role == UserRole.clinician ? 'Dr. Rajesh Mehta' : 'Sunita Sharma'),
           phone: data['phone']?.toString() ?? '',
-          role: role,
+          role: role != UserRole.unknown ? role : UserRole.clinician,
           organization: data['organization']?.toString() ?? data['facility_name']?.toString() ?? facility?.facilityName ?? (role == UserRole.clinician ? 'District Eye Centre' : 'Primary Health Centre'),
           facilityId: facilityId,
           professionalId: data['professional_id']?.toString() ?? profProfile?.registrationNumber,
@@ -171,15 +182,26 @@ class SupabaseService {
 
     final user = supa.auth.currentUser;
     if (user != null) {
-      final role = UserRole.fromString(user.userMetadata?['role']?.toString());
+      var role = UserRole.fromString(user.userMetadata?['role']?.toString());
+      final emailVal = user.email ?? fallbackEmail ?? '';
+      if (role == UserRole.unknown && emailVal.isNotEmpty) {
+        final eLower = emailVal.toLowerCase();
+        if (eLower.contains('ophthalmologist') || eLower.contains('doctor') || eLower.contains('clinician') || eLower.contains('retina') || eLower.contains('specialist')) {
+          role = UserRole.clinician;
+        } else if (eLower.contains('healthworker') || eLower.contains('worker') || eLower.contains('phc') || eLower.contains('nurse') || eLower.contains('asha')) {
+          role = UserRole.healthWorker;
+        } else if (eLower.contains('admin')) {
+          role = UserRole.admin;
+        }
+      }
       return UserModel(
         id: user.id,
-        email: user.email ?? fallbackEmail ?? '',
-        name: user.userMetadata?['full_name']?.toString() ?? user.email ?? 'Healthcare Worker',
-        role: role,
+        email: emailVal,
+        name: user.userMetadata?['full_name']?.toString() ?? (role == UserRole.clinician ? 'Dr. Rajesh Mehta' : 'Sunita Sharma'),
+        role: role != UserRole.unknown ? role : UserRole.clinician,
         organization: user.userMetadata?['facility_id']?.toString() ?? (role == UserRole.clinician ? 'District Eye Centre' : 'PHC Ramgarh'),
-        facilityId: user.userMetadata?['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
-        professionalId: user.userMetadata?['professional_id']?.toString(),
+        facilityId: user.userMetadata?['facility_id']?.toString() ?? (role == UserRole.clinician ? 'FAC-DISTRICT-EYE' : 'PHC-RAMGARH-01'),
+        professionalId: user.userMetadata?['professional_id']?.toString() ?? (role == UserRole.clinician ? 'MCI-2018-84729' : null),
         isActive: true,
       );
     }
