@@ -193,30 +193,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: InkWell(
                       onTap: _fillDoctorDemo,
                       borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 9),
                         decoration: BoxDecoration(
                           color: _selectedRole == UserRole.clinician
                               ? Colors.white
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _selectedRole == UserRole.clinician
+                                ? AppColors.accent
+                                : Colors.transparent,
+                            width: 1.2,
+                          ),
                           boxShadow: _selectedRole == UserRole.clinician
                               ? [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
+                                    color: AppColors.accent.withValues(alpha: 0.12),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
                                   ),
                                 ]
                               : null,
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             '👨‍⚕️ Ophthalmologist',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: _selectedRole == UserRole.clinician
+                                  ? AppColors.accent
+                                  : AppColors.textPrimary,
                             ),
                           ),
                         ),
@@ -228,30 +237,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: InkWell(
                       onTap: _fillWorkerDemo,
                       borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 9),
                         decoration: BoxDecoration(
                           color: _selectedRole == UserRole.healthWorker
                               ? Colors.white
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _selectedRole == UserRole.healthWorker
+                                ? AppColors.primary
+                                : Colors.transparent,
+                            width: 1.2,
+                          ),
                           boxShadow: _selectedRole == UserRole.healthWorker
                               ? [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
+                                    color: AppColors.primary.withValues(alpha: 0.12),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
                                   ),
                                 ]
                               : null,
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             '🩺 Health Worker',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: _selectedRole == UserRole.healthWorker
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary,
                             ),
                           ),
                         ),

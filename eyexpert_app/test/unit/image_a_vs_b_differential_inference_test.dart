@@ -127,7 +127,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // UI must show Level 0 / Normal / Non-referable
-      expect(find.textContaining('AI PRELIMINARY ASSESSMENT'), findsOneWidget);
+      expect(find.textContaining('AI DECISION SUPPORT'), findsOneWidget);
       expect(find.textContaining('Level 0'), findsWidgets);
       expect(find.textContaining('SUBMIT FOR OPHTHALMOLOGIST REVIEW'), findsOneWidget);
     });
@@ -160,7 +160,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // UI must show Level 3 / Severe NPDR / Referable
-      expect(find.textContaining('AI PRELIMINARY ASSESSMENT'), findsOneWidget);
+      expect(find.textContaining('AI DECISION SUPPORT'), findsOneWidget);
       expect(find.textContaining('Level 3'), findsWidgets);
       expect(find.textContaining('SUBMIT FOR OPHTHALMOLOGIST REVIEW'), findsOneWidget);
     });

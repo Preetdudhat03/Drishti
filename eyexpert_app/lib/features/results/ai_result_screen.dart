@@ -144,7 +144,7 @@ class _AiResultScreenState extends ConsumerState<AiResultScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      'NEURAL RETINOPATHY CLASSIFICATION',
+                      tr('neural_classification'),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
@@ -154,7 +154,7 @@ class _AiResultScreenState extends ConsumerState<AiResultScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'LEVEL ${pred.drLevel}',
+                      '${tr('level_prefix').toUpperCase()} ${pred.drLevel}',
                       style: TextStyle(
                         fontSize: 42,
                         fontWeight: FontWeight.w900,
@@ -228,20 +228,20 @@ class _AiResultScreenState extends ConsumerState<AiResultScreen> {
                       runSpacing: 14,
                       children: [
                         _metricCol(
-                          'MODEL PROBABILITY',
+                          tr('model_probability'),
                           AppFormatters.formatProbability(pred.modelProbability),
                           AppColors.primary,
                         ),
                         _metricCol(
-                          'CALIBRATED CONFIDENCE',
+                          tr('calibrated_confidence'),
                           pred.calibratedConfidence != null
                               ? AppFormatters.formatProbability(pred.calibratedConfidence)
-                              : 'Auto-Calibrated',
+                              : tr('auto_calibrated'),
                           AppColors.textPrimary,
                         ),
                         _metricCol(
-                          'OPTICAL QUALITY',
-                          quality?.status.label ?? 'OPTIMAL',
+                          tr('optical_quality'),
+                          quality?.status.label ?? tr('optimal'),
                           AppColors.statusGood,
                         ),
                       ],
@@ -260,7 +260,7 @@ class _AiResultScreenState extends ConsumerState<AiResultScreen> {
                     Expanded(
                       flex: 5,
                       child: ClinicalCard(
-                        title: 'SOFTMAX CLASS PROBABILITIES',
+                        title: tr('softmax_probabilities'),
                         icon: const Icon(Icons.bar_chart_rounded, color: AppColors.primary, size: 18),
                         child: ProbabilityDistributionWidget(
                           classProbabilities: pred.classProbabilities,
@@ -275,7 +275,7 @@ class _AiResultScreenState extends ConsumerState<AiResultScreen> {
                       child: Column(
                         children: [
                           ClinicalCard(
-                            title: 'AI CLINICAL TRIAGE RECOMMENDATION',
+                            title: tr('triage_recommendation'),
                             icon: const Icon(Icons.recommend_rounded, color: AppColors.primary, size: 18),
                             child: Container(
                               padding: const EdgeInsets.all(14),
@@ -319,7 +319,7 @@ class _AiResultScreenState extends ConsumerState<AiResultScreen> {
                 ),
               ] else ...[
                 ClinicalCard(
-                  title: 'SOFTMAX CLASS PROBABILITIES',
+                  title: tr('softmax_probabilities'),
                   icon: const Icon(Icons.bar_chart_rounded, color: AppColors.primary, size: 18),
                   child: ProbabilityDistributionWidget(
                     classProbabilities: pred.classProbabilities,
@@ -328,7 +328,7 @@ class _AiResultScreenState extends ConsumerState<AiResultScreen> {
                 ),
                 const SizedBox(height: 14),
                 ClinicalCard(
-                  title: 'AI CLINICAL TRIAGE RECOMMENDATION',
+                  title: tr('triage_recommendation'),
                   icon: const Icon(Icons.recommend_rounded, color: AppColors.primary, size: 18),
                   child: Container(
                     padding: const EdgeInsets.all(14),

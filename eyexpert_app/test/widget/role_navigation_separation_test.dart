@@ -101,7 +101,7 @@ void main() {
       // Verify permitted PHC Worker intake items
       expect(find.text('Dashboard'), findsWidgets);
       expect(find.text('New Intake'), findsWidgets);
-      expect(find.text('+ START NEW SCREENING'), findsOneWidget);
+      expect(find.text('START NEW SCREENING'), findsOneWidget);
 
       // Verify specialist review queue is NOT on PHC primary nav
       expect(find.text('Review Queue'), findsNothing);
@@ -197,7 +197,7 @@ void main() {
       await tester.pump();
 
       // Verify PHC primary actions are present
-      expect(find.text('+ START NEW SCREENING'), findsOneWidget);
+      expect(find.text('START NEW SCREENING'), findsOneWidget);
       expect(find.text('Screening Dashboard'), findsWidgets);
 
       // Verify Clinician review queue is absent

@@ -37,45 +37,51 @@ class ScreeningWorkflowRibbon extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStepItem(
-            stepNum: 1,
-            label: tr('step1_ribbon'),
-            shortLabel: 'Intake',
-            isActive: activeStep == 1,
-            isCompleted: activeStep > 1,
-            isMobile: isMobile,
+          Expanded(
+            child: _buildStepItem(
+              stepNum: 1,
+              label: tr('step1_ribbon'),
+              shortLabel: tr('step1_short'),
+              isActive: activeStep == 1,
+              isCompleted: activeStep > 1,
+              isMobile: isMobile,
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Icon(
-              Icons.arrow_forward_rounded,
-              size: 14,
+              Icons.arrow_forward_ios_rounded,
+              size: 11,
               color: activeStep > 1 ? const Color(0xFF38BDF8) : const Color(0xFF475569),
             ),
           ),
-          _buildStepItem(
-            stepNum: 2,
-            label: tr('step2_ribbon'),
-            shortLabel: 'Capture',
-            isActive: activeStep == 2,
-            isCompleted: activeStep > 2,
-            isMobile: isMobile,
+          Expanded(
+            child: _buildStepItem(
+              stepNum: 2,
+              label: tr('step2_ribbon'),
+              shortLabel: tr('step2_short'),
+              isActive: activeStep == 2,
+              isCompleted: activeStep > 2,
+              isMobile: isMobile,
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Icon(
-              Icons.arrow_forward_rounded,
-              size: 14,
+              Icons.arrow_forward_ios_rounded,
+              size: 11,
               color: activeStep > 2 ? const Color(0xFF10B981) : const Color(0xFF475569),
             ),
           ),
-          _buildStepItem(
-            stepNum: 3,
-            label: tr('step3_ribbon'),
-            shortLabel: 'Result & Slip',
-            isActive: activeStep == 3,
-            isCompleted: false,
-            isMobile: isMobile,
+          Expanded(
+            child: _buildStepItem(
+              stepNum: 3,
+              label: tr('step3_ribbon'),
+              shortLabel: tr('step3_short'),
+              isActive: activeStep == 3,
+              isCompleted: false,
+              isMobile: isMobile,
+            ),
           ),
         ],
       ),
@@ -148,10 +154,11 @@ class ScreeningWorkflowRibbon extends ConsumerWidget {
                       ),
               ),
             ),
-            const SizedBox(width: 7),
-            Flexible(
+            const SizedBox(width: 6),
+            Expanded(
               child: Text(
                 displayText,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: isMobile ? 11 : 12.5,

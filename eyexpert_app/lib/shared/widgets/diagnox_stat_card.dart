@@ -40,18 +40,29 @@ class DiagnoXStatCard extends StatelessWidget {
           // Header: Icon + Category tag
           Row(
             children: [
-              Icon(
-                icon,
-                size: 16,
-                color: iconColor ?? AppColors.textSecondary,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: (iconColor ?? AppColors.primary).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  size: 16,
+                  color: iconColor ?? AppColors.primary,
+                ),
               ),
-              const SizedBox(width: 6),
-              Text(
-                category,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  category,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],

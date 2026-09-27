@@ -19,6 +19,6 @@ void main() {
     );
 
     await tester.pump();
-    expect(find.text('Image Quality Assessment'), findsOneWidget);
+    expect(find.text('Optical Quality Safety Gate'), findsWidgets);
   });
 }

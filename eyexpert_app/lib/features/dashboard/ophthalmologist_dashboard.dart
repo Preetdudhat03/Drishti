@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/responsive_layout.dart';
+import '../../core/localization/locale_provider.dart';
 import '../../shared/widgets/pill_button.dart';
 import '../../shared/widgets/diagnox_stat_card.dart';
 import '../../data/models/screening_case_model.dart';
@@ -23,10 +24,22 @@ class OphthalmologistDashboard extends ConsumerWidget {
     this.onSelectCase,
   });
 
+  String _getGreeting(String Function(String) tr) {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return tr('greeting_morning');
+    } else if (hour >= 12 && hour < 17) {
+      return tr('greeting_afternoon');
+    } else {
+      return tr('greeting_evening');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reviewState = ref.watch(reviewQueueProvider);
     final authState = ref.watch(authProvider);
+    final tr = ref.watch(trProvider);
     final user = authState.user;
 
     final pendingCases = reviewState.cases.where((c) => c.isPendingReview).toList();
@@ -88,7 +101,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                             Row(
                               children: [
                                 Text(
-                                  '${AppFormatters.getGreeting()}, ',
+                                  '${_getGreeting(tr)}, ',
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
@@ -129,7 +142,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
 
                 // 2. Primary Action Buttons — REVIEW NEXT CASE
                 PillButton(
-                  label: 'REVIEW NEXT CASE (${pendingCases.length} Pending)',
+                  label: '${tr('review_next_case')} (${pendingCases.length} ${tr('stat_pending')})',
                   icon: Icons.assignment_turned_in_rounded,
                   width: double.infinity,
                   height: 54,
@@ -143,7 +156,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 PillButton(
-                  label: 'Open Full Clinical Review Queue',
+                  label: tr('open_review_queue'),
                   icon: Icons.checklist_rtl_rounded,
                   variant: PillButtonVariant.secondaryOutlined,
                   width: double.infinity,
@@ -159,7 +172,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                     Expanded(
                       child: DiagnoXStatCard(
                         icon: Icons.warning_rounded,
-                        category: 'Urgent Referrals',
+                        category: tr('urgent_referrals'),
                         value: '${reviewState.pendingReferableCount}',
                         subtitle: 'P(L>=2) >= 30%',
                         iconColor: AppColors.statusCritical,
@@ -169,9 +182,9 @@ class OphthalmologistDashboard extends ConsumerWidget {
                     Expanded(
                       child: DiagnoXStatCard(
                         icon: Icons.check_circle_outline_rounded,
-                        category: 'Completed',
+                        category: tr('stat_completed'),
                         value: '${reviewState.completedCount}',
-                        subtitle: 'Specialist validated',
+                        subtitle: tr('specialist_validated'),
                         iconColor: AppColors.statusGood,
                       ),
                     ),
@@ -184,9 +197,9 @@ class OphthalmologistDashboard extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Recent Cases',
-                      style: TextStyle(
+                    Text(
+                      tr('recent_cases'),
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary,
@@ -196,11 +209,11 @@ class OphthalmologistDashboard extends ConsumerWidget {
                     InkWell(
                       onTap: onOpenReviewQueue,
                       borderRadius: BorderRadius.circular(6),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                         child: Text(
-                          'View All',
-                          style: TextStyle(
+                          tr('view_all'),
+                          style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textSecondary,
@@ -221,10 +234,10 @@ class OphthalmologistDashboard extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        'No pending cases awaiting diagnosis.',
-                        style: TextStyle(
+                        tr('no_pending_cases'),
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
                         ),
@@ -236,6 +249,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
                     if (index > 0) const SizedBox(height: 10),
                     _buildRecentCaseCard(
                       reviewState.cases[index],
+                      tr: tr,
                       onSelectCase: onSelectCase,
                       onOpenReviewQueue: onOpenReviewQueue,
                     ),
@@ -252,6 +266,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
 
   Widget _buildRecentCaseCard(
     ScreeningCaseModel c, {
+    required String Function(String) tr,
     ValueChanged<ScreeningCaseModel>? onSelectCase,
     required VoidCallback onOpenReviewQueue,
   }) {
@@ -261,17 +276,17 @@ class OphthalmologistDashboard extends ConsumerWidget {
 
     final String patientDisplayName = c.patient.patientId.startsWith('PT-')
         ? c.patient.patientId
-        : 'Patient #${c.patient.patientId}';
+        : '${tr('patient_prefix')} #${c.patient.patientId}';
 
     final String conditionLabel = pred != null
-        ? '${pred.severityLabel} (${AppFormatters.formatEye(c.patient.eye)})'
-        : 'Awaiting AI Grading';
+        ? '${tr('level_${pred.drLevel}')} (${AppFormatters.formatEye(c.patient.eye)})'
+        : tr('awaiting_ai_grading');
 
     final String riskBadgeText = isHighRisk
-        ? 'High'
+        ? tr('risk_badge_high')
         : isLowRisk
-            ? 'Low'
-            : 'Moderate';
+            ? tr('risk_badge_low')
+            : tr('risk_badge_mod');
 
     final Color riskBg = isHighRisk
         ? AppColors.badgeHighRiskBg
@@ -300,7 +315,7 @@ class OphthalmologistDashboard extends ConsumerWidget {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
-            offset: const Offset(0, 3),
+            offset: const Offset(0, 2),
           ),
         ],
       ),

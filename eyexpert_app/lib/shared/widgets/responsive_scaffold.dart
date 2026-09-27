@@ -102,6 +102,7 @@ class ResponsiveScaffold extends ConsumerWidget {
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    final tr = ref.read(trProvider);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -109,12 +110,12 @@ class ResponsiveScaffold extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        title: const Text('Sign Out from Workstation?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-        content: const Text('Your local offline session state will be safely preserved.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+        title: Text(tr('sign_out_title'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        content: Text(tr('sign_out_desc'), style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(tr('cancel'), style: const TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -129,7 +130,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(tr('sign_out'), style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -138,102 +139,163 @@ class ResponsiveScaffold extends ConsumerWidget {
 
   void _showLanguageModal(BuildContext context, WidgetRef ref) {
     final currentCode = ref.read(localeProvider);
+    final tr = ref.read(trProvider);
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) {
+        final scrollController = ScrollController();
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.75,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Select Language / भाषा चुनें',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
+                // Top drag handle bar
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Tailored for Primary Health Centers & frontline ASHA workers',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 16),
-                for (final lang in AppLocalizations.supportedLanguages) ...[
-                  InkWell(
-                    onTap: () {
-                      ref.read(localeProvider.notifier).setLanguage(lang.code);
-                      Navigator.pop(ctx);
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: lang.code == currentCode
-                            ? AppColors.primaryLight
-                            : AppColors.surfaceMuted,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: lang.code == currentCode
-                              ? AppColors.primary
-                              : AppColors.border,
-                          width: lang.code == currentCode ? 1.8 : 1,
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tr('select_language'),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              tr('language_subtitle'),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Row(
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.border),
+                // Scrollable Language Items with custom Scrollbar
+                Flexible(
+                  child: Scrollbar(
+                    controller: scrollController,
+                    thumbVisibility: true,
+                    thickness: 6,
+                    radius: const Radius.circular(8),
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      child: Column(
                         children: [
-                          Text(lang.flag, style: const TextStyle(fontSize: 22)),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  lang.localName,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
+                          for (final lang in AppLocalizations.supportedLanguages) ...[
+                            InkWell(
+                              onTap: () {
+                                ref.read(localeProvider.notifier).setLanguage(lang.code);
+                                Navigator.pop(ctx);
+                              },
+                              borderRadius: BorderRadius.circular(14),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: lang.code == currentCode
+                                      ? AppColors.primaryLight
+                                      : AppColors.surfaceMuted,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
                                     color: lang.code == currentCode
                                         ? AppColors.primary
-                                        : AppColors.textPrimary,
+                                        : AppColors.border,
+                                    width: lang.code == currentCode ? 2 : 1,
                                   ),
                                 ),
-                                Text(
-                                  lang.name,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
+                                child: Row(
+                                  children: [
+                                    Text(lang.flag, style: const TextStyle(fontSize: 24)),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            lang.localName,
+                                            style: TextStyle(
+                                              fontSize: 15.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: lang.code == currentCode
+                                                  ? AppColors.primary
+                                                  : AppColors.textPrimary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 1),
+                                          Text(
+                                            lang.name,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (lang.code == currentCode)
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.primary,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.check_rounded,
+                                          color: Colors.white,
+                                          size: 15,
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                          if (lang.code == currentCode)
-                            const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
+                          ],
                         ],
                       ),
                     ),
                   ),
-                ],
-                const SizedBox(height: 10),
+                ),
+                const SizedBox(height: 8),
               ],
             ),
           ),

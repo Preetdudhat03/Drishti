@@ -22,6 +22,17 @@ class HealthWorkerDashboard extends ConsumerWidget {
     required this.onViewCases,
   });
 
+  String _getGreeting(String Function(String) tr) {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return tr('greeting_morning');
+    } else if (hour >= 12 && hour < 17) {
+      return tr('greeting_afternoon');
+    } else {
+      return tr('greeting_evening');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reviewState = ref.watch(reviewQueueProvider);
@@ -98,7 +109,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                             Row(
                               children: [
                                 Text(
-                                  '${AppFormatters.getGreeting()}, ',
+                                  '${_getGreeting(tr)}, ',
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
@@ -250,9 +261,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                     ),
                     child: Center(
                       child: Text(
-                        tr('no_screenings_today') != 'no_screenings_today'
-                            ? tr('no_screenings_today')
-                            : 'No recent screenings recorded yet today.',
+                        tr('no_screenings_today'),
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
@@ -263,7 +272,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                 else ...[
                   for (int index = 0; index < reviewState.cases.take(5).length; index++) ...[
                     if (index > 0) const SizedBox(height: 8),
-                    _buildRecentScreeningCard(reviewState.cases[index]),
+                    _buildRecentScreeningCard(reviewState.cases[index], tr: tr),
                   ],
                 ],
 
@@ -276,24 +285,24 @@ class HealthWorkerDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentScreeningCard(dynamic c) {
+  Widget _buildRecentScreeningCard(dynamic c, {required String Function(String) tr}) {
     final pred = c.prediction;
     final isHighRisk = c.isReferable || pred?.drLevel == 4 || pred?.drLevel == 3;
     final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
 
     final String patientDisplayName = c.patient.patientId.startsWith('PT-')
         ? c.patient.patientId
-        : 'Patient #${c.patient.patientId}';
+        : '${tr('patient_prefix')} #${c.patient.patientId}';
 
     final String conditionLabel = pred != null
-        ? '${pred.severityLabel} • ${AppFormatters.formatEye(c.patient.eye)}'
-        : 'Grading in progress';
+        ? '${tr('level_${pred.drLevel}')} • ${AppFormatters.formatEye(c.patient.eye)}'
+        : tr('grading_in_progress');
 
     final String riskBadgeText = isHighRisk
-        ? 'High Risk'
+        ? tr('risk_high')
         : isLowRisk
-            ? 'Low Risk'
-            : 'Moderate';
+            ? tr('risk_low')
+            : tr('risk_moderate');
 
     final Color riskBg = isHighRisk
         ? AppColors.badgeHighRiskBg
