@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/responsive_layout.dart';
+import '../../core/localization/locale_provider.dart';
 import '../../shared/widgets/clinical_card.dart';
 import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/fundus_image_viewer.dart';
 import '../../shared/widgets/probability_bar.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
+import '../../shared/widgets/screening_workflow_ribbon.dart';
 import '../screening/screening_session_provider.dart';
 
 class ExplainabilityScreen extends ConsumerStatefulWidget {
@@ -34,6 +36,132 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
     super.dispose();
   }
 
+  Widget _buildLesionBiomarkerGuide(String lang) {
+    final isHindi = lang == 'hi';
+
+    final lesions = [
+      {
+        'color': const Color(0xFFDC2626),
+        'title': isHindi ? 'माइक्रोएन्यूरिज्म (Microaneurysms)' : 'Microaneurysms',
+        'subtitle': isHindi ? 'केशिकाओं के छोटे लाल उभार (आरंभिक लक्षण)' : 'Small capillary outpouchings (earliest DR sign)',
+      },
+      {
+        'color': const Color(0xFFEA580C),
+        'title': isHindi ? 'रेटिनल रक्तस्राव (Retinal Hemorrhages)' : 'Retinal Hemorrhages',
+        'subtitle': isHindi ? 'गहरे रक्त के धब्बे (ब्लॉट व फ्लेम हेमोरेज)' : 'Blot & flame bleeding into nerve fiber layer',
+      },
+      {
+        'color': const Color(0xFFCA8A04),
+        'title': isHindi ? 'हार्ड एक्सुडेट्स (Hard Exudates)' : 'Hard Exudates',
+        'subtitle': isHindi ? 'मैकुला के निकट पीले लिपिड व फैट जमाव' : 'Yellow lipid deposits leaking from fragile vessels',
+      },
+      {
+        'color': const Color(0xFF64748B),
+        'title': isHindi ? 'कॉटन वूल स्पॉट्स (Cotton Wool Spots)' : 'Cotton Wool Spots',
+        'subtitle': isHindi ? 'रक्त आपूर्ति की कमी से तंत्रिका सूजन' : 'Nerve fiber infarcts from microvascular ischemia',
+      },
+      {
+        'color': const Color(0xFF9333EA),
+        'title': isHindi ? 'नियोवास्कुलराइजेशन (Neovascularization)' : 'Neovascularization',
+        'subtitle': isHindi ? 'असामान्य नई रक्त वाहिकाएं (PDR का प्रमुख लक्षण)' : 'Abnormal new vessels prone to vitreous bleeding',
+      },
+    ];
+
+    return ClinicalCard(
+      title: isHindi ? 'रेटिना घाव व बायोमार्कर मार्गदर्शिका' : 'RETINAL LESION & BIOMARKER GUIDE',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Heatmap Colormap Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isHindi ? 'एआई ध्यान तीव्रता (Grad-CAM)' : 'Grad-CAM Neural Attention Intensity',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                    ),
+                    const Text('Turbo Map', style: TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF3B82F6), // Low / Blue
+                        Color(0xFF10B981), // Medium / Green
+                        Color(0xFFFBBF24), // High / Yellow
+                        Color(0xFFEF4444), // Max / Red
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(isHindi ? 'निम्न ध्यान' : 'Low Attention', style: const TextStyle(fontSize: 9.5, color: AppColors.textMuted)),
+                    Text(isHindi ? 'मध्यम' : 'Moderate', style: const TextStyle(fontSize: 9.5, color: AppColors.textMuted)),
+                    Text(isHindi ? 'सर्वोच्च ध्यान (घाव क्षेत्र)' : 'Max Activation (Lesion Focal)', style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: Color(0xFFDC2626))),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Lesion List
+          for (final item in lesions) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 3),
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: item['color'] as Color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['title'] as String,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                        ),
+                        Text(
+                          item['subtitle'] as String,
+                          style: const TextStyle(fontSize: 10.5, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(screeningSessionProvider);
@@ -41,6 +169,8 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
     final pred = session.prediction;
     final patient = session.patient;
     final isDesktop = ResponsiveLayout.isDesktop(context);
+    final tr = ref.watch(trProvider);
+    final currentLang = ref.watch(localeProvider);
 
     Widget imageViewerWidget = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -62,25 +192,25 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
             labelColor: Colors.white,
             unselectedLabelColor: AppColors.textSecondary,
             labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-            tabs: const [
-              Tab(text: 'ORIGINAL'),
-              Tab(text: 'GRAD-CAM'),
-              Tab(text: 'OVERLAY'),
+            tabs: [
+              Tab(text: tr('tab_original')),
+              Tab(text: tr('tab_gradcam')),
+              Tab(text: tr('tab_overlay')),
             ],
           ),
         ),
         const SizedBox(height: 10),
 
-        // Fundus Viewer Container (Clean off-white frame with dark retinal canvas)
+        // Fundus Viewer Container
         Container(
           height: isDesktop ? 440 : 320,
           decoration: BoxDecoration(
             color: Colors.black,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border, width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             child: AnimatedBuilder(
               animation: _tabController,
               builder: (context, _) {
@@ -121,16 +251,16 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.opacity_rounded, size: 16, color: AppColors.accent),
+                  const Icon(Icons.opacity_rounded, size: 16, color: AppColors.primary),
                   const SizedBox(width: 8),
-                  const Text('Overlay Blend:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  Text(tr('blend_opacity'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                   Expanded(
                     child: Slider(
                       value: _overlayOpacity,
                       min: 0.1,
                       max: 1.0,
                       divisions: 9,
-                      activeColor: AppColors.accent,
+                      activeColor: AppColors.primary,
                       label: '${(_overlayOpacity * 100).toInt()}%',
                       onChanged: (val) => setState(() => _overlayOpacity = val),
                     ),
@@ -149,7 +279,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
       children: [
         // AI Evidence Card
         ClinicalCard(
-          title: 'AI EVIDENCE & ATTENDED REGIONS',
+          title: tr('attended_structures'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -164,14 +294,14 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Image Quality:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  StatusBadge.good(label: '✓ GOOD'),
+                  const Text('Safety Gate Check:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  StatusBadge.good(label: '✓ VERIFIED'),
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Model-Attended Retinal Structures:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              Text(
+                tr('attended_structures'),
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
               ),
               const SizedBox(height: 6),
               Wrap(
@@ -180,9 +310,9 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
                 children: (exp?.modelAttendedRegions ?? ['Superior temporal arcade', 'Perimacular region'])
                     .map(
                       (region) => Chip(
-                        avatar: const Icon(Icons.location_searching_rounded, size: 14, color: AppColors.accent),
+                        avatar: const Icon(Icons.location_searching_rounded, size: 14, color: AppColors.primary),
                         label: Text(region, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                        backgroundColor: AppColors.accentLight,
+                        backgroundColor: AppColors.primaryLight,
                         side: BorderSide.none,
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                       ),
@@ -192,6 +322,10 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
             ],
           ),
         ),
+        const SizedBox(height: 10),
+
+        // Lesion Explainer Key
+        _buildLesionBiomarkerGuide(currentLang),
         const SizedBox(height: 10),
 
         // Statutory Interpretability Disclaimer
@@ -209,7 +343,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '⚠ Interpretability output — highlights regions contributing to AI model prediction and does not represent a definitive lesion diagnosis.',
+                  '⚠ Grad-CAM outputs highlight anatomical receptive fields contributing to deep learning inference and require ophthalmologist clinical validation.',
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w500,
@@ -226,7 +360,7 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
         // Evidence Softmax Probabilities
         if (pred != null)
           ClinicalCard(
-            title: 'EVIDENCE SOFTMAX PROBABILITIES',
+            title: 'RESNET-18 CLASS PROBABILITIES',
             child: ProbabilityDistributionWidget(
               classProbabilities: pred.classProbabilities,
               predictedLevel: pred.drLevel,
@@ -244,6 +378,9 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // 1. 3-Step Guided Flow Ribbon (Active on Step 3)
+              const ScreeningWorkflowRibbon(activeStep: 3),
+
               // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -258,12 +395,12 @@ class _ExplainabilityScreenState extends ConsumerState<ExplainabilityScreen> wit
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'EXPLAINABILITY (GRAD-CAM)',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary),
+                        Text(
+                          tr('xai_title'),
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.primary),
                         ),
                         Text(
-                          'Regions contributing to model prediction • Patient: ${patient?.patientId ?? "N/A"}',
+                          'Regions contributing to prediction • Patient: ${patient?.patientId ?? "N/A"} (${patient?.eye ?? "OD"})',
                           style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                         ),
                       ],

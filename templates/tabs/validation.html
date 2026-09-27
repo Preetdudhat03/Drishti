@@ -1,0 +1,85 @@
+<!-- ==================== TAB 3: MODEL VALIDATION SUITE ==================== -->
+<div id="tab-validation" class="tab-view">
+    <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+            <span id="valHeaderTitle">Model Validation & Batch Testing Suite</span>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-sm" id="btnTabDemo" onclick="switchValMode('demo')">1. Demonstration Batch</button>
+                <button class="btn btn-outline btn-sm" id="btnTabBench" onclick="switchValMode('bench')">2. Benchmark Test Set (Ground Truth)</button>
+            </div>
+        </div>
+
+        <!-- 3A: DEMONSTRATION BATCH -->
+        <div id="valModeDemo">
+            <p id="valDemoSub" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Upload 5 to 50 fundus images for batch screening. Provides instant throughput testing and triage categorization.</p>
+            
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                <input type="file" id="batchFiles" multiple accept="image/*" style="width: auto; margin: 0;">
+                <button id="btnRunBatch" class="btn btn-success btn-sm" onclick="runBatchDemo()">🚀 Run Batch Triage</button>
+                <button id="btnLoadDemoBatch" class="btn btn-outline btn-sm" onclick="loadSampleBatch()">📦 Load 10 Demo Samples</button>
+            </div>
+
+            <div id="batchProgressBox" style="display: none; margin-bottom: 15px;">
+                <div style="font-size: 11px; margin-bottom: 4px;" id="batchStatusText">Processing batch...</div>
+                <div style="background: #e2e8f0; border-radius: 6px; height: 10px; overflow: hidden;">
+                    <div id="batchProgressBar" style="background: var(--primary-accent); height: 100%; width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table" id="batchDemoTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th id="thBatchFile">Filename</th>
+                            <th id="thBatchQuality">Quality Status</th>
+                            <th id="thBatchGrade">AI DR Grade</th>
+                            <th id="thBatchReferable">Referable DR</th>
+                            <th id="thBatchProb">Model Probability</th>
+                            <th id="thBatchTime">Processing Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batchDemoTableBody">
+                        <tr><td colspan="7" style="text-align: center; color: var(--text-muted);" id="batchDemoPlaceholder">No batch executed yet. Click "Load 10 Demo Samples" or upload files.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3B: BENCHMARK VALIDATION WITH GROUND TRUTH -->
+        <div id="valModeBench" style="display: none;">
+            <p id="valBenchSub" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Evaluation on the held-out APTOS 2019 test split (549 fundus images) with ground truth labels.</p>
+            
+            <div class="grid-2" style="margin-bottom: 15px;">
+                <div class="card" style="background: #f8fafc;">
+                    <div class="card-header" id="benchSummaryHeader" style="font-size: 12px;">Benchmark Summary Metrics</div>
+                    <div class="provenance-box">
+                        <div class="provenance-row"><span id="lblTestSamples" class="provenance-key">Held-Out Test Samples:</span><span class="provenance-val">549</span></div>
+                        <div class="provenance-row"><span id="lblQwk" class="provenance-key">Quadratic Weighted Kappa (QWK):</span><span class="provenance-val">0.870 (High Agreement)</span></div>
+                        <div class="provenance-row"><span id="lblAcc" class="provenance-key">5-Class Top-1 Accuracy:</span><span class="provenance-val">76.87%</span></div>
+                        <div class="provenance-row"><span id="lblSens" class="provenance-key">Referable DR Sensitivity:</span><span class="provenance-val">82.14%</span></div>
+                        <div class="provenance-row"><span id="lblSpec" class="provenance-key">Referable DR Specificity:</span><span class="provenance-val">96.62%</span></div>
+                        <div class="provenance-row"><span id="lblAuc" class="provenance-key">ROC AUC (Referable DR):</span><span class="provenance-val">0.980</span></div>
+                    </div>
+                </div>
+
+                <div class="card" style="background: #f8fafc;">
+                    <div class="card-header" id="cmHeader" style="font-size: 12px;">5-Class Confusion Matrix (Ground Truth vs Prediction)</div>
+                    <table class="data-table" style="font-size: 11px;">
+                        <thead>
+                            <tr><th>True \ Pred</th><th>L0</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><b>L0 (No DR)</b></td><td style="background:#dcfce7; font-weight:700;">256</td><td>12</td><td>2</td><td>0</td><td>0</td></tr>
+                            <tr><td><b>L1 (Mild)</b></td><td>3</td><td style="background:#dcfce7; font-weight:700;">43</td><td>9</td><td>0</td><td>0</td></tr>
+                            <tr><td><b>L2 (Mod)</b></td><td>0</td><td>36</td><td style="background:#dcfce7; font-weight:700;">92</td><td>13</td><td>9</td></tr>
+                            <tr><td><b>L3 (Sev)</b></td><td>0</td><td>0</td><td>12</td><td style="background:#dcfce7; font-weight:700;">9</td><td>8</td></tr>
+                            <tr><td><b>L4 (PDR)</b></td><td>0</td><td>4</td><td>13</td><td>6</td><td style="background:#dcfce7; font-weight:700;">22</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

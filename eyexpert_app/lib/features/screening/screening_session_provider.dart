@@ -234,6 +234,7 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final result = await _repository.analyze(
         screeningId: state.screeningId!,
         quality: state.quality!,
+        imagePath: state.imagePath,
       );
 
       // Step 4: Grad-CAM Explainability Generation

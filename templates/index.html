@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRISHTI — Explainable AI DR Screening Platform (SIH 2026)</title>
+    <!-- Chart.js for Model Probabilities -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Drishti Core Design System & Responsive Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="mode-simple">
+
+<!-- SIDEBAR BACKDROP ON MOBILE -->
+<div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
+<!-- SIDEBAR NAVIGATION -->
+<div id="sidebar">
+    <div class="sidebar-brand">
+        <div>
+            <h1 id="sidebarBrandTitle">👁 DRISHTI</h1>
+            <p id="sidebarBrandSub">Explainable AI Retinal Screening (SIH 2026)</p>
+        </div>
+        <button class="sidebar-close-btn" onclick="toggleSidebar(false)">✕</button>
+    </div>
+    <ul class="nav-list">
+        <li class="nav-item active" id="nav-item-screening" onclick="switchTab('tab-screening'); toggleSidebar(false)">🏥 1. New Screening</li>
+        <li class="nav-item" id="nav-item-queue" onclick="switchTab('tab-queue'); toggleSidebar(false)">📋 2. Clinician Review Queue</li>
+        <li class="nav-item" id="nav-item-validation" onclick="switchTab('tab-validation'); toggleSidebar(false)">🧪 3. Model Validation Suite</li>
+        <li class="nav-item" id="nav-item-sim" onclick="switchTab('tab-sim'); toggleSidebar(false)">📊 4. District Telemed Sim</li>
+        <li class="nav-item" id="nav-item-reports" onclick="switchTab('tab-reports'); toggleSidebar(false)">📄 5. Screening Reports</li>
+        <div class="nav-divider"></div>
+        <li class="nav-item" id="nav-item-developer" onclick="switchTab('tab-developer'); toggleSidebar(false)">⚙ System & API Inspector</li>
+    </ul>
+    <div class="sidebar-footer">
+        <div id="sidebarModelEngine"><b>Model Engine:</b> PyTorch ResNet-18</div>
+        <div id="sidebarStatusPill" class="model-status-pill status-active">● REAL MODEL ACTIVE</div>
+        <div id="sidebarSupabasePill" style="margin-top: 4px;" class="model-status-pill status-supabase">☁ SUPABASE CONNECTED</div>
+    </div>
+</div>
+
+<!-- MAIN APPLICATION CONTAINER -->
+<div id="main-container">
+    <header>
+        <div class="header-left">
+            <button class="menu-toggle-btn" onclick="toggleSidebar(true)" title="Open Navigation Menu">☰</button>
+            <div class="header-title-box">
+                <h2 id="viewTitle">New Retinal Screening Workflow</h2>
+                <p id="viewSubtitle">Patient intake, optical quality gating, AI inference, Grad-CAM XAI & Supabase cloud sync.</p>
+            </div>
+        </div>
+        <div class="header-actions" style="display:flex; align-items:center; gap:8px;">
+            <div id="modeToggleContainer" style="display:inline-flex; background:#0f172a; padding:2px; border-radius:20px; border:1px solid #334155;">
+                <button id="btnModeSimple" onclick="setAppMode('simple')" class="btn-mode active" style="padding:4px 10px; font-size:11px; font-weight:700; border-radius:16px; border:none; background:#10b981; color:#ffffff; cursor:pointer;" title="Simple View (ASHA / PHC Frontline)">🟢 Simple Mode (ASHA)</button>
+                <button id="btnModeExpert" onclick="setAppMode('expert')" class="btn-mode" style="padding:4px 10px; font-size:11px; font-weight:600; border-radius:16px; border:none; background:transparent; color:#94a3b8; cursor:pointer;" title="Specialist View (Doctor / Jury Mode)">🩺 Doctor Mode</button>
+            </div>
+            <span id="roleLabel" style="font-size: 11px; color: var(--text-muted);">Role:</span>
+            <select id="roleSelector" style="width: 155px; margin: 0; padding: 4px 8px; font-size: 11px;">
+                <option value="clinician" id="roleOptClinician">🩺 Clinician / Doctor</option>
+                <option value="healthworker" id="roleOptHW">👤 Health Worker (PHC)</option>
+                <option value="evaluator" id="roleOptEval">🔬 SIH Evaluator</option>
+            </select>
+            <span id="langLabel" style="font-size: 11px; color: var(--text-muted); margin-left:4px;">🌐 Language:</span>
+            <select id="langSelector" onchange="changeLanguage(this.value)" style="width: 135px; margin: 0; padding: 4px 8px; font-size: 11px; font-weight:700; background: #1e293b; color: #f8fafc; border: 1px solid #475569; border-radius: 6px; cursor: pointer;">
+                <option value="en">🇬🇧 English</option>
+                <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
+                <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+            </select>
+            <button id="voiceGuideBtn" onclick="toggleVoiceGuide()" class="btn btn-outline btn-sm" style="font-size:11px; padding:4px 8px; border-radius:6px; color:#cbd5e1; border-color:#475569;" title="Audio Guidance">🔊 Audio</button>
+        </div>
+    </header>
+
+    <div class="content-body">
+        {% include 'tabs/screening.html' %}
+        {% include 'tabs/queue.html' %}
+        {% include 'tabs/validation.html' %}
+        {% include 'tabs/simulation.html' %}
+        {% include 'tabs/reports.html' %}
+        {% include 'tabs/developer.html' %}
+    </div>
+</div>
+
+<!-- MODAL DIALOGS -->
+{% include 'modals/camera_modal.html' %}
+{% include 'modals/referral_slip.html' %}
+
+<!-- MODULAR CLIENT SCRIPTS -->
+<script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+<script src="{{ url_for('static', filename='js/rural_tools.js') }}"></script>
+<script src="{{ url_for('static', filename='js/screening.js') }}"></script>
+<script src="{{ url_for('static', filename='js/queue.js') }}"></script>
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/simulation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+
+<script>
+// Main Application Initialization
+window.onload = function() {
+    initChart();
+    setAppMode(appMode);
+    
+    // Apply initial language from localStorage or default English
+    const savedLang = localStorage.getItem('drishti_lang') || 'en';
+    const langSelect = document.getElementById('langSelector');
+    if (langSelect) langSelect.value = savedLang;
+    changeLanguage(savedLang);
+
+    // Initial test sample
+    const sampleSelect = document.getElementById('sampleSelect');
+    if (sampleSelect) {
+        sampleSelect.value = 'sample_good_npdr_moderate';
+        loadBenchmarkSample();
+    }
+    
+    // Initial fetch of live Supabase queue
+    refreshQueueTable();
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!-- ==================== TAB 4: DISTRICT TELEMEDICINE SIMULATION ==================== -->
+<div id="tab-sim" class="tab-view">
+    <div class="card">
+        <div class="card-header">
+            <span id="simHeaderTitle">District-Scale Telemedicine Simulation (120,000 Patients / Year)</span>
+            <button id="btnRecalcSim" class="btn btn-outline btn-sm" onclick="recalcSimulation()">↻ Recalculate Model</button>
+        </div>
+        <p id="simHeaderDesc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Simulating patient arrival, bandwidth constraints, AI pre-filtering throughput, queue waiting times, and ophthalmologist capacity across a district network.</p>
+
+        <div class="grid-2" style="margin-bottom: 20px;">
+            <div>
+                <label id="lblSimParams">SIMULATION PARAMETERS:</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div>
+                        <label style="font-size: 10px;" id="lblSimPatients">Annual Patients:</label>
+                        <input type="number" id="simPatients" value="120000" onchange="recalcSimulation()">
+                    </div>
+                    <div>
+                        <label style="font-size: 10px;" id="lblSimPHCs">PHC Health Centers:</label>
+                        <input type="number" id="simPHCs" value="24" onchange="recalcSimulation()">
+                    </div>
+                    <div>
+                        <label style="font-size: 10px;" id="lblSimDoctors">Available Ophthalmologists:</label>
+                        <input type="number" id="simDoctors" value="4" onchange="recalcSimulation()">
+                    </div>
+                    <div>
+                        <label style="font-size: 10px;" id="lblSimDocCap">Doctor Review Cap (cases/day):</label>
+                        <input type="number" id="simDocCap" value="40" onchange="recalcSimulation()">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label id="lblTriageSummary">TRIAGE COMPARISON SUMMARY:</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: #fee2e2; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #991b1b; font-weight: 700;" id="lblBaselineTitle">BASELINE (100% MANUAL)</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #b91c1c; margin-top: 4px;" id="simBaseWait">4.8 Hours</div>
+                        <div style="font-size: 10px; color: #7f1d1d; margin-top: 2px;" id="simBaseLoad">Doctor Load: 125% (Overload)</div>
+                    </div>
+                    <div style="background: #dcfce7; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #166534; font-weight: 700;" id="lblOptTitle">DRISHTI AI-GATED (28%)</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #15803d; margin-top: 4px;" id="simOptWait">4.2 Mins</div>
+                        <div style="font-size: 10px; color: #14532d; margin-top: 2px;" id="simOptLoad">Doctor Load: 29.2% (Balanced)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-header" id="breakdownHeader" style="font-size: 12px;">Operational Queue & Throughput Breakdown</div>
+        <div class="provenance-box">
+            <div class="provenance-row"><span id="lblDailyArrival" class="provenance-key">Daily Patient Arrival Rate:</span><span class="provenance-val" id="simDailyArrival">400 patients / day</span></div>
+            <div class="provenance-row"><span id="lblAutoDischarge" class="provenance-key">AI Pre-screened Non-Referable (Auto-discharged):</span><span class="provenance-val" id="simAutoDischarged">288 patients / day (72.0%)</span></div>
+            <div class="provenance-row"><span id="lblTeleQueue" class="provenance-key">Specialist Tele-consult Queue:</span><span class="provenance-val" id="simTeleQueue">112 patients / day (Referable + Borderline)</span></div>
+            <div class="provenance-row"><span id="lblBandwidthRed" class="provenance-key">Bandwidth Reduction:</span><span class="provenance-val" id="simBandwidthVal">68.4% (Edge processed at PHC level)</span></div>
+        </div>
+    </div>
+</div>

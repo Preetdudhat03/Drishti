@@ -31,7 +31,7 @@ class ReportService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        'Drishti Screening Report (दृष्टि)',
+                        'Drishti Screening Report',
                         style: const pw.TextStyle(
                           fontSize: 20,
                           fontWeight: pw.FontWeight.bold,

@@ -1,0 +1,31 @@
+<!-- ==================== TAB 2: CLINICIAN REVIEW QUEUE ==================== -->
+<div id="tab-queue" class="tab-view">
+    <div class="card">
+        <div class="card-header">
+            <span id="queueHeaderTitle">Clinician Tele-Ophthalmology Review Queue (Supabase Cloud)</span>
+            <button id="btnRefreshQueue" class="btn btn-outline btn-sm" onclick="refreshQueueTable()">↻ Refresh Live Queue</button>
+        </div>
+        <p id="queueSubTitle" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Real-time clinical cases synchronized from Supabase cloud database awaiting qualified specialist sign-off.</p>
+
+        <div class="table-responsive">
+            <table class="data-table" id="queueTable">
+                <thead>
+                    <tr>
+                        <th id="thScreeningId">Screening ID</th>
+                        <th id="thPatient">Patient ID / Name</th>
+                        <th id="thEye">Eye</th>
+                        <th id="thGrade">AI DR Grade</th>
+                        <th id="thReferable">Referable</th>
+                        <th id="thQuality">Quality</th>
+                        <th id="thStatus">Status</th>
+                        <th id="thSubmitted">Submitted (UTC)</th>
+                        <th id="thActions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="queueTableBody">
+                    <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Loading live cases from Supabase...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

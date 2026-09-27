@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Drishti Flutter App (Chrome)",
+      "cwd": "eyexpert_app",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome"
+    },
+    {
+      "name": "Drishti Flutter App (Windows)",
+      "cwd": "eyexpert_app",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "windows"
+    }
+  ]
+}

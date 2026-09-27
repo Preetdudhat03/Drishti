@@ -79,16 +79,16 @@ class DrishtiLogo extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                   decoration: BoxDecoration(
                     color: iconColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    'दृष्टि',
+                    'AI',
                     style: TextStyle(
                       fontSize: size * 0.38,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: iconColor,
                     ),
                   ),

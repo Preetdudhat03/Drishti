@@ -50,99 +50,82 @@ class OphthalmologistDashboard extends ConsumerWidget {
               children: [
                 const SizedBox(height: 8),
                 // 1. Header: Branding & Greeting + Doctor Avatar
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 26,
-                                height: 26,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.remove_red_eye_rounded,
-                                  size: 15,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Drishti Specialist',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            AppFormatters.getGreeting(),
-                            style: const TextStyle(
-                              fontSize: 54,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
-                              letterSpacing: -1.5,
-                              height: 1.05,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '$doctorName!',
-                            style: const TextStyle(
-                              fontSize: 60,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.primary,
-                              letterSpacing: -1.5,
-                              height: 1.05,
-                            ),
-                          ),
-                        ],
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-
-                    // Doctor Profile Avatar
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.surface,
-                        border: Border.all(color: AppColors.border, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.08),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Container(
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
                           color: const Color(0xFFE0F2FE),
-                          child: const Icon(
-                            Icons.person,
-                            size: 28,
-                            color: Color(0xFF0284C7),
-                          ),
+                          border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.3), width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          size: 28,
+                          color: Color(0xFF0284C7),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  '${AppFormatters.getGreeting()}, ',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    doctorName,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${user?.facilityId ?? "FAC-DISTRICT-EYE"} • ${user?.organization ?? "District Eye Hospital"}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 18),
 
                 // 2. Primary Action Buttons — REVIEW NEXT CASE
                 PillButton(

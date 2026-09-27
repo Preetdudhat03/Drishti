@@ -46,7 +46,7 @@ class DrishtiApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: '${AppConstants.appName} (${AppConstants.appHindiName})',
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.clinicalTheme,
       home: const RootScreen(),

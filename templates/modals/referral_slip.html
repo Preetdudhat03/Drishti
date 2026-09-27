@@ -1,0 +1,76 @@
+<!-- ==================== BILINGUAL PATIENT REFERRAL SLIP MODAL ==================== -->
+<div id="referralSlipModal" class="referral-modal" onclick="if(event.target===this) closeReferralSlipModal()">
+    <div class="referral-slip-paper">
+        <!-- HEADER -->
+        <div style="background:#0f172a; color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #0284c7;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="font-size:28px;">👁️</div>
+                <div>
+                    <h3 style="margin:0; font-size:16px; font-weight:800; letter-spacing:0.5px; color:#f8fafc;" id="slipHeaderTitle">DRISHTI — Tele-Retinal Screening & Referral Slip</h3>
+                    <p style="margin:2px 0 0 0; font-size:10.5px; color:#94a3b8;" id="slipHeaderSub">National Programme for Control of Blindness (NPCB) Support | SIH 2026</p>
+                </div>
+            </div>
+            <div class="no-print">
+                <button onclick="closeReferralSlipModal()" style="background:transparent; border:none; color:#cbd5e1; font-size:20px; cursor:pointer;" title="Close">✕</button>
+            </div>
+        </div>
+
+        <div style="padding:20px;">
+            <!-- PATIENT DETAILS GRID -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:14px; font-size:12px;">
+                <div><b id="slipLblName">Patient Name:</b> <span id="slipName" style="font-weight:700; color:#0f172a;">Rajesh Patel</span></div>
+                <div><b id="slipLblId">Patient ID:</b> <span id="slipId" style="font-family:monospace; color:#0284c7; font-weight:700;">PT-2026-4401</span></div>
+                <div><b id="slipLblAge">Age / Gender:</b> <span id="slipAge">56 Yrs / M</span></div>
+                <div><b id="slipLblEye">Examined Eye:</b> <span id="slipEye">Right Eye (OD)</span></div>
+                <div><b id="slipLblDate">Screening Date:</b> <span id="slipDate">24/09/2026</span></div>
+                <div><b id="slipLblCenter">Center:</b> <span id="slipCenter">Primary Health Centre (PHC)</span></div>
+            </div>
+
+            <!-- IMAGES & DIAGNOSIS CALLOUT -->
+            <div style="display:grid; grid-template-columns: 140px 1fr; gap:14px; margin-bottom:14px; align-items:center;">
+                <div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; background:#000; height:130px; display:flex; align-items:center; justify-content:center;">
+                    <img id="slipFundusImg" src="" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+                <div>
+                    <!-- URGENCY BANNER -->
+                    <div id="slipUrgencyBanner" style="padding:10px 14px; border-radius:8px; margin-bottom:8px; background:#fef2f2; border:1.5px solid #ef4444; color:#991b1b;">
+                        <div style="font-size:14px; font-weight:800;" id="slipUrgencyTitle">🔴 Tele-Ophthalmology Consultation Recommended (Level 2)</div>
+                        <div style="font-size:11.5px; font-weight:600; margin-top:2px;" id="slipUrgencyTimeline">Timeline: Visit District Hospital within 4 to 8 weeks</div>
+                    </div>
+                    <div style="font-size:11.5px; color:#334155; line-height:1.45; background:#f1f5f9; padding:8px 10px; border-radius:6px;" id="slipDoctorNote">
+                        <b>Clinical Note:</b> Signs consistent with referable diabetic retinopathy detected. Specialist evaluation recommended.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 ADVICE BULLETS -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:14px; font-size:11.5px;">
+                <b style="color:#0f172a; display:block; margin-bottom:6px;" id="slipTipsTitle">Key Health Guidance for Patient and Family:</b>
+                <div style="display:flex; flex-direction:column; gap:4px; color:#475569;">
+                    <div id="slipTip1">🩸 <b>1. Sugar Control:</b> Regular fasting and post-prandial blood glucose checks (HbA1c &lt; 7.0%).</div>
+                    <div id="slipTip2">💊 <b>2. Daily Medication:</b> Continue prescribed diabetes and hypertension medications on time.</div>
+                    <div id="slipTip3">🏥 <b>3. Hospital Visit:</b> Bring this referral slip to the District Hospital Eye Department.</div>
+                </div>
+            </div>
+
+            <!-- FOOTER WITH VERIFICATION STAMP & QR -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:12px; font-size:10.5px; color:#64748b;">
+                <div>
+                    <div id="slipFooterDoc"><b>Verified Tele-Ophthalmologist:</b> Dr. Rajesh Kumar, MD (Ophthalmology)</div>
+                    <div><b id="slipFooterAuth">Authentication Code:</b> <span id="slipAuditCode" style="font-family:monospace; color:#0284c7;">DRISHTI-SIH26038-VERIFIED</span></div>
+                    <div style="margin-top:2px; font-size:9.5px; color:#94a3b8;" id="slipFooterNotice">*This is a computer-verified tele-screening slip. No physical signature is required.</div>
+                </div>
+                <div style="text-align:center;">
+                    <canvas id="slipQrCanvas" width="56" height="56" style="border:1px solid #cbd5e1; border-radius:4px;"></canvas>
+                    <div style="font-size:8.5px; color:#64748b; margin-top:2px;" id="slipQrLabel">QR Verify</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS (HIDDEN IN PRINT) -->
+        <div class="no-print" style="background:#f8fafc; padding:12px 20px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px;">
+            <button id="btnSlipClose" onclick="closeReferralSlipModal()" class="btn btn-outline btn-sm">✕ Close</button>
+            <button id="btnSlipPrint" onclick="printReferralSlip()" class="btn btn-success btn-sm" style="font-weight:700;">🖨️ Print Slip</button>
+        </div>
+    </div>
+</div>

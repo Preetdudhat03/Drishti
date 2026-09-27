@@ -8,6 +8,9 @@ import '../../shared/widgets/status_badge.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/fundus_image_viewer.dart';
 import '../../shared/widgets/medical_disclaimer_banner.dart';
+import '../../shared/widgets/screening_workflow_ribbon.dart';
+import '../../core/localization/locale_provider.dart';
+import '../../core/services/audio_guidance_service.dart';
 import '../screening/screening_session_provider.dart';
 
 class ImageQualityScreen extends ConsumerStatefulWidget {
@@ -28,8 +31,18 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(screeningSessionProvider.notifier).runQualityAssessment();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final lang = ref.read(localeProvider);
+      AudioGuidanceService.promptQualityChecking(ref, lang);
+      await ref.read(screeningSessionProvider.notifier).runQualityAssessment();
+      final q = ref.read(screeningSessionProvider).quality;
+      if (q != null) {
+        if (q.isUngradable) {
+          AudioGuidanceService.promptQualityFail(ref, lang);
+        } else {
+          AudioGuidanceService.promptQualityPass(ref, lang);
+        }
+      }
     });
   }
 
@@ -38,17 +51,21 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
     final session = ref.watch(screeningSessionProvider);
     final quality = session.quality;
     final isEvaluating = session.isProcessing;
+    final tr = ref.watch(trProvider);
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: ResponsiveLayout.pagePadding(context),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 750),
+          constraints: const BoxConstraints(maxWidth: 780),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
+              // 1. 3-Step Guided Flow Ribbon (Active on Step 2 - Quality Gate)
+              const ScreeningWorkflowRibbon(activeStep: 2),
+
+              // 2. Header & Status Pill
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -56,14 +73,14 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Image Quality Assessment',
-                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                        Text(
+                          tr('quality_title'),
+                          style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Screening ID: ${session.screeningId ?? "N/A"} • Eye: ${session.patient?.eye ?? "OD"}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          'Screening ID: ${session.screeningId ?? "Pending"} • Eye: ${session.patient?.eye ?? "OD"}',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -77,6 +94,8 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                             : StatusBadge.good(isLarge: true),
                 ],
               ),
+              const SizedBox(height: 14),
+
               if (session.errorMessage != null) ...[
                 // Explicit Actionable Error Card
                 ClinicalCard(
@@ -162,7 +181,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                             child: OutlinedButton.icon(
                               onPressed: widget.onRetake,
                               icon: const Icon(Icons.camera_alt_outlined),
-                              label: const Text('Recapture Image'),
+                              label: Text(tr('retake_image')),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                               ),
@@ -176,15 +195,14 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
               ] else if (isEvaluating || quality == null) ...[
                 // Loading / Multi-Step Pipeline Evaluation State
                 ClinicalCard(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      // Thumbnail of the image being evaluated
                       if (session.imagePath != null)
                         SizedBox(
                           height: 160,
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                             child: FundusImageViewer(
                               originalImagePath: session.imagePath!,
                               eyeTag: session.patient?.eye,
@@ -192,7 +210,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                             ),
                           ),
                         ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
 
                       const LinearProgressIndicator(
                         backgroundColor: Color(0xFFE2E8F0),
@@ -201,16 +219,16 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      const Text(
-                        'Automated Optical Quality & Pre-Screening Pipeline',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      Text(
+                        tr('quality_title'),
+                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold, color: AppColors.primary),
                       ),
                       const SizedBox(height: 4),
                       const Text(
                         'Evaluating mathematical metrics before running deep neural inference...',
                         style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
 
                       // Step-by-step Pipeline Stepper Items
                       _pipelineStep(
@@ -252,12 +270,19 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     // Thumbnail Fundus Image
                     Expanded(
                       flex: 4,
-                      child: SizedBox(
+                      child: Container(
                         height: 220,
-                        child: FundusImageViewer(
-                          originalImagePath: session.imagePath ?? '',
-                          eyeTag: session.patient?.eye,
-                          imageId: 'IMG-${session.screeningId?.replaceAll("EX-", "")}',
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: FundusImageViewer(
+                            originalImagePath: session.imagePath ?? '',
+                            eyeTag: session.patient?.eye,
+                            imageId: 'IMG-${session.screeningId?.replaceAll("EX-", "")}',
+                          ),
                         ),
                       ),
                     ),
@@ -267,34 +292,35 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     Expanded(
                       flex: 5,
                       child: Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                           color: quality.isUngradable
-                              ? AppColors.statusUngradableBg.withValues(alpha: 0.5)
+                              ? AppColors.statusUngradableBg.withValues(alpha: 0.6)
                               : quality.isBorderline
-                                  ? AppColors.statusBorderlineBg.withValues(alpha: 0.5)
-                                  : AppColors.statusGoodBg.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(12),
+                                  ? AppColors.statusBorderlineBg.withValues(alpha: 0.6)
+                                  : AppColors.statusGoodBg.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: quality.isUngradable
                                 ? AppColors.statusUngradable.withValues(alpha: 0.4)
                                 : quality.isBorderline
                                     ? AppColors.statusBorderline.withValues(alpha: 0.4)
                                     : AppColors.statusGood.withValues(alpha: 0.4),
+                            width: 1.5,
                           ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'OVERALL QUALITY SCORE',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54),
+                              'OVERALL OPTICAL QUALITY',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.black54, letterSpacing: 0.5),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               AppFormatters.formatPercentage(quality.overallScore),
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: 36,
                                 fontWeight: FontWeight.w900,
                                 color: quality.isUngradable
                                     ? AppColors.statusUngradable
@@ -306,13 +332,13 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                             const SizedBox(height: 4),
                             Text(
                               quality.isUngradable
-                                  ? 'STATUS: UNGRADABLE'
+                                  ? tr('quality_ungradable')
                                   : quality.isBorderline
-                                      ? 'STATUS: BORDERLINE (Enhancement Applied)'
-                                      : 'STATUS: OPTIMAL FOR SCREENING',
+                                      ? tr('quality_borderline')
+                                      : tr('quality_good'),
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                                 color: quality.isUngradable
                                     ? AppColors.statusUngradable
                                     : quality.isBorderline
@@ -330,11 +356,11 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
 
                 // Breakdown Metrics Gauges Card
                 ClinicalCard(
-                  title: 'Quality Assessment Breakdown',
+                  title: 'Optical Parameter Breakdown',
                   child: Column(
                     children: [
                       _metricRow(
-                        label: 'Focus & Sharpness',
+                        label: tr('sharpness'),
                         score: quality.sharpness.score,
                         status: quality.sharpness.status,
                         icon: Icons.filter_center_focus_rounded,
@@ -342,7 +368,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       ),
                       const Divider(height: 16),
                       _metricRow(
-                        label: 'Illumination & Exposure',
+                        label: tr('illumination'),
                         score: quality.illumination.score,
                         status: quality.illumination.status,
                         icon: Icons.wb_sunny_outlined,
@@ -350,7 +376,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       ),
                       const Divider(height: 16),
                       _metricRow(
-                        label: 'Retinal Field of View',
+                        label: tr('fov'),
                         score: quality.fieldOfView.score,
                         status: quality.fieldOfView.status,
                         icon: Icons.crop_free_rounded,
@@ -359,19 +385,19 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
                 // Specific Clinical Feedback Messages Banner
                 if (quality.feedbackMessages.isNotEmpty)
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: quality.isUngradable
                           ? AppColors.statusUngradableBg
                           : quality.isBorderline
                               ? AppColors.statusBorderlineBg
                               : AppColors.statusGoodBg,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: quality.isUngradable
                             ? AppColors.statusUngradable.withValues(alpha: 0.3)
@@ -398,7 +424,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                                       ? AppColors.statusBorderline
                                       : AppColors.statusGood,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             Text(
                               quality.isUngradable
                                   ? 'CLINICAL RECAPTURE REQUIRED'
@@ -434,7 +460,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                 // Strict Safety-Gated Action Buttons
                 if (quality.isUngradable) ...[
                   PrimaryButton(
-                    text: 'Recapture Retinal Image',
+                    text: tr('retake_image'),
                     icon: Icons.replay_rounded,
                     isDestructive: true,
                     onPressed: widget.onRetake,
@@ -442,7 +468,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                   const SizedBox(height: 8),
                   const Center(
                     child: Text(
-                      'Automated DR prediction is blocked for ungradable images to maintain clinical safety.',
+                      'Automated DR prediction is blocked for ungradable images to maintain clinical patient safety.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 11, color: AppColors.statusUngradable, fontWeight: FontWeight.w600),
                     ),
@@ -452,8 +478,9 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                     children: [
                       Expanded(
                         child: PrimaryButton(
-                          text: 'Apply CLAHE Enhancement & Screen',
+                          text: 'Apply CLAHE & Screen',
                           icon: Icons.auto_fix_high_rounded,
+                          useGradient: true,
                           onPressed: widget.onProceedToProcessing,
                         ),
                       ),
@@ -461,17 +488,19 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
                       OutlinedButton.icon(
                         onPressed: widget.onRetake,
                         icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Retake Optional'),
+                        label: Text(tr('retake_image')),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          side: const BorderSide(color: AppColors.border),
                         ),
                       ),
                     ],
                   ),
                 ] else ...[
                   PrimaryButton(
-                    text: 'Continue to AI Screening',
+                    text: tr('proceed_inference'),
                     icon: Icons.arrow_forward_rounded,
+                    useGradient: true,
                     onPressed: widget.onProceedToProcessing,
                   ),
                 ],
@@ -597,4 +626,3 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
     );
   }
 }
-

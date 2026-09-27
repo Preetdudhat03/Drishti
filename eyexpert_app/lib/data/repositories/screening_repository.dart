@@ -33,10 +33,12 @@ class ScreeningRepository {
   Future<Map<String, dynamic>> analyze({
     required String screeningId,
     required QualityAssessmentModel quality,
+    String? imagePath,
   }) async {
     return _screeningService.analyzeScreening(
       screeningId: screeningId,
       quality: quality,
+      imagePath: imagePath,
     );
   }
 }

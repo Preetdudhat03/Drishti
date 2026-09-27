@@ -1,0 +1,251 @@
+<!-- ==================== TAB 1: NEW SCREENING ==================== -->
+<div id="tab-screening" class="tab-view active">
+    
+    <!-- 3-STEP GUIDED FLOW RIBBON (ENGLISH DEFAULT) -->
+    <div id="ruralStepRibbon" style="display:flex; align-items:center; justify-content:space-between; background:linear-gradient(90deg, #1e293b, #0f172a); border:1px solid #334155; border-radius:10px; padding:10px 18px; margin-bottom:16px; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:12px; color:#38bdf8;">
+            <span style="background:#0284c7; color:white; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px;">1</span>
+            <span id="step1Text">1. Patient Intake & Context</span>
+        </div>
+        <span style="color:#64748b; font-weight:700;">➔</span>
+        <div style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:12px; color:#38bdf8;">
+            <span style="background:#0284c7; color:white; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px;">2</span>
+            <span id="step2Text">2. Capture Retinal Photo</span>
+        </div>
+        <span style="color:#64748b; font-weight:700;">➔</span>
+        <div style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:12px; color:#10b981;">
+            <span style="background:#10b981; color:white; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px;">3</span>
+            <span id="step3Text">3. Screening Result & Referral Slip</span>
+        </div>
+    </div>
+
+    <div class="grid-3">
+        
+        <!-- CARD 1: ACQUISITION & PATIENT CONTEXT -->
+        <div class="card">
+            <div class="card-header" id="card1Header">1. Image Acquisition & Context</div>
+            
+            <label id="sampleSelectLabel">SELECT BENCHMARK TEST SAMPLE:</label>
+            <select id="sampleSelect" onchange="loadBenchmarkSample()">
+                <option value="">-- Choose Test Case --</option>
+                <option value="sample_good_npdr_moderate">Moderate NPDR (Referable DR Level 2)</option>
+                <option value="sample_good_normal">Normal Retina (Non-Referable Level 0)</option>
+                <option value="sample_good_npdr_mild">Mild NPDR (Non-Referable Level 1)</option>
+                <option value="sample_good_pdr_severe">Proliferative DR (Referable Level 4)</option>
+                <option value="sample_borderline_illum">Borderline Low Contrast (CLAHE Target)</option>
+                <option value="sample_ungradable_blur">Ungradable Motion Blur (Safety Gate)</option>
+                <option value="sample_ungradable_dark">Ungradable Underexposure (Safety Gate)</option>
+            </select>
+
+            <div id="dropZone" style="border: 2px dashed #94a3b8; border-radius: 8px; padding: 18px 14px; text-align: center; background: #f8fafc; cursor: pointer; margin-bottom: 12px; transition: all 0.2s;" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleFileUpload(event)">
+                <div style="font-size: 24px; margin-bottom: 4px;">📁</div>
+                <p id="dropZoneText" style="font-size: 13px; font-weight: 700; color: var(--primary-accent); margin-bottom: 2px;">Drag & Drop or Click to Upload</p>
+                <p id="dropZoneSubtext" style="font-size: 10.5px; color: var(--text-muted);">Compatible with Smartphone Fundus, Topcon, Zeiss, Remidio DICOM/PNG/JPG</p>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button id="btnDeviceCam" class="btn btn-outline btn-sm" style="flex: 1;" onclick="openCameraModal()">📷 Device Camera Stream</button>
+            </div>
+
+            <!-- MULTI-VIEW SELECTOR STRIP -->
+            <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+                <button id="viewBtnOrig" class="btn btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('orig')">Original</button>
+                <button id="viewBtnEnh" class="btn btn-outline btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('enh')">CLAHE</button>
+                <button id="viewBtnCam" class="btn btn-outline btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('cam')">Heatmap</button>
+                <button id="viewBtnOver" class="btn btn-outline btn-sm" style="flex:1; font-size:10px; padding:4px;" onclick="setMainView('overlay')">Overlay</button>
+            </div>
+
+            <div class="img-box" id="mainImgBox" style="position: relative;">
+                <img id="origImg" src="" style="display: none;">
+                <img id="mainDynamicImg" src="" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
+                <span id="origPlaceholder" style="color: #64748b; font-size: 12px;">No image loaded</span>
+                <div id="loadingOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(9,9,11,0.85); flex-direction:column; align-items:center; justify-content:center; color:white; border-radius:8px;">
+                    <div style="width:28px; height:28px; border:3px solid #f59e0b; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                    <span id="loadingOverlayText" style="font-size:11px; margin-top:8px; font-weight:600;">Running PyTorch ResNet-18 & Syncing Supabase...</span>
+                </div>
+            </div>
+
+            <!-- PATIENT CONTEXT METADATA -->
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                <label id="patContextLabel" style="font-weight: 700; color: var(--primary);">PATIENT CONTEXT (STORED IN SUPABASE):</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
+                    <input type="text" id="patId" placeholder="Patient ID (PT-2026-XXXX)" value="PT-2026-8819">
+                    <input type="text" id="patName" placeholder="Full Patient Name" value="Sunita Devi">
+                    <input type="number" id="patAge" placeholder="Age" value="54">
+                    <select id="patEye">
+                        <option value="OD">OD (Right Eye)</option>
+                        <option value="OS">OS (Left Eye)</option>
+                    </select>
+                    <input type="number" id="patDuration" placeholder="Diabetes Duration (Yrs)" value="8">
+                    <input type="number" id="patHba1c" placeholder="HbA1c %" step="0.1" value="8.4">
+                </div>
+                <p id="patContextNotice" style="font-size: 9px; color: var(--text-muted); margin-top: 2px;">*Notice: Clinical context is synced directly to Supabase cloud table `screenings`.</p>
+            </div>
+        </div>
+
+        <!-- CARD 2: QUALITY GATE -->
+        <div class="card">
+            <div class="card-header">
+                <span id="card2Header">2. Quality Assessment Gate</span>
+                <span id="qualityBadge" class="badge badge-good">QUALITY: --</span>
+            </div>
+
+            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700; font-size: 13px;">OVERALL SCORE:</span>
+                    <span id="qualityScoreText" style="font-size: 14px; font-weight: 800; color: var(--primary);">Score: -- / 1.00</span>
+                </div>
+            </div>
+
+            <div style="font-size: 12px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9;">
+                    <span id="labelSharp" style="color: var(--text-muted);">Sharpness (Laplacian):</span>
+                    <span id="metricSharp" style="font-weight: 700;">--</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9;">
+                    <span id="labelIllum" style="color: var(--text-muted);">Illumination / Exposure:</span>
+                    <span id="metricIllum" style="font-weight: 700;">--</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9;">
+                    <span id="labelFOV" style="color: var(--text-muted);">Retinal FOV Coverage:</span>
+                    <span id="metricFOV" style="font-weight: 700;">--</span>
+                </div>
+            </div>
+
+            <div style="padding: 8px 10px; background: #f8fafc; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; margin-bottom: 12px;">
+                <b id="labelRecapture" style="color: var(--text-muted);">Recapture Guidance:</b>
+                <p id="recaptureGuidance" style="color: var(--text-main); margin-top: 2px;">Awaiting analysis.</p>
+            </div>
+
+            <!-- VISUAL QUALITY CHECKLIST FOR FRONTLINE ASHA WORKERS -->
+            <div id="simpleQualityChecklist" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:12px;">
+                <div style="font-size:11px; font-weight:700; color:#334155; margin-bottom:6px;" id="chkTitle">Camera Photo Quality Check:</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px; font-size:11px;">
+                    <div id="chkClarity" style="background:white; border:1px solid #cbd5e1; border-radius:6px; padding:6px; text-align:center; font-weight:600;">👁️ Sharpness: <span id="valClarity" style="color:#16a34a;">✅ Good</span></div>
+                    <div id="chkLight" style="background:white; border:1px solid #cbd5e1; border-radius:6px; padding:6px; text-align:center; font-weight:600;">💡 Lighting: <span id="valLight" style="color:#16a34a;">✅ Adequate</span></div>
+                    <div id="chkCenter" style="background:white; border:1px solid #cbd5e1; border-radius:6px; padding:6px; text-align:center; font-weight:600;">🎯 Centering: <span id="valCenter" style="color:#16a34a;">✅ Centered</span></div>
+                </div>
+            </div>
+
+            <label id="labelEnhanced">ENHANCED PREVIEW (ADAPTIVE CLAHE):</label>
+            <div class="img-box" style="height: 140px;">
+                <img id="enhancedImg" src="" style="display: none;">
+                <span id="enhPlaceholder" style="color: #64748b; font-size: 11px;">Enhanced View</span>
+            </div>
+        </div>
+
+        <!-- CARD 3: AI CLASSIFICATION & EXPLAINABILITY -->
+        <div class="card">
+            <div class="card-header" id="card3Header">3. AI Screening & Grad-CAM XAI</div>
+
+            <!-- HERO TRAFFIC LIGHT CARD FOR RURAL PATIENTS & ASHA WORKERS -->
+            <div id="simpleTrafficLightCard" style="display:block; margin-bottom:12px; border-radius:10px; padding:14px; text-align:center; border:2px solid #16a34a; background:#f0fdf4; transition:all 0.3s;">
+                <div style="font-size:34px; margin-bottom:4px;" id="trafficIcon">🟢</div>
+                <div id="trafficStatusTitle" style="font-size:16px; font-weight:800; color:#166534; margin-bottom:4px;">SAFE — NORMAL RETINA (Level 0 - NO DR)</div>
+                <div id="trafficActionDirective" style="font-size:12.5px; font-weight:600; color:#15803d; line-height:1.4;">Retina is healthy with no diabetic retinopathy signs. Regular annual screening recommended at PHC.</div>
+            </div>
+
+            <!-- RURAL ACTION BUTTONS: SPEAK GUIDANCE & PRINT REFERRAL SLIP -->
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <button id="btnSpeakAdvice" onclick="speakPatientAdvice()" class="btn btn-sm" style="flex:1; background:#0284c7; color:white; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; border:none; padding:8px 10px; border-radius:6px; cursor:pointer;" title="Speak clinical advice to patient">
+                    <span>📢</span> <span id="lblSpeakAdvice">Speak Advice to Patient</span>
+                </button>
+                <button id="btnPrintSlip" onclick="openReferralSlipModal()" class="btn btn-sm" style="flex:1; background:#059669; color:white; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; border:none; padding:8px 10px; border-radius:6px; cursor:pointer;" title="Print referral slip for patient">
+                    <span>🖨️</span> <span id="lblPrintSlip">Print Patient Slip</span>
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+                <div id="drLevelBadge" class="badge" style="background: #e2e8f0; color: #1e293b; font-size: 15px; padding: 6px 14px;">DR LEVEL: --</div>
+                <div id="referableBadge" class="badge badge-ref-no">REFERABLE: --</div>
+            </div>
+
+            <p id="drDescription" style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">Awaiting screening...</p>
+            <p id="probText" style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Model Probability: --</p>
+
+            <div id="probBarChartBox" style="height: 100px; margin-bottom: 12px;">
+                <canvas id="probBarChart"></canvas>
+            </div>
+
+            <div class="card-header" id="labelLayer4" style="font-size: 12px; padding-bottom: 4px; margin-top: 10px;">Layer4 Grad-CAM Model Attention</div>
+            <div class="cam-grid">
+                <div>
+                    <p id="labelCamHeatmap" style="font-size: 10px; font-weight: 600; text-align: center; margin-bottom: 2px;">Grad-CAM Heatmap</p>
+                    <div class="cam-box"><img id="camImg" src="" style="display:none;"><span id="camPlaceholder" style="color:#64748b; font-size: 10px;">Heatmap</span></div>
+                </div>
+                <div>
+                    <p id="labelOverlay" style="font-size: 10px; font-weight: 600; text-align: center; margin-bottom: 2px;">Evidence Overlay</p>
+                    <div class="cam-box"><img id="overlayImg" src="" style="display:none;"><span id="overlayPlaceholder" style="color:#64748b; font-size: 10px;">Overlay</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CARD 4: PROVENANCE & CARD 5: CLINICIAN DECISION SUPPORT -->
+    <div class="grid-2" style="margin-top: 20px;">
+        
+        <!-- CARD 4: PROVENANCE -->
+        <div class="card" id="provBoxCard">
+            <div class="card-header">
+                <span id="provHeaderTitle">Model & Evidence Provenance</span>
+                <span id="provBadge" class="badge badge-good">Validated Test QWK: 0.870</span>
+            </div>
+            <div class="provenance-box">
+                <div class="provenance-row"><span id="provModelNameKey" class="provenance-key">Model Name:</span><span id="provModelNameVal" class="provenance-val">Drishti DR Classifier</span></div>
+                <div class="provenance-row"><span id="provArchKey" class="provenance-key">Architecture:</span><span id="provArchVal" class="provenance-val">PyTorch ResNet-18 (Deep Residual Learning)</span></div>
+                <div class="provenance-row"><span id="provDataKey" class="provenance-key">Training Dataset:</span><span id="provDataVal" class="provenance-val">APTOS 2019 Blindness Detection (3,662 Fundus Images)</span></div>
+                <div class="provenance-row"><span id="provMethodKey" class="provenance-key">Explainability Method:</span><span id="provMethodVal" class="provenance-val">Layer4 Grad-CAM (Target Class Backpropagation)</span></div>
+                <div class="provenance-row"><span id="provCloudKey" class="provenance-key">Cloud Sync:</span><span id="provCloudVal" class="provenance-val">Supabase PostgreSQL 15.1 + Real-time RLS</span></div>
+                <div class="provenance-row"><span id="provStatusKey" class="provenance-key">Status:</span><span class="provenance-val" id="provReviewStatus">CLINICAL VALIDATION PENDING</span></div>
+            </div>
+        </div>
+
+        <!-- CARD 5: CLINICIAN HUMAN-IN-THE-LOOP ACTIONS -->
+        <div class="card">
+            <div class="card-header">
+                <span id="clinHeaderTitle">Clinician Decision Support & Supabase Sync</span>
+                <span id="caseStatusBadge" class="badge" style="background: #fef3c7; color: #92400e;">PENDING REVIEW</span>
+            </div>
+
+            <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 11px; margin-bottom: 12px;">
+                <b id="recActionHeaderTitle">Clinical Recommendation:</b>
+                <p id="recActionText" style="margin-top: 3px;">Awaiting screening result.</p>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <button id="btnValidateAi" class="btn btn-success btn-sm" onclick="clinicianValidate()">✔ Validate AI Result</button>
+                <button id="btnRejectAi" class="btn btn-danger btn-sm" onclick="clinicianReject()">✖ Reject (Recapture Required)</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <select id="overrideLvl" style="width: 150px; margin: 0; padding: 5px 8px; font-size: 11px;">
+                    <option value="0">Level 0 (Normal)</option>
+                    <option value="1">Level 1 (Mild NPDR)</option>
+                    <option value="2">Level 2 (Moderate NPDR)</option>
+                    <option value="3">Level 3 (Severe NPDR)</option>
+                    <option value="4">Level 4 (PDR)</option>
+                </select>
+                <button id="btnOverrideAi" class="btn btn-warning btn-sm" onclick="clinicianOverride()">⚠ Override Grade</button>
+            </div>
+
+            <div style="margin-bottom: 8px;">
+                <span id="labelQuickFindings" style="font-size:10px; color:var(--text-muted); font-weight:600;">QUICK FINDINGS:</span>
+                <span id="chipNormal" class="chip" onclick="addFinding('Clear retina, no DR lesions')">+ Normal</span>
+                <span id="chipMicro" class="chip" onclick="addFinding('Isolated microaneurysms detected')">+ Microaneurysms</span>
+                <span id="chipExudates" class="chip" onclick="addFinding('Hard exudates & blot hemorrhages')">+ Exudates</span>
+                <span id="chipCotton" class="chip" onclick="addFinding('Cotton wool spots & venous beading')">+ Cotton Wool</span>
+                <span id="chipNeovasc" class="chip" onclick="addFinding('Neovascularization present (Urgent referral)')">+ Neovasc</span>
+            </div>
+
+            <input type="text" id="clinicianRationale" placeholder="Enter ophthalmologist clinical findings..." value="Verified. Findings consistent with clinical grade.">
+            
+            <div style="display: flex; gap: 8px;">
+                <button id="btnSubmitQueue" class="btn btn-outline btn-sm" style="flex: 1;" onclick="submitToQueue()">📥 Submit to Review Queue</button>
+                <button id="btnExportReport" class="btn btn-outline btn-sm" style="flex: 1;" onclick="exportReport()">📄 Export 3-Part Report</button>
+            </div>
+        </div>
+
+    </div>
+</div>

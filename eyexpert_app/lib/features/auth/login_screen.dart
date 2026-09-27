@@ -424,7 +424,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               height: 50,
               onPressed: authState.isLoading ? null : _handleLogin,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+
+            // Instant Demo Access Button
+            PillButton(
+              label: '⚡ Instant Field Demo Access',
+              icon: Icons.bolt_rounded,
+              variant: PillButtonVariant.secondaryOutlined,
+              height: 46,
+              onPressed: () {
+                if (_selectedRole == UserRole.clinician) {
+                  _fillDoctorDemo();
+                } else {
+                  _fillWorkerDemo();
+                }
+              },
+            ),
+            const SizedBox(height: 10),
 
             // Onboarding CTA
             if (widget.onOpenOnboarding != null)

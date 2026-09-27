@@ -1,0 +1,28 @@
+<!-- ==================== TAB 5: SCREENING REPORTS ==================== -->
+<div id="tab-reports" class="tab-view">
+    <div class="card">
+        <div class="card-header">
+            <span id="reportsHeaderTitle">Structured Clinical Screening Reports Archive (Supabase)</span>
+            <button id="btnRefreshReports" class="btn btn-outline btn-sm" onclick="refreshReportsTable()">↻ Refresh Reports Archive</button>
+        </div>
+        <p id="reportsHeaderDesc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Separates (1) AI Screening Result, (2) Grad-CAM Explainability, and (3) Clinician Final Decision into printable clinical reports fetched dynamically from Supabase.</p>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th id="thRepId">Report ID</th>
+                        <th id="thRepPatient">Patient ID / Name</th>
+                        <th id="thRepDate">Date (UTC)</th>
+                        <th id="thRepAiSeverity">AI Severity Finding</th>
+                        <th id="thRepClinician">Clinician Sign-off</th>
+                        <th id="thRepAction">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted);" id="reportsTablePlaceholder">Loading live reports from Supabase...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

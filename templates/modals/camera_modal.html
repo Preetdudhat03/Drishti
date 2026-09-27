@@ -1,0 +1,14 @@
+<!-- ==================== CAMERA CAPTURE MODAL ==================== -->
+<div id="cameraModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:20px; border-radius:10px; width:460px; max-width:90%;">
+        <h3 id="camModalTitle" style="font-size:15px; margin-bottom:6px; color:#0f172a;">Device Camera Acquisition</h3>
+        <p id="camModalSub" style="font-size:11px; color:var(--text-muted); margin-bottom:12px;"><b>Notice:</b> Test demonstration capture. Live clinical diagnosis requires an optical fundus adapter.</p>
+        <div style="width:100%; height:260px; background:#000; border-radius:8px; overflow:hidden; position:relative;">
+            <video id="webcamVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:14px;">
+            <button id="btnCancelCam" class="btn btn-outline" onclick="closeCameraModal()">Cancel</button>
+            <button id="btnCaptureCam" class="btn btn-success" onclick="snapCameraFrame()">📸 Capture Snapshot</button>
+        </div>
+    </div>
+</div>

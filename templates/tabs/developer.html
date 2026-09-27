@@ -1,0 +1,27 @@
+<!-- ==================== TAB 6: DEVELOPER & API INSPECTOR ==================== -->
+<div id="tab-developer" class="tab-view">
+    <div class="card">
+        <div class="card-header">
+            <span id="devHeaderTitle">System Status & REST API Contract Inspector</span>
+            <span class="badge badge-good" id="badgeApiCompliant">API v1.0 Compliant</span>
+        </div>
+        <p id="devHeaderDesc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Live inspect JSON payloads matching <code>EYEXPERT_API_CONTRACT_V1.md</code> and Supabase Cloud sync status.</p>
+
+        <div class="provenance-box" style="margin-bottom: 15px;">
+            <div class="provenance-row"><span id="lblSupaUrl" class="provenance-key">Supabase Cloud URL:</span><span class="provenance-val">{{ supabase_url }}</span></div>
+            <div class="provenance-row"><span id="lblSupaConn" class="provenance-key">Supabase Connection:</span><span class="provenance-val" style="color: #f59e0b; font-weight: 700;">{{ supabase_status }}</span></div>
+            <div class="provenance-row"><span id="lblPytorchDevice" class="provenance-key">PyTorch Engine Device:</span><span class="provenance-val">{{ model_provenance.device }}</span></div>
+            <div class="provenance-row"><span id="lblModelCkpt" class="provenance-key">Model Weights Checkpoint:</span><span class="provenance-val">{{ model_path }}</span></div>
+        </div>
+
+        <label id="lblApiPayload">LATEST REST API / SUPABASE PAYLOAD LOG:</label>
+        <pre id="apiJsonInspector" style="background: #121215; color: #fbbf24; border: 1px solid #27272a; padding: 14px; border-radius: 8px; font-size: 11px; max-height: 250px; overflow-y: auto;">
+{
+  "status": "HEALTHY",
+  "database": "Supabase PostgreSQL Cloud",
+  "connected": true,
+  "tables": ["screenings", "quality_assessments", "ai_predictions", "explainability_results", "clinician_reviews", "audit_events"]
+}
+        </pre>
+    </div>
+</div>
