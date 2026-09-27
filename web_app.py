@@ -1289,11 +1289,12 @@ def api_v1_login():
                 prof_found = True
                 user_name = prof.data.get('name') or prof.data.get('full_name', 'Medical Staff')
                 role_db = (prof.data.get('role') or '').upper()
-                if any(x in role_db for x in ('CLINICIAN', 'OPHTHALMOLOGIST', 'DOCTOR', 'SPECIALIST', 'SURGEON')):
+                role_clean = role_db.replace('_', '').replace(' ', '').replace('/', '')
+                if any(x in role_clean for x in ('CLINICIAN', 'OPHTHALMOLOGIST', 'OPHTHALMOLOGY', 'DOCTOR', 'SPECIALIST', 'SURGEON', 'RETINA', 'OPTOMETR')):
                     user_role = 'clinician'
-                elif 'ADMIN' in role_db:
+                elif 'ADMIN' in role_clean:
                     user_role = 'admin'
-                elif any(x in role_db for x in ('HEALTH_WORKER', 'PHC_WORKER', 'NURSE', 'ASHA', 'OPERATOR')):
+                elif any(x in role_clean for x in ('HEALTHWORKER', 'PHCWORKER', 'HEALTH', 'WORKER', 'PHC', 'NURSE', 'ASHA', 'OPERATOR', 'SCREENER', 'CHW', 'HW')):
                     user_role = 'healthWorker'
                 else:
                     user_role = 'unknown'
@@ -1303,17 +1304,19 @@ def api_v1_login():
             print(f"[Drishti Engine] Supabase profile query notice: {e}")
 
     if not prof_found:
-        if any(x in role_req for x in ('CLINICIAN', 'OPHTHALMOLOGIST', 'DOCTOR', 'SPECIALIST', 'SURGEON')):
+        u_lower = username.lower()
+        r_clean = role_req.replace('_', '').replace(' ', '').replace('/', '')
+        if any(x in r_clean for x in ('CLINICIAN', 'OPHTHALMOLOGIST', 'OPHTHALMOLOGY', 'DOCTOR', 'SPECIALIST', 'SURGEON', 'RETINA', 'OPTOMETR')) or any(x in u_lower for x in ('ophthalmologist', 'doctor', 'clinician', 'retina')):
             user_role = 'clinician'
             user_name = 'Dr. Rajesh Kumar'
             user_id = 'USR-2026-CLIN01'
             facility = 'DISTRICT-EYE-HOSPITAL'
-        elif any(x in role_req for x in ('HEALTH_WORKER', 'PHC_WORKER', 'NURSE', 'ASHA', 'OPERATOR')):
+        elif any(x in r_clean for x in ('HEALTHWORKER', 'PHCWORKER', 'HEALTH', 'WORKER', 'PHC', 'NURSE', 'ASHA', 'OPERATOR', 'SCREENER', 'CHW', 'HW')) or any(x in u_lower for x in ('healthworker', 'worker', 'phc', 'asha', 'nurse')):
             user_role = 'healthWorker'
             user_name = 'Sunita Sharma'
             user_id = 'USR-2026-HW01'
             facility = 'PHC-RAMGARH-01'
-        elif 'ADMIN' in role_req:
+        elif 'ADMIN' in r_clean or 'admin' in u_lower:
             user_role = 'admin'
             user_name = 'Administrator'
             user_id = 'USR-2026-ADM01'

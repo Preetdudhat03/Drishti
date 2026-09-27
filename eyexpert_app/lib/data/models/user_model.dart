@@ -36,27 +36,38 @@ enum UserRole {
 
   static UserRole fromString(String? role) {
     if (role == null) return UserRole.unknown;
-    final normalized = role.trim().toUpperCase();
-    if (normalized.isEmpty) return UserRole.unknown;
+    final raw = role.trim().toUpperCase();
+    if (raw.isEmpty) return UserRole.unknown;
+
+    final normalized = raw.replaceAll('_', '').replaceAll(' ', '').replaceAll('/', '').replaceAll('-', '');
 
     if (normalized.contains('CLINICIAN') ||
         normalized.contains('OPHTHALMOLOGIST') ||
-        normalized == 'DOCTOR' ||
+        normalized.contains('OPHTHALMOLOGY') ||
+        normalized.contains('DOCTOR') ||
+        normalized.contains('PHYSICIAN') ||
         normalized.contains('SPECIALIST') ||
         normalized.contains('SURGEON') ||
-        normalized.contains('RETINA')) {
+        normalized.contains('RETINA') ||
+        normalized.contains('OPTOMETR') ||
+        normalized == 'DR') {
       return UserRole.clinician;
     }
-    if (normalized.contains('ADMIN')) {
+    if (normalized.contains('ADMIN') ||
+        normalized.contains('SUPERUSER') ||
+        normalized.contains('ROOT')) {
       return UserRole.admin;
     }
-    if (normalized.contains('HEALTH_WORKER') ||
-        normalized.contains('PHC_WORKER') ||
-        normalized.contains('HEALTH WORKER') ||
-        normalized.contains('PHC WORKER') ||
+    if (normalized.contains('HEALTHWORKER') ||
+        normalized.contains('PHCWORKER') ||
+        normalized.contains('HEALTH') ||
+        normalized.contains('WORKER') ||
+        normalized.contains('PHC') ||
         normalized.contains('NURSE') ||
         normalized.contains('ASHA') ||
         normalized.contains('OPERATOR') ||
+        normalized.contains('SCREENER') ||
+        normalized.contains('CHW') ||
         normalized == 'HW') {
       return UserRole.healthWorker;
     }
@@ -195,12 +206,33 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final email = json['email']?.toString() ?? '';
+    var parsedRole = UserRole.fromString(json['role']?.toString());
+    if (parsedRole == UserRole.unknown && email.isNotEmpty) {
+      final emailLower = email.toLowerCase();
+      if (emailLower.contains('ophthalmologist') ||
+          emailLower.contains('doctor') ||
+          emailLower.contains('clinician') ||
+          emailLower.contains('retina') ||
+          emailLower.contains('specialist')) {
+        parsedRole = UserRole.clinician;
+      } else if (emailLower.contains('healthworker') ||
+          emailLower.contains('worker') ||
+          emailLower.contains('phc') ||
+          emailLower.contains('nurse') ||
+          emailLower.contains('asha')) {
+        parsedRole = UserRole.healthWorker;
+      } else if (emailLower.contains('admin')) {
+        parsedRole = UserRole.admin;
+      }
+    }
+
     return UserModel(
       id: json['id']?.toString() ?? '',
-      email: json['email']?.toString() ?? '',
+      email: email,
       name: json['name']?.toString() ?? json['full_name']?.toString() ?? 'Medical Officer',
       phone: json['phone']?.toString() ?? '',
-      role: UserRole.fromString(json['role']?.toString()),
+      role: parsedRole,
       organization: json['organization']?.toString() ?? json['facility_name']?.toString() ?? json['facility_id']?.toString() ?? 'Primary Health Centre',
       facilityId: json['facility_id']?.toString() ?? 'PHC-RAMGARH-01',
       professionalId: json['professional_id']?.toString() ?? json['registration_number']?.toString() ?? json['registration_id']?.toString(),

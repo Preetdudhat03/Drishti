@@ -15,11 +15,23 @@ void main() {
     test('UserRole parsing from diverse string representations', () {
       expect(UserRole.fromString('HEALTH_WORKER'), UserRole.healthWorker);
       expect(UserRole.fromString('Health Worker'), UserRole.healthWorker);
+      expect(UserRole.fromString('healthWorker'), UserRole.healthWorker);
+      expect(UserRole.fromString('HEALTHWORKER'), UserRole.healthWorker);
+      expect(UserRole.fromString('PHC / Health Worker'), UserRole.healthWorker);
+      expect(UserRole.fromString('Nurse'), UserRole.healthWorker);
+      expect(UserRole.fromString('ASHA'), UserRole.healthWorker);
+      expect(UserRole.fromString('HW'), UserRole.healthWorker);
       expect(UserRole.fromString('OPHTHALMOLOGIST'), UserRole.clinician);
+      expect(UserRole.fromString('Ophthalmologist / Clinician'), UserRole.clinician);
       expect(UserRole.fromString('Clinician'), UserRole.clinician);
+      expect(UserRole.fromString('clinician'), UserRole.clinician);
       expect(UserRole.fromString('Doctor'), UserRole.clinician);
+      expect(UserRole.fromString('Retina Specialist'), UserRole.clinician);
       expect(UserRole.fromString('ADMIN'), UserRole.admin);
+      expect(UserRole.fromString('Administrator'), UserRole.admin);
       expect(UserRole.fromString(null), UserRole.unknown);
+      expect(UserRole.fromString(''), UserRole.unknown);
+      expect(UserRole.fromString('random_guest'), UserRole.unknown);
     });
 
     test('UserModel JSON serialization & deserialization', () {
