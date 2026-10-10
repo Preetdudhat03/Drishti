@@ -341,7 +341,9 @@ class CaseQueueScreen extends ConsumerWidget {
           ),
         ),
       ],
-    );
+    ),
+  ),
+);
   }
 
   Widget _tagPill(String label, Color bg, Color textColor) {
