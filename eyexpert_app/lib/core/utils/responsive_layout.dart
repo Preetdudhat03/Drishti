@@ -33,7 +33,7 @@ class ResponsiveLayout extends StatelessWidget {
     final isDesktopOrTablet = isDesktop(context) || isTablet(context);
     if (isDesktopOrTablet) return 24.0;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    return bottomInset + 15.0;
+    return bottomInset + 10.0;
   }
 
   /// Standard responsive page padding for full-screen scrollable views inside ResponsiveScaffold.
