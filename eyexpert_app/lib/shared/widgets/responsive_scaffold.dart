@@ -316,18 +316,18 @@ class ResponsiveScaffold extends ConsumerWidget {
       extendBody: true,
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(84),
+        preferredSize: const Size.fromHeight(60),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(18),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.88),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withValues(alpha: 0.90),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(
                       color: AppColors.border.withValues(alpha: 0.8),
                       width: 1,
@@ -335,13 +335,13 @@ class ResponsiveScaffold extends ConsumerWidget {
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final availableWidth = constraints.maxWidth;
@@ -353,8 +353,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                           children: [
                             // Brand Emblem
                             Container(
-                              width: isUltraCompact ? 32 : 36,
-                              height: isUltraCompact ? 32 : 36,
+                              width: isUltraCompact ? 30 : 34,
+                              height: isUltraCompact ? 30 : 34,
                               decoration: BoxDecoration(
                                 color: AppColors.primaryLight,
                                 borderRadius: BorderRadius.circular(10),
@@ -363,10 +363,10 @@ class ResponsiveScaffold extends ConsumerWidget {
                               child: Icon(
                                 Icons.remove_red_eye_rounded,
                                 color: AppColors.primary,
-                                size: isUltraCompact ? 18 : 20,
+                                size: isUltraCompact ? 17 : 19,
                               ),
                             ),
-                            SizedBox(width: isUltraCompact ? 8 : 10),
+                            SizedBox(width: isUltraCompact ? 6 : 8),
 
                             // Title & Role
                             Expanded(
@@ -383,13 +383,13 @@ class ResponsiveScaffold extends ConsumerWidget {
                                           maxLines: 1,
                                           style: TextStyle(
                                             fontWeight: FontWeight.w800,
-                                            fontSize: isUltraCompact ? 13.5 : 15,
+                                            fontSize: isUltraCompact ? 13 : 14.5,
                                             color: AppColors.textPrimary,
                                             letterSpacing: -0.3,
                                           ),
                                         ),
                                       ),
-                                      if (!isUltraCompact) ...[
+                                      if (!isCompact) ...[
                                         const SizedBox(width: 6),
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
@@ -437,8 +437,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(14),
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isUltraCompact ? 6 : 8,
-                                  vertical: isUltraCompact ? 4 : 5,
+                                  horizontal: isCompact ? 6 : 8,
+                                  vertical: isCompact ? 4 : 5,
                                 ),
                                 decoration: BoxDecoration(
                                   color: isClinician ? const Color(0xFFFEF3C7) : AppColors.primaryLight,
@@ -453,15 +453,13 @@ class ResponsiveScaffold extends ConsumerWidget {
                                   children: [
                                     Icon(
                                       isClinician ? Icons.medical_services_outlined : Icons.health_and_safety_outlined,
-                                      size: isUltraCompact ? 13 : 14,
+                                      size: isCompact ? 13 : 14,
                                       color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
                                     ),
-                                    if (!isUltraCompact) ...[
+                                    if (!isCompact) ...[
                                       const SizedBox(width: 4),
                                       Text(
-                                        isCompact
-                                            ? (isClinician ? 'Screener' : 'Doctor')
-                                            : (isClinician ? tr('switch_to_screener') : tr('switch_to_doctor')),
+                                        isClinician ? tr('switch_to_screener') : tr('switch_to_doctor'),
                                         style: TextStyle(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.w800,
@@ -475,8 +473,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                             ),
                             const SizedBox(width: 4),
 
-                            // Audio Guidance Toggle (hidden on ultra-compact to avoid overflow)
-                            if (!isUltraCompact) ...[
+                            // Audio Guidance Toggle (hidden on compact to prioritize title readability)
+                            if (!isCompact) ...[
                               IconButton(
                                 icon: Icon(
                                   isAudioEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
@@ -497,8 +495,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isUltraCompact ? 5 : 7,
-                                  vertical: isUltraCompact ? 3 : 4,
+                                  horizontal: isCompact ? 5 : 7,
+                                  vertical: isCompact ? 3 : 4,
                                 ),
                                 decoration: BoxDecoration(
                                   color: AppColors.surfaceMuted,
@@ -508,8 +506,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(currentLang.flag, style: TextStyle(fontSize: isUltraCompact ? 11 : 12)),
-                                    if (!isUltraCompact) ...[
+                                    Text(currentLang.flag, style: TextStyle(fontSize: isCompact ? 12 : 12)),
+                                    if (!isCompact) ...[
                                       const SizedBox(width: 3),
                                       Text(
                                         currentLang.code.toUpperCase(),
