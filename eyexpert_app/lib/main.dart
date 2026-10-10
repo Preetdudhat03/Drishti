@@ -282,33 +282,51 @@ class _RootScreenState extends ConsumerState<RootScreen> {
 
       switch (_navIndex) {
         case 0:
-          title = 'Priority Review Queue';
-          body = CaseQueueScreen(
-            onSelectCase: (c) => setState(() => _activeCaseReview = c),
+          title = 'Specialist Overview';
+          body = OphthalmologistDashboard(
+            onOpenReviewQueue: () {
+              ref.read(reviewQueueProvider.notifier).setFilter('PENDING');
+              setState(() => _navIndex = 1);
+            },
+            onViewCases: () {
+              ref.read(reviewQueueProvider.notifier).setFilter('ALL');
+              setState(() => _navIndex = 1);
+            },
+            onOpenQueueWithFilter: (filter) {
+              ref.read(reviewQueueProvider.notifier).setFilter(filter);
+              setState(() => _navIndex = 1);
+            },
+            onViewSystemStatus: () => setState(() => _navIndex = 2),
+            onReviewCase: (c) => setState(() => _activeCaseReview = c),
+            onViewReport: (c) => setState(() => _activeReportView = c),
+            onSelectCase: (c) {
+              if (c.hasReviewed) {
+                setState(() => _activeReportView = c);
+              } else {
+                setState(() => _activeCaseReview = c);
+              }
+            },
           );
           break;
         case 1:
-          title = 'All Screening Cases';
+          title = 'Clinical Review Queue & Cases';
           body = CaseQueueScreen(
-            onSelectCase: (c) => setState(() => _activeCaseReview = c),
+            onReviewCase: (c) => setState(() => _activeCaseReview = c),
+            onViewReport: (c) => setState(() => _activeReportView = c),
+            onSelectCase: (c) {
+              if (c.hasReviewed) {
+                setState(() => _activeReportView = c);
+              } else {
+                setState(() => _activeCaseReview = c);
+              }
+            },
           );
           break;
         case 2:
-          title = 'Specialist Overview';
-          body = OphthalmologistDashboard(
-            onOpenReviewQueue: () => setState(() => _navIndex = 0),
-            onViewCases: () => setState(() => _navIndex = 1),
-            onViewSystemStatus: () => setState(() => _navIndex = 0),
-            onSelectCase: (c) => setState(() => _activeCaseReview = c),
-          );
+          title = 'Telemedicine & System Status';
+          body = const SystemStatusScreen();
           break;
         case 3:
-          title = 'Clinical Reports';
-          body = CaseQueueScreen(
-            onSelectCase: (c) => setState(() => _activeReportView = c),
-          );
-          break;
-        case 4:
         default:
           title = 'Clinician Profile & Verification';
           body = const ProfileScreen();
