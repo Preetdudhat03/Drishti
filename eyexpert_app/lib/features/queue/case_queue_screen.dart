@@ -8,9 +8,32 @@ import '../../core/network/connection_provider.dart';
 import '../review/review_queue_provider.dart';
 
 class CaseQueueScreen extends ConsumerWidget {
-  final ValueChanged<ScreeningCaseModel> onSelectCase;
+  final ValueChanged<ScreeningCaseModel>? onSelectCase;
+  final ValueChanged<ScreeningCaseModel>? onReviewCase;
+  final ValueChanged<ScreeningCaseModel>? onViewReport;
 
-  const CaseQueueScreen({super.key, required this.onSelectCase});
+  const CaseQueueScreen({
+    super.key,
+    this.onSelectCase,
+    this.onReviewCase,
+    this.onViewReport,
+  });
+
+  void _handleCaseAction(ScreeningCaseModel c) {
+    if (c.hasReviewed) {
+      if (onViewReport != null) {
+        onViewReport!(c);
+      } else if (onSelectCase != null) {
+        onSelectCase!(c);
+      }
+    } else {
+      if (onReviewCase != null) {
+        onReviewCase!(c);
+      } else if (onSelectCase != null) {
+        onSelectCase!(c);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,18 +77,18 @@ class CaseQueueScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
 
-              // Filter Chips
+              // Filter Chips for Review Queue, All Cases, Urgent, and Reports
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _filterChip(ref, 'All (${queueState.totalScreenedCount})', 'ALL', queueState.filter),
+                    _filterChip(ref, 'All Cases (${queueState.totalScreenedCount})', 'ALL', queueState.filter),
                     const SizedBox(width: 8),
-                    _filterChip(ref, 'Pending (${queueState.totalPendingCount})', 'PENDING', queueState.filter),
+                    _filterChip(ref, 'Pending Queue (${queueState.totalPendingCount})', 'PENDING', queueState.filter),
                     const SizedBox(width: 8),
-                    _filterChip(ref, 'Referable Priority (${queueState.referableCount})', 'REFERABLE', queueState.filter),
+                    _filterChip(ref, 'Urgent Referrals (${queueState.referableCount})', 'REFERABLE', queueState.filter),
                     const SizedBox(width: 8),
-                    _filterChip(ref, 'Completed (${queueState.completedCount})', 'COMPLETED', queueState.filter),
+                    _filterChip(ref, 'Reports Archive (${queueState.completedCount})', 'COMPLETED', queueState.filter),
                   ],
                 ),
               ),
