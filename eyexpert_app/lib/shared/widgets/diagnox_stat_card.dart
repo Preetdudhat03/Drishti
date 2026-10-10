@@ -19,8 +19,13 @@ class DiagnoXStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.sizeOf(context).width < 650;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 14 : 18,
+        vertical: isMobile ? 12 : 16,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
@@ -67,22 +72,24 @@ class DiagnoXStatCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: isMobile ? 6 : 10),
           // Big bold numerical value
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 28,
+            style: TextStyle(
+              fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
               letterSpacing: -0.8,
               height: 1.1,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           // Subtitle
           Text(
             subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w500,
