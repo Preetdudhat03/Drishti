@@ -811,7 +811,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
 
                   // Table Rows
                   for (int i = 0; i < cases.take(10).length; i++) ...[
-                    if (i > 0) const Divider(height: 1, color: AppColors.borderMuted),
+                    if (i > 0) const Divider(height: 1, color: AppColors.border),
                     _buildTableRow(cases[i], tr),
                   ],
                 ],
