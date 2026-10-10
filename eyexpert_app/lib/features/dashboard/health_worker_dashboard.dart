@@ -148,27 +148,28 @@ class HealthWorkerDashboard extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // 2. Primary Action Buttons (Hero Centerpiece)
                 PillButton(
                   label: tr('start_screening'),
                   icon: Icons.camera_alt_rounded,
                   width: double.infinity,
-                  height: 50,
+                  height: 48,
                   onPressed: onStartScreening,
                 ),
-                const SizedBox(height: 10),
+
+                const SizedBox(height: 8),
                 PillButton(
                   label: tr('view_records'),
                   icon: Icons.folder_open_rounded,
                   variant: PillButtonVariant.secondaryOutlined,
                   width: double.infinity,
-                  height: 46,
+                  height: 44,
                   onPressed: onViewCases,
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // 3. Stats Rows (Four PHC Metrics)
                 Row(
@@ -182,7 +183,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                         iconColor: AppColors.primary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: DiagnoXStatCard(
                         icon: Icons.warning_amber_rounded,
@@ -194,7 +195,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
@@ -206,7 +207,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                         iconColor: AppColors.statusBorderline,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: DiagnoXStatCard(
                         icon: Icons.verified_rounded,
@@ -219,7 +220,7 @@ class HealthWorkerDashboard extends ConsumerWidget {
                   ],
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
 
                 // 4. "Recent Screenings" Section
                 Row(
