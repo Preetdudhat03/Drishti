@@ -60,12 +60,14 @@ class HealthWorkerDashboard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                OfflineStatusBar(
-                  isOnline: syncState.isOnline,
-                  pendingCount: syncState.pendingCount,
-                  onTap: () => ref.read(syncQueueProvider.notifier).syncNow(),
-                ),
-                const SizedBox(height: 10),
+                if (!syncState.isOnline || syncState.pendingCount > 0) ...[
+                  OfflineStatusBar(
+                    isOnline: syncState.isOnline,
+                    pendingCount: syncState.pendingCount,
+                    onTap: () => ref.read(syncQueueProvider.notifier).syncNow(),
+                  ),
+                  const SizedBox(height: 10),
+                ],
 
                 // 1. Header: Branding & Greeting + Worker Avatar
                 Container(
