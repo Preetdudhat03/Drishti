@@ -39,182 +39,193 @@ class CaseQueueScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final queueState = ref.watch(reviewQueueProvider);
     final cases = queueState.filteredCases;
+    final isDesktop = ResponsiveLayout.isDesktop(context);
 
-    return Column(
-      children: [
-        // Search & Filter Header matching DiagnoX Patients screen
-        Container(
-          padding: EdgeInsets.fromLTRB(20, ResponsiveLayout.topBarClearance(context), 20, 8),
-          color: Colors.transparent,
-          child: Column(
-            children: [
-              // Pill Search Field
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  onChanged: (val) => ref.read(reviewQueueProvider.notifier).setSearchQuery(val),
-                  decoration: const InputDecoration(
-                    hintText: 'Type a symptom, patient ID, or name...',
-                    hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
-                    prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Filter Chips for Review Queue, All Cases, Urgent, and Reports
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _filterChip(ref, 'All Cases (${queueState.totalScreenedCount})', 'ALL', queueState.filter),
-                    const SizedBox(width: 8),
-                    _filterChip(ref, 'Pending Queue (${queueState.totalPendingCount})', 'PENDING', queueState.filter),
-                    const SizedBox(width: 8),
-                    _filterChip(ref, 'Urgent Referrals (${queueState.referableCount})', 'REFERABLE', queueState.filter),
-                    const SizedBox(width: 8),
-                    _filterChip(ref, 'Reports Archive (${queueState.completedCount})', 'COMPLETED', queueState.filter),
-                  ],
-                ),
-              ),
-            ],
-          ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: isDesktop ? 1160 : double.infinity,
         ),
-
-        if (queueState.errorMessage != null)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            color: const Color(0xFFFFFBEB),
-            child: Row(
-              children: [
-                const Icon(Icons.cloud_off_rounded, color: Color(0xFFD97706), size: 20),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'App is currently offline. Showing local cases. Tap retry to reconnect.',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF92400E), fontWeight: FontWeight.w600),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    await ref.read(connectionProvider.notifier).checkConnection();
-                    await ref.read(reviewQueueProvider.notifier).loadPendingReviews();
-                  },
-                  child: const Text('Retry', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                ),
-              ],
-            ),
-          ),
-
-        // Cases List
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await Future.wait([
-                ref.read(connectionProvider.notifier).checkConnection(),
-                ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
-              ]);
-            },
-            color: AppColors.primary,
-            child: cases.isEmpty
-                ? LayoutBuilder(
-                    builder: (context, constraints) => SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.folder_open_rounded, size: 54, color: AppColors.textMuted),
-                              const SizedBox(height: 12),
-                              Text(
-                                queueState.searchQuery.isEmpty
-                                    ? 'No cases currently in review queue.'
-                                    : 'No cases found matching "${queueState.searchQuery}"',
-                                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Swipe down to refresh from Supabase database',
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 11.5),
-                              ),
-                            ],
-                          ),
+        child: Column(
+          children: [
+            // Search & Filter Header matching DiagnoX Patients screen
+            Container(
+              padding: EdgeInsets.fromLTRB(16, ResponsiveLayout.topBarClearance(context), 16, 8),
+              color: Colors.transparent,
+              child: Column(
+                children: [
+                  // Pill Search Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
+                      ],
+                    ),
+                    child: TextField(
+                      onChanged: (val) => ref.read(reviewQueueProvider.notifier).setSearchQuery(val),
+                      decoration: const InputDecoration(
+                        hintText: 'Type a symptom, patient ID, or name...',
+                        hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
+                        prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
                       ),
                     ),
-                  )
-                : ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(20, 8, 20, ResponsiveLayout.bottomBarClearance(context)),
-                    itemCount: cases.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final c = cases[index];
-                      final pred = c.prediction;
-                      final isHighRisk = c.isReferable || (pred != null && pred.drLevel >= 3);
-                      final String patientName = c.patient.patientId.startsWith('PT-')
-                          ? c.patient.patientId
-                          : 'Patient #${c.patient.patientId}';
-                      final String patientAge = c.patient.age != null && c.patient.age! > 0 ? '${c.patient.age}y' : '42y';
-                      final String patientGender = c.patient.gender?.isNotEmpty == true ? c.patient.gender! : 'Male';
-                      final String eyeSide = AppFormatters.formatEye(c.patient.eye);
+                  ),
+                  const SizedBox(height: 12),
 
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.border),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.025),
-                              blurRadius: 14,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _handleCaseAction(c),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.all(18),
+                  // Filter Chips for Review Queue, All Cases, Urgent, and Reports
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _filterChip(ref, 'All Cases (${queueState.totalScreenedCount})', 'ALL', queueState.filter),
+                        const SizedBox(width: 8),
+                        _filterChip(ref, 'Pending Queue (${queueState.totalPendingCount})', 'PENDING', queueState.filter),
+                        const SizedBox(width: 8),
+                        _filterChip(ref, 'Urgent Referrals (${queueState.referableCount})', 'REFERABLE', queueState.filter),
+                        const SizedBox(width: 8),
+                        _filterChip(ref, 'Reports Archive (${queueState.completedCount})', 'COMPLETED', queueState.filter),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            if (queueState.errorMessage != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                color: const Color(0xFFFFFBEB),
+                child: Row(
+                  children: [
+                    const Icon(Icons.cloud_off_rounded, color: Color(0xFFD97706), size: 20),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'App is currently offline. Showing local cases. Tap retry to reconnect.',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF92400E), fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await ref.read(connectionProvider.notifier).checkConnection();
+                        await ref.read(reviewQueueProvider.notifier).loadPendingReviews();
+                      },
+                      child: const Text('Retry', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Cases List
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await Future.wait([
+                    ref.read(connectionProvider.notifier).checkConnection(),
+                    ref.read(reviewQueueProvider.notifier).loadPendingReviews(),
+                  ]);
+                },
+                color: AppColors.primary,
+                child: cases.isEmpty
+                    ? LayoutBuilder(
+                        builder: (context, constraints) => SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                            child: Center(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Top row: Tag pills
-                                  Row(
-                                    children: [
-                                      _tagPill('Diabetes', const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
-                                      const SizedBox(width: 6),
-                                      _tagPill(eyeSide, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
-                                      const SizedBox(width: 6),
-                                      if (isHighRisk)
-                                        _tagPill('Urgent Triage', AppColors.badgeHighRiskBg, AppColors.badgeHighRiskText)
-                                      else if (c.hasReviewed)
-                                        _tagPill('Validated', const Color(0xFFF1F5F9), AppColors.textPrimary),
-                                      const Spacer(),
-                                      const Icon(Icons.more_vert_rounded, size: 18, color: AppColors.textMuted),
-                                    ],
-                                  ),
+                                  const Icon(Icons.folder_open_rounded, size: 54, color: AppColors.textMuted),
                                   const SizedBox(height: 12),
+                                  Text(
+                                    queueState.searchQuery.isEmpty
+                                        ? 'No cases currently in review queue.'
+                                        : 'No cases found matching "${queueState.searchQuery}"',
+                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Swipe down to refresh from Supabase database',
+                                    style: TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.fromLTRB(16, 8, 16, ResponsiveLayout.bottomBarClearance(context)),
+                        itemCount: cases.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final c = cases[index];
+                          final pred = c.prediction;
+                          final isHighRisk = c.isReferable || (pred != null && pred.drLevel >= 3);
+                          final String patientName = c.patient.patientId.startsWith('PT-')
+                              ? c.patient.patientId
+                              : 'Patient #${c.patient.patientId}';
+                          final String patientAge = c.patient.age != null && c.patient.age! > 0 ? '${c.patient.age}y' : '42y';
+                          final String patientGender = c.patient.gender?.isNotEmpty == true ? c.patient.gender! : 'Male';
+                          final String eyeSide = AppFormatters.formatEye(c.patient.eye);
+
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.border),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.025),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => _handleCaseAction(c),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Top row: Tag pills with responsive Wrap
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Wrap(
+                                              spacing: 6,
+                                              runSpacing: 4,
+                                              children: [
+                                                _tagPill('Diabetes', const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
+                                                _tagPill(eyeSide, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
+                                                if (isHighRisk)
+                                                  _tagPill('Urgent Triage', AppColors.badgeHighRiskBg, AppColors.badgeHighRiskText)
+                                                else if (c.hasReviewed)
+                                                  _tagPill('Validated', const Color(0xFFF1F5F9), AppColors.textPrimary),
+                                              ],
+                                            ),
+                                          ),
+                                          const Icon(Icons.more_vert_rounded, size: 18, color: AppColors.textMuted),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
 
                                   // Clinical summary note
                                   Text(
