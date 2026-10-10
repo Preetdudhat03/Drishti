@@ -25,6 +25,8 @@ import 'features/review/clinician_review_screen.dart';
 import 'features/queue/case_queue_screen.dart';
 import 'features/offline/sync_manager_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/system_status/system_status_screen.dart';
+import 'features/review/review_queue_provider.dart';
 import 'features/screening/screening_session_provider.dart';
 
 void main() async {
