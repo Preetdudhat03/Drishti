@@ -139,22 +139,22 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
                 // 1. Header: Branding & Greeting + Doctor Profile
                 _buildHeaderCard(context, user, doctorName, tr, isMobile, isSmallMobile),
 
-                const SizedBox(height: 16),
+                SizedBox(height: isMobile ? 12 : 16),
 
                 // 2. Primary Clinical Action Bar (Responsive)
                 _buildActionButtons(context, pendingCases, screenWidth),
 
-                const SizedBox(height: 20),
+                SizedBox(height: isMobile ? 14 : 20),
 
                 // 3. Review Queue Priority Triage Stat Strip (Responsive Grid)
                 _buildTriageStats(context, reviewState, pendingCases, urgentCases, completedCases, tr, screenWidth),
 
-                const SizedBox(height: 24),
+                SizedBox(height: isMobile ? 16 : 24),
 
                 // 4. Clinical Cases Section Header & Local Filter Tabs
                 _buildCasesSectionHeader(context, allCases, pendingCases, urgentCases, completedCases, tr, isMobile),
 
-                const SizedBox(height: 14),
+                SizedBox(height: isMobile ? 10 : 14),
 
                 // 5. Clinical Cases Display (Responsive Table on Wide Screens, Cards on Mobile/Narrow Screens)
                 if (displayedCases.isEmpty)
@@ -164,7 +164,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
                 else
                   _buildMobileCasesList(displayedCases, tr),
 
-                const SizedBox(height: 32),
+                SizedBox(height: isMobile ? 16 : 32),
               ],
             ),
           ),
