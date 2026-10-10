@@ -342,183 +342,206 @@ class ResponsiveScaffold extends ConsumerWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Brand Emblem
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                          ),
-                          child: const Icon(
-                            Icons.remove_red_eye_rounded,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        
-                        // Title & Role
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final availableWidth = constraints.maxWidth;
+                        final isUltraCompact = availableWidth < 420;
+                        final isCompact = availableWidth < 580;
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Brand Emblem
+                            Container(
+                              width: isUltraCompact ? 32 : 36,
+                              height: isUltraCompact ? 32 : 36,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryLight,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                              ),
+                              child: Icon(
+                                Icons.remove_red_eye_rounded,
+                                color: AppColors.primary,
+                                size: isUltraCompact ? 18 : 20,
+                              ),
+                            ),
+                            SizedBox(width: isUltraCompact ? 8 : 10),
+
+                            // Title & Role
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Flexible(
-                                    child: Text(
-                                      title,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 15,
-                                        color: AppColors.textPrimary,
-                                        letterSpacing: -0.3,
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          title,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: isUltraCompact ? 13.5 : 15,
+                                            color: AppColors.textPrimary,
+                                            letterSpacing: -0.3,
+                                          ),
+                                        ),
+                                      ),
+                                      if (!isUltraCompact) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryLight,
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Text(
+                                            'SIH 2026',
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  if (currentUser != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 1),
+                                      child: Text(
+                                        isClinician
+                                            ? tr('specialist')
+                                            : tr('phc_screener'),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: isUltraCompact ? 9 : 10,
+                                          color: AppColors.textSecondary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primaryLight,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Text(
-                                      'SIH 2026',
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
-                              if (currentUser != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 1),
-                                  child: Text(
-                                    isClinician
-                                        ? tr('specialist')
-                                        : tr('phc_screener'),
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.textSecondary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                            ),
+
+                            // Fast Role Switcher Pill for Jury / Evaluation
+                            InkWell(
+                              onTap: () {
+                                final nextRole = isClinician ? UserRole.healthWorker : UserRole.clinician;
+                                ref.read(authProvider.notifier).switchWorkspaceRole(nextRole);
+                              },
+                              borderRadius: BorderRadius.circular(14),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isUltraCompact ? 6 : 8,
+                                  vertical: isUltraCompact ? 4 : 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isClinician ? const Color(0xFFFEF3C7) : AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isClinician ? const Color(0xFFF59E0B) : AppColors.primary,
+                                    width: 1,
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
-
-                        // Fast Role Switcher Pill for Jury / Evaluation
-                        InkWell(
-                          onTap: () {
-                            final nextRole = isClinician ? UserRole.healthWorker : UserRole.clinician;
-                            ref.read(authProvider.notifier).switchWorkspaceRole(nextRole);
-                          },
-                          borderRadius: BorderRadius.circular(14),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: isClinician ? const Color(0xFFFEF3C7) : AppColors.primaryLight,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isClinician ? const Color(0xFFF59E0B) : AppColors.primary,
-                                width: 1,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isClinician ? Icons.medical_services_outlined : Icons.health_and_safety_outlined,
+                                      size: isUltraCompact ? 13 : 14,
+                                      color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
+                                    ),
+                                    if (!isUltraCompact) ...[
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        isCompact
+                                            ? (isClinician ? 'Screener' : 'Doctor')
+                                            : (isClinician ? tr('switch_to_screener') : tr('switch_to_doctor')),
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isClinician ? Icons.medical_services_outlined : Icons.health_and_safety_outlined,
-                                  size: 14,
-                                  color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  isMobile
-                                      ? (isClinician ? 'Screener' : 'Doctor')
-                                      : (isClinician ? tr('switch_to_screener') : tr('switch_to_doctor')),
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
+                            const SizedBox(width: 4),
 
-                        // Audio Guidance Toggle
-                        IconButton(
-                          icon: Icon(
-                            isAudioEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                            color: isAudioEnabled ? AppColors.primary : AppColors.textMuted,
-                            size: 19,
-                          ),
-                          tooltip: tr('audio_guide'),
-                          padding: const EdgeInsets.all(6),
-                          constraints: const BoxConstraints(),
-                          onPressed: () => ref.read(audioGuidanceEnabledProvider.notifier).toggle(),
-                        ),
-                        const SizedBox(width: 4),
+                            // Audio Guidance Toggle (hidden on ultra-compact to avoid overflow)
+                            if (!isUltraCompact) ...[
+                              IconButton(
+                                icon: Icon(
+                                  isAudioEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                                  color: isAudioEnabled ? AppColors.primary : AppColors.textMuted,
+                                  size: 18,
+                                ),
+                                tooltip: tr('audio_guide'),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(),
+                                onPressed: () => ref.read(audioGuidanceEnabledProvider.notifier).toggle(),
+                              ),
+                              const SizedBox(width: 2),
+                            ],
 
-                        // Language Selector Pill
-                        InkWell(
-                          onTap: () => _showLanguageModal(context, ref),
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceMuted,
+                            // Language Selector Pill
+                            InkWell(
+                              onTap: () => _showLanguageModal(context, ref),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(currentLang.flag, style: const TextStyle(fontSize: 12)),
-                                const SizedBox(width: 3),
-                                Text(
-                                  currentLang.code.toUpperCase(),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary,
-                                  ),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isUltraCompact ? 5 : 7,
+                                  vertical: isUltraCompact ? 3 : 4,
                                 ),
-                              ],
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceMuted,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(currentLang.flag, style: TextStyle(fontSize: isUltraCompact ? 11 : 12)),
+                                    if (!isUltraCompact) ...[
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        currentLang.code.toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
+                            const SizedBox(width: 4),
 
-                        // Online/Offline Status Indicator
-                        ConnectionStatusPill(isCompact: true),
-                        if (actions != null) ...actions!,
-                        const SizedBox(width: 4),
+                            // Online/Offline Status Indicator
+                            ConnectionStatusPill(isCompact: true),
+                            if (actions != null) ...actions!,
+                            const SizedBox(width: 2),
 
-                        // Sign Out Button
-                        IconButton(
-                          icon: const Icon(Icons.logout_rounded, color: AppColors.textSecondary, size: 18),
-                          tooltip: 'Sign Out',
-                          padding: const EdgeInsets.all(6),
-                          constraints: const BoxConstraints(),
-                          onPressed: () => _showLogoutDialog(context, ref),
-                        ),
-                      ],
+                            // Sign Out Button
+                            IconButton(
+                              icon: const Icon(Icons.logout_rounded, color: AppColors.textSecondary, size: 17),
+                              tooltip: 'Sign Out',
+                              padding: const EdgeInsets.all(4),
+                              constraints: const BoxConstraints(),
+                              onPressed: () => _showLogoutDialog(context, ref),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
