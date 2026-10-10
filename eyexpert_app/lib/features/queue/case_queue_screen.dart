@@ -192,7 +192,7 @@ class CaseQueueScreen extends ConsumerWidget {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () => onSelectCase(c),
+                            onTap: () => _handleCaseAction(c),
                             borderRadius: BorderRadius.circular(20),
                             child: Padding(
                               padding: const EdgeInsets.all(18),
@@ -246,7 +246,7 @@ class CaseQueueScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 10),
 
-                                  // Bottom Row: Avatar + Name + Action Icons
+                                  // Bottom Row: Avatar + Name + Dedicated Action Button
                                   Row(
                                     children: [
                                       CircleAvatar(
@@ -272,8 +272,50 @@ class CaseQueueScreen extends ConsumerWidget {
                                           ),
                                         ),
                                       ),
-                                      const Icon(Icons.edit_outlined, size: 16, color: AppColors.textMuted),
-                                      const SizedBox(width: 10),
+                                      InkWell(
+                                        onTap: () => _handleCaseAction(c),
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: c.isPendingReview
+                                                ? AppColors.primaryLight
+                                                : const Color(0xFFDCFCE7),
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: c.isPendingReview
+                                                  ? AppColors.primary.withValues(alpha: 0.3)
+                                                  : const Color(0xFF16A34A).withValues(alpha: 0.3),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                c.isPendingReview
+                                                    ? Icons.rate_review_rounded
+                                                    : Icons.description_outlined,
+                                                size: 14,
+                                                color: c.isPendingReview
+                                                    ? AppColors.primary
+                                                    : const Color(0xFF16A34A),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                c.isPendingReview ? 'Review & Sign' : 'View Report',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: c.isPendingReview
+                                                      ? AppColors.primary
+                                                      : const Color(0xFF16A34A),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
                                       const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
                                     ],
                                   ),
