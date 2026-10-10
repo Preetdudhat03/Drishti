@@ -35,24 +35,19 @@ class ResponsiveScaffold extends ConsumerWidget {
     if (role == UserRole.clinician) {
       return [
         NavigationDestination(
-          icon: const Icon(Icons.fact_check_outlined),
-          selectedIcon: const Icon(Icons.fact_check_rounded),
-          label: tr('nav_queue'),
+          icon: const Icon(Icons.space_dashboard_outlined),
+          selectedIcon: const Icon(Icons.space_dashboard_rounded),
+          label: tr('nav_dashboard'),
         ),
         NavigationDestination(
-          icon: const Icon(Icons.grid_view_rounded),
-          selectedIcon: const Icon(Icons.grid_view_sharp),
+          icon: const Icon(Icons.fact_check_outlined),
+          selectedIcon: const Icon(Icons.fact_check_rounded),
           label: tr('nav_cases'),
         ),
         NavigationDestination(
-          icon: const Icon(Icons.speed_rounded),
-          selectedIcon: const Icon(Icons.speed_rounded),
-          label: tr('nav_overview'),
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.description_outlined),
-          selectedIcon: const Icon(Icons.description_rounded),
-          label: tr('nav_reports'),
+          icon: const Icon(Icons.sync_rounded),
+          selectedIcon: const Icon(Icons.sync_rounded),
+          label: tr('nav_sync'),
         ),
         NavigationDestination(
           icon: const Icon(Icons.person_outline),
