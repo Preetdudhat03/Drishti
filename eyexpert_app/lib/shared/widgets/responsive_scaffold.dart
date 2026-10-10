@@ -673,15 +673,15 @@ class ResponsiveScaffold extends ConsumerWidget {
       bottomNavigationBar: (isMobile)
           ? SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(22),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.92),
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(22),
                         border: Border.all(
                           color: AppColors.border.withValues(alpha: 0.8),
                           width: 1,
@@ -696,7 +696,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                       ),
                       child: NavigationBarTheme(
                         data: NavigationBarThemeData(
-                          height: 64,
+                          height: 58,
                           backgroundColor: Colors.transparent,
                           surfaceTintColor: Colors.transparent,
                           indicatorColor: AppColors.primaryLight,
