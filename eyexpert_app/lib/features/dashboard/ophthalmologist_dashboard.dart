@@ -127,12 +127,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
       color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.fromLTRB(
-          isMobile ? 12.0 : 20.0,
-          ResponsiveLayout.topBarClearance(context),
-          isMobile ? 12.0 : 20.0,
-          ResponsiveLayout.bottomBarClearance(context),
-        ),
+        padding: ResponsiveLayout.pagePadding(context),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -141,8 +136,6 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 6),
-
                 // 1. Header: Branding & Greeting + Doctor Profile
                 _buildHeaderCard(context, user, doctorName, tr, isMobile, isSmallMobile),
 
