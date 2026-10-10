@@ -105,9 +105,12 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
     final tr = ref.watch(trProvider);
     final user = authState.user;
 
-    final isMobile = ResponsiveLayout.isMobile(context);
-    final isDesktop = ResponsiveLayout.isDesktop(context);
-    final isTablet = ResponsiveLayout.isTablet(context);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = screenWidth < 650;
+    final isTablet = screenWidth >= 650 && screenWidth < 1100;
+    final isDesktop = screenWidth >= 1100;
+    final isSmallMobile = screenWidth < 380;
+    final useTableView = screenWidth >= 740;
 
     final allCases = reviewState.cases;
     final pendingCases = allCases.where((c) => c.isPendingReview).toList();
@@ -124,44 +127,49 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
       color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: ResponsiveLayout.pagePadding(context),
+        padding: EdgeInsets.fromLTRB(
+          isMobile ? 12.0 : 20.0,
+          ResponsiveLayout.topBarClearance(context),
+          isMobile ? 12.0 : 20.0,
+          ResponsiveLayout.bottomBarClearance(context),
+        ),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: isDesktop ? 1160 : (isTablet ? 940 : double.infinity),
+              maxWidth: isDesktop ? 1200 : (isTablet ? 960 : double.infinity),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
                 // 1. Header: Branding & Greeting + Doctor Profile
-                _buildHeaderCard(context, user, doctorName, tr, isMobile),
+                _buildHeaderCard(context, user, doctorName, tr, isMobile, isSmallMobile),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
 
                 // 2. Primary Clinical Action Bar (Responsive)
-                _buildActionButtons(context, pendingCases, isMobile, isDesktop),
+                _buildActionButtons(context, pendingCases, screenWidth),
 
-                const SizedBox(height: 22),
+                const SizedBox(height: 20),
 
                 // 3. Review Queue Priority Triage Stat Strip (Responsive Grid)
-                _buildTriageStats(context, reviewState, pendingCases, urgentCases, completedCases, tr, isDesktop),
+                _buildTriageStats(context, reviewState, pendingCases, urgentCases, completedCases, tr, screenWidth),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
 
                 // 4. Clinical Cases Section Header & Local Filter Tabs
                 _buildCasesSectionHeader(context, allCases, pendingCases, urgentCases, completedCases, tr, isMobile),
 
                 const SizedBox(height: 14),
 
-                // 5. Clinical Cases Display (Table on Desktop/Tablet, Responsive Cards on Mobile)
+                // 5. Clinical Cases Display (Responsive Table on Wide Screens, Cards on Mobile/Narrow Screens)
                 if (displayedCases.isEmpty)
                   _buildEmptyState(tr)
-                else if (isMobile)
-                  _buildMobileCasesList(displayedCases, tr)
+                else if (useTableView)
+                  _buildResponsiveTable(displayedCases, tr)
                 else
-                  _buildDesktopTable(displayedCases, tr),
+                  _buildMobileCasesList(displayedCases, tr),
 
                 const SizedBox(height: 32),
               ],
@@ -173,7 +181,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
   }
 
   // =========================================================================
-  // 1. Header Card
+  // 1. Header Card (Fully Responsive for All Screen Sizes)
   // =========================================================================
   Widget _buildHeaderCard(
     BuildContext context,
@@ -181,9 +189,10 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
     String doctorName,
     String Function(String) tr,
     bool isMobile,
+    bool isSmallMobile,
   ) {
     return Container(
-      padding: EdgeInsets.all(isMobile ? 16 : 20),
+      padding: EdgeInsets.all(isSmallMobile ? 14 : (isMobile ? 16 : 20)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -202,8 +211,8 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
               children: [
                 Row(
                   children: [
-                    _buildDoctorAvatar(),
-                    const SizedBox(width: 14),
+                    _buildDoctorAvatar(size: isSmallMobile ? 44 : 50),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,8 +221,8 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
                             children: [
                               Text(
                                 '${_getGreeting(tr)}, ',
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                style: TextStyle(
+                                  fontSize: isSmallMobile ? 13 : 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textSecondary,
                                 ),
@@ -222,8 +231,8 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
                                 child: Text(
                                   doctorName,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: isSmallMobile ? 15 : 16,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.textPrimary,
                                   ),
@@ -231,12 +240,12 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
                               ),
                             ],
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 2),
                           Text(
                             '${user?.facilityId ?? "FAC-DISTRICT-EYE"} • ${user?.organization ?? "District Eye Hospital"}',
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11.5,
+                            style: TextStyle(
+                              fontSize: isSmallMobile ? 11 : 11.5,
                               color: AppColors.textMuted,
                               fontWeight: FontWeight.w500,
                             ),
@@ -247,7 +256,9 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
                   children: [
                     _buildStatusPill(
                       label: 'Ophthalmology Specialist',
@@ -255,7 +266,6 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
                       bg: AppColors.primaryLight,
                       icon: Icons.verified_user_rounded,
                     ),
-                    const Spacer(),
                     _buildStatusPill(
                       label: 'Cloud Sync Live',
                       color: const Color(0xFF16A34A),
@@ -268,7 +278,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
             )
           : Row(
               children: [
-                _buildDoctorAvatar(),
+                _buildDoctorAvatar(size: 52),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -328,19 +338,19 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
     );
   }
 
-  Widget _buildDoctorAvatar() {
+  Widget _buildDoctorAvatar({double size = 52}) {
     return Container(
-      width: 52,
-      height: 52,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: const Color(0xFFE0F2FE),
         border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.3), width: 2),
       ),
-      child: const Icon(
+      child: Icon(
         Icons.person_rounded,
-        size: 28,
-        color: Color(0xFF0284C7),
+        size: size * 0.54,
+        color: const Color(0xFF0284C7),
       ),
     );
   }
@@ -382,13 +392,12 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
   Widget _buildActionButtons(
     BuildContext context,
     List<ScreeningCaseModel> pendingCases,
-    bool isMobile,
-    bool isDesktop,
+    double screenWidth,
   ) {
     final tr = ref.watch(trProvider);
     final String nextCaseLabel = '${tr('review_next_case')} (${pendingCases.length} ${tr('stat_pending')})';
 
-    if (isDesktop || !isMobile) {
+    if (screenWidth >= 920) {
       return Row(
         children: [
           Expanded(
@@ -468,7 +477,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
             const SizedBox(width: 10),
             Expanded(
               child: PillButton(
-                label: 'Reports',
+                label: 'Reports Archive',
                 icon: Icons.description_outlined,
                 variant: PillButtonVariant.secondaryOutlined,
                 height: 46,
@@ -497,7 +506,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
     List<ScreeningCaseModel> urgentCases,
     List<ScreeningCaseModel> completedCases,
     String Function(String) tr,
-    bool isDesktop,
+    double screenWidth,
   ) {
     final urgentCard = InkWell(
       onTap: () => setState(() => _activeFilter = 'REFERABLE'),
@@ -547,7 +556,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
       ),
     );
 
-    if (isDesktop) {
+    if (screenWidth >= 1040) {
       return Row(
         children: [
           Expanded(child: urgentCard),
@@ -566,15 +575,15 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
         Row(
           children: [
             Expanded(child: urgentCard),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(child: pendingCard),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(child: completedCard),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(child: totalCard),
           ],
         ),
@@ -600,27 +609,30 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tr('recent_cases'),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.3,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tr('recent_cases'),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Tele-ophthalmology triage & patient screening records',
-                  style: TextStyle(
-                    fontSize: isMobile ? 11.5 : 12.5,
-                    color: AppColors.textSecondary,
+                  const SizedBox(height: 2),
+                  Text(
+                    'Tele-ophthalmology triage & patient screening records',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: isMobile ? 11.5 : 12.5,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             InkWell(
               onTap: () {
@@ -657,6 +669,7 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
         // Quick Filter Tabs Row
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
           child: Row(
             children: [
               _filterTabPill('All Cases (${allCases.length})', 'ALL'),
@@ -709,9 +722,9 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
   }
 
   // =========================================================================
-  // 5. Desktop / Tablet Responsive Table View
+  // 5. Desktop / Tablet Responsive Table View (Fills 100% Width Gracefully)
   // =========================================================================
-  Widget _buildDesktopTable(List<ScreeningCaseModel> cases, String Function(String) tr) {
+  Widget _buildResponsiveTable(List<ScreeningCaseModel> cases, String Function(String) tr) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -729,218 +742,272 @@ class _OphthalmologistDashboardState extends ConsumerState<OphthalmologistDashbo
         borderRadius: BorderRadius.circular(20),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 880),
-            child: DataTable(
-              headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
-              horizontalMargin: 20,
-              columnSpacing: 24,
-              dataRowMinHeight: 56,
-              dataRowMaxHeight: 64,
-              columns: const [
-                DataColumn(
-                  label: Text(
-                    'PATIENT',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+            constraints: const BoxConstraints(minWidth: 720),
+            child: IntrinsicWidth(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Table Header
+                  Container(
+                    color: const Color(0xFFF8FAFC),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    child: Row(
+                      children: const [
+                        SizedBox(
+                          width: 170,
+                          child: Text(
+                            'PATIENT',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 80,
+                          child: Text(
+                            'EYE',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 180,
+                          child: Text(
+                            'AI DR GRADE',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 100,
+                          child: Text(
+                            'CONFIDENCE',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 100,
+                          child: Text(
+                            'RISK TRIAGE',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 110,
+                          child: Text(
+                            'STATUS',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 110,
+                          child: Text(
+                            'ACTION',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'EYE',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'AI DR GRADE',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'CONFIDENCE',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'RISK TRIAGE',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'STATUS',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'ACTION',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted),
-                  ),
-                ),
-              ],
-              rows: cases.take(10).map((c) {
-                final pred = c.prediction;
-                final isHighRisk = c.isReferable || (pred != null && pred.drLevel >= 3);
-                final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
+                  const Divider(height: 1, color: AppColors.border),
 
-                final String patientDisplayName = c.patient.patientId.startsWith('PT-')
-                    ? c.patient.patientId
-                    : '${tr('patient_prefix')} #${c.patient.patientId}';
-                final String eyeSide = AppFormatters.formatEye(c.patient.eye);
+                  // Table Rows
+                  for (int i = 0; i < cases.take(10).length; i++) ...[
+                    if (i > 0) const Divider(height: 1, color: AppColors.borderMuted),
+                    _buildTableRow(cases[i], tr),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                return DataRow(
-                  onSelectChanged: (_) => _handleCaseAction(c),
-                  cells: [
-                    // 1. Patient
-                    DataCell(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+  Widget _buildTableRow(ScreeningCaseModel c, String Function(String) tr) {
+    final pred = c.prediction;
+    final isHighRisk = c.isReferable || (pred != null && pred.drLevel >= 3);
+    final isLowRisk = pred?.drLevel == 0 || pred?.drLevel == 1;
+
+    final String patientDisplayName = c.patient.patientId.startsWith('PT-')
+        ? c.patient.patientId
+        : '${tr('patient_prefix')} #${c.patient.patientId}';
+    final String eyeSide = AppFormatters.formatEye(c.patient.eye);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _handleCaseAction(c),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            children: [
+              // 1. Patient
+              SizedBox(
+                width: 170,
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: AppColors.primaryLight,
+                      child: Text(
+                        patientDisplayName.substring(0, 1).toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 14,
-                            backgroundColor: AppColors.primaryLight,
-                            child: Text(
-                              patientDisplayName.substring(0, 1).toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
-                              ),
+                          Text(
+                            patientDisplayName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                patientDisplayName,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              Text(
-                                '${c.patient.age ?? 42}y • ${c.patient.gender ?? "Male"}',
-                                style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
-                              ),
-                            ],
+                          Text(
+                            '${c.patient.age ?? 42}y • ${c.patient.gender ?? "Male"}',
+                            style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
                           ),
                         ],
                       ),
                     ),
-
-                    // 2. Eye
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE0F2FE),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          eyeSide,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0284C7),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // 3. AI DR Grade
-                    DataCell(
-                      Text(
-                        pred != null ? tr('level_${pred.drLevel}') : tr('awaiting_ai_grading'),
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-
-                    // 4. Confidence
-                    DataCell(
-                      Text(
-                        pred != null ? '${(pred.modelProbability * 100).toStringAsFixed(0)}%' : '—',
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-
-                    // 5. Risk Triage Badge
-                    DataCell(
-                      _buildRiskBadge(isHighRisk, isLowRisk, tr),
-                    ),
-
-                    // 6. Status Badge
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: c.hasReviewed ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: c.hasReviewed ? const Color(0xFF16A34A).withValues(alpha: 0.3) : const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Text(
-                          c.hasReviewed ? 'Validated' : 'Pending',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: c.hasReviewed ? const Color(0xFF16A34A) : const Color(0xFFB45309),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // 7. Dedicated Action Button
-                    DataCell(
-                      InkWell(
-                        onTap: () => _handleCaseAction(c),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: c.isPendingReview ? AppColors.primary : const Color(0xFF16A34A),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                c.isPendingReview ? Icons.rate_review_rounded : Icons.description_outlined,
-                                size: 13,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                c.isPendingReview ? 'Review' : 'Report',
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
-                );
-              }).toList(),
-            ),
+                ),
+              ),
+
+              // 2. Eye
+              SizedBox(
+                width: 80,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0F2FE),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      eyeSide,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0284C7),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 3. AI DR Grade
+              SizedBox(
+                width: 180,
+                child: Text(
+                  pred != null ? tr('level_${pred.drLevel}') : tr('awaiting_ai_grading'),
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+
+              // 4. Confidence
+              SizedBox(
+                width: 100,
+                child: Text(
+                  pred != null ? '${(pred.modelProbability * 100).toStringAsFixed(0)}%' : '—',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+
+              // 5. Risk Triage Badge
+              SizedBox(
+                width: 100,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _buildRiskBadge(isHighRisk, isLowRisk, tr),
+                ),
+              ),
+
+              // 6. Status Badge
+              SizedBox(
+                width: 110,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: c.hasReviewed ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: c.hasReviewed
+                            ? const Color(0xFF16A34A).withValues(alpha: 0.3)
+                            : const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      c.hasReviewed ? 'Validated' : 'Pending',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: c.hasReviewed ? const Color(0xFF16A34A) : const Color(0xFFB45309),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 7. Dedicated Action Button
+              SizedBox(
+                width: 110,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: InkWell(
+                    onTap: () => _handleCaseAction(c),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: c.isPendingReview ? AppColors.primary : const Color(0xFF16A34A),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            c.isPendingReview ? Icons.rate_review_rounded : Icons.description_outlined,
+                            size: 13,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            c.isPendingReview ? 'Review' : 'Report',
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
