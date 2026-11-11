@@ -6,7 +6,7 @@ class AppConstants {
   static const String appTagline = 'Explainable AI-Assisted Diabetic Retinopathy Screening';
   static const String sihProblemStatement = 'SIH 2026 | Problem Statement 26038';
   static const String sihTheme = 'Smart Healthcare — AI for Rural Retinal Screening';
-  static const String appVersion = '1.0.0-rc1';
+  static const String appVersion = '2.2.3+17';
 
   // Environment & Supabase Configuration
   // Note: Anon key is public client credential protected by RLS; never embed service-role secrets.

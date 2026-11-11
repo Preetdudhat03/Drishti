@@ -89,13 +89,35 @@ class _PatientIntakeScreenState extends ConsumerState<PatientIntakeScreen> {
     final patientId = _patientIdController.text.trim();
     if (patientId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid Patient ID')),
+        const SnackBar(
+          content: Text('Please enter a valid Patient ID or ABHA Token'),
+          backgroundColor: AppColors.statusCritical,
+        ),
       );
       return;
     }
 
-    final int? age = int.tryParse(_ageController.text);
-    final int? duration = int.tryParse(_diabetesDurationController.text);
+    final int? age = int.tryParse(_ageController.text.trim());
+    if (age != null && (age <= 0 || age > 125)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid age between 1 and 125 years.'),
+          backgroundColor: AppColors.statusCritical,
+        ),
+      );
+      return;
+    }
+
+    final int? duration = int.tryParse(_diabetesDurationController.text.trim());
+    if (duration != null && (duration < 0 || (age != null && duration > age))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Diabetes duration cannot exceed patient age or be negative.'),
+          backgroundColor: AppColors.statusCritical,
+        ),
+      );
+      return;
+    }
 
     ref.read(screeningSessionProvider.notifier).startNewSession(
       patientId: patientId,

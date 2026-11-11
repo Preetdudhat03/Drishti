@@ -22,10 +22,10 @@ class ResponsiveLayout extends StatelessWidget {
   static bool isDesktop(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= 1100;
 
-  /// Top clearance for content so it sits cleanly and snugly below the floating glassmorphic top bar (~6-8px gap).
+  /// Top clearance for content so it sits cleanly and snugly below the floating glassmorphic top bar (~8-10px gap).
   static double topBarClearance(BuildContext context) {
     final statusBar = MediaQuery.paddingOf(context).top;
-    return statusBar + 15.0;
+    return statusBar + 22.0;
   }
 
   /// Bottom clearance for content so it is never obscured by the floating bottom navigation bar.
@@ -33,7 +33,7 @@ class ResponsiveLayout extends StatelessWidget {
     final isDesktopOrTablet = isDesktop(context) || isTablet(context);
     if (isDesktopOrTablet) return 24.0;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    return bottomInset + 88.0;
+    return bottomInset + 92.0;
   }
 
   /// Standard responsive page padding for full-screen scrollable views inside ResponsiveScaffold.

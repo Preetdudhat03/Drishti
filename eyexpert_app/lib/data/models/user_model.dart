@@ -173,6 +173,14 @@ class UserModel {
   bool get isClinician => role == UserRole.clinician;
   bool get isHealthWorker => role == UserRole.healthWorker;
   bool get isVerified => verificationStatus == OverallVerificationStatus.verified;
+  bool get isDemoAccount {
+    final e = email.toLowerCase();
+    final i = id.toLowerCase();
+    return e.contains('drishti.org') ||
+        e.contains('demo') ||
+        i.startsWith('usr-2026-') ||
+        i.contains('demo');
+  }
 
   int calculateCompletionPercentage() {
     int score = 0;

@@ -26,6 +26,7 @@ class SecureStorage {
 
   static Future<void> clearSession() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove(_keyToken);
+    await prefs.remove(_keyUser);
   }
 }

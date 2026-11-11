@@ -6,8 +6,15 @@ import '../screening/screening_session_provider.dart';
 
 class ClinicalProcessingScreen extends ConsumerStatefulWidget {
   final VoidCallback onComplete;
+  final VoidCallback? onRetake;
+  final VoidCallback? onCancel;
 
-  const ClinicalProcessingScreen({super.key, required this.onComplete});
+  const ClinicalProcessingScreen({
+    super.key,
+    required this.onComplete,
+    this.onRetake,
+    this.onCancel,
+  });
 
   @override
   ConsumerState<ClinicalProcessingScreen> createState() => _ClinicalProcessingScreenState();
@@ -113,8 +120,30 @@ class _ClinicalProcessingScreenState extends ConsumerState<ClinicalProcessingScr
                           ),
                         ),
                       ),
+                      if (widget.onRetake != null) ...[
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: widget.onRetake,
+                            icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                            label: const Text('Retake Image'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.textPrimary,
+                              side: const BorderSide(color: AppColors.border),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
+                  if (widget.onCancel != null) ...[
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: widget.onCancel,
+                      child: const Text('Cancel & Return to Intake', style: TextStyle(color: AppColors.textSecondary)),
+                    ),
+                  ],
                 ],
               ),
             ),

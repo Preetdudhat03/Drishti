@@ -35,6 +35,7 @@ class _ImageQualityScreenState extends ConsumerState<ImageQualityScreen> {
       final lang = ref.read(localeProvider);
       AudioGuidanceService.promptQualityChecking(ref, lang);
       await ref.read(screeningSessionProvider.notifier).runQualityAssessment();
+      if (!mounted) return;
       final q = ref.read(screeningSessionProvider).quality;
       if (q != null) {
         if (q.isUngradable) {

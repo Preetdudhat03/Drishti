@@ -228,7 +228,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> switchWorkspaceRole(UserRole targetRole) async {
     final current = state.user;
-    if (current == null) return;
+    if (current == null || !current.isDemoAccount) {
+      // In production, real verified profiles cannot arbitrarily elevate their role in-memory
+      return;
+    }
     final isTargetClinician = targetRole == UserRole.clinician;
     final updated = current.copyWith(
       role: targetRole,

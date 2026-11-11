@@ -378,6 +378,8 @@ class _RootScreenState extends ConsumerState<RootScreen> {
         } else if (_screeningStep == 3) {
           body = ClinicalProcessingScreen(
             onComplete: () => setState(() => _screeningStep = 4),
+            onRetake: () => setState(() => _screeningStep = 1),
+            onCancel: _resetScreeningFlow,
           );
         } else if (_screeningStep == 4) {
           body = AiResultScreen(

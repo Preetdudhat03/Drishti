@@ -8,6 +8,7 @@ import '../../data/models/screening_case_model.dart';
 import '../../data/services/screening_service.dart';
 import '../../data/repositories/screening_repository.dart';
 import '../review/review_queue_provider.dart';
+import '../offline/sync_queue_provider.dart';
 import '../../data/services/supabase_service.dart';
 
 final screeningServiceProvider = Provider<ScreeningService>((ref) => ScreeningService());
@@ -264,8 +265,15 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
       final newCase = state.toScreeningCase();
       if (newCase != null) {
         _ref.read(reviewQueueProvider.notifier).addCase(newCase);
+        bool saved = false;
         if (SupabaseService.isInitialized) {
-          await _supabaseService.saveScreeningCase(newCase);
+          saved = await _supabaseService.saveScreeningCase(newCase);
+        }
+        if (!saved && state.imagePath != null) {
+          await _ref.read(syncQueueProvider.notifier).queueCapture(
+            patient: newCase.patient,
+            imagePath: state.imagePath!,
+          );
         }
       }
     } catch (e) {
@@ -283,8 +291,15 @@ class ScreeningSessionNotifier extends StateNotifier<ScreeningSessionState> {
     final updatedCase = state.toScreeningCase();
     if (updatedCase != null) {
       _ref.read(reviewQueueProvider.notifier).addCase(updatedCase);
+      bool saved = false;
       if (SupabaseService.isInitialized) {
-        await _supabaseService.saveScreeningCase(updatedCase);
+        saved = await _supabaseService.saveScreeningCase(updatedCase);
+      }
+      if (!saved && state.imagePath != null) {
+        await _ref.read(syncQueueProvider.notifier).queueCapture(
+          patient: updatedCase.patient,
+          imagePath: state.imagePath!,
+        );
       }
     }
   }

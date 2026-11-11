@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/sync_queue_item.dart';
 import '../../data/models/patient_model.dart';
 import '../../data/services/sync_service.dart';
+import '../review/review_queue_provider.dart';
 
 final syncServiceProvider = Provider<SyncService>((ref) => SyncService());
 
@@ -35,8 +36,9 @@ class SyncQueueState {
 
 class SyncQueueNotifier extends StateNotifier<SyncQueueState> {
   final SyncService _syncService;
+  final Ref _ref;
 
-  SyncQueueNotifier(this._syncService) : super(const SyncQueueState()) {
+  SyncQueueNotifier(this._syncService, this._ref) : super(const SyncQueueState()) {
     _syncService.queueStream.listen((q) {
       state = state.copyWith(queue: q, isSyncing: _syncService.isSyncing);
     });
@@ -62,6 +64,10 @@ class SyncQueueNotifier extends StateNotifier<SyncQueueState> {
 
   Future<void> syncNow() async {
     await _syncService.syncPendingQueue();
+    // Refresh review queue so synced records immediately appear for doctor evaluation
+    try {
+      await _ref.read(reviewQueueProvider.notifier).loadPendingReviews();
+    } catch (_) {}
   }
 
   void clearCompleted() {
@@ -72,5 +78,5 @@ class SyncQueueNotifier extends StateNotifier<SyncQueueState> {
 final syncQueueProvider =
     StateNotifierProvider<SyncQueueNotifier, SyncQueueState>((ref) {
   final syncService = ref.watch(syncServiceProvider);
-  return SyncQueueNotifier(syncService);
+  return SyncQueueNotifier(syncService, ref);
 });

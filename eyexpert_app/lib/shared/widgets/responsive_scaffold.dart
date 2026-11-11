@@ -428,50 +428,52 @@ class ResponsiveScaffold extends ConsumerWidget {
                               ),
                             ),
 
-                            // Fast Role Switcher Pill for Jury / Evaluation
-                            InkWell(
-                              onTap: () {
-                                final nextRole = isClinician ? UserRole.healthWorker : UserRole.clinician;
-                                ref.read(authProvider.notifier).switchWorkspaceRole(nextRole);
-                              },
-                              borderRadius: BorderRadius.circular(14),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isCompact ? 6 : 8,
-                                  vertical: isCompact ? 4 : 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isClinician ? const Color(0xFFFEF3C7) : AppColors.primaryLight,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: isClinician ? const Color(0xFFF59E0B) : AppColors.primary,
-                                    width: 1,
+                            // Fast Role Switcher Pill for Jury / Evaluation (Demo accounts only)
+                            if (currentUser?.isDemoAccount == true) ...[
+                              InkWell(
+                                onTap: () {
+                                  final nextRole = isClinician ? UserRole.healthWorker : UserRole.clinician;
+                                  ref.read(authProvider.notifier).switchWorkspaceRole(nextRole);
+                                },
+                                borderRadius: BorderRadius.circular(14),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isCompact ? 6 : 8,
+                                    vertical: isCompact ? 4 : 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isClinician ? const Color(0xFFFEF3C7) : AppColors.primaryLight,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isClinician ? const Color(0xFFF59E0B) : AppColors.primary,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        isClinician ? Icons.medical_services_outlined : Icons.health_and_safety_outlined,
+                                        size: isCompact ? 13 : 14,
+                                        color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
+                                      ),
+                                      if (!isCompact) ...[
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          isClinician ? tr('switch_to_screener') : tr('switch_to_doctor'),
+                                          style: TextStyle(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      isClinician ? Icons.medical_services_outlined : Icons.health_and_safety_outlined,
-                                      size: isCompact ? 13 : 14,
-                                      color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
-                                    ),
-                                    if (!isCompact) ...[
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        isClinician ? tr('switch_to_screener') : tr('switch_to_doctor'),
-                                        style: TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w800,
-                                          color: isClinician ? const Color(0xFFB45309) : AppColors.primary,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
+                              const SizedBox(width: 4),
+                            ],
 
                             // Audio Guidance Toggle (hidden on compact to prioritize title readability)
                             if (!isCompact) ...[

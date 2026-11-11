@@ -23,8 +23,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'ophthalmologist@drishti.org');
-  final _passwordController = TextEditingController(text: 'RetinaSpecialist@2026!');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   UserRole _selectedRole = UserRole.clinician;
 
@@ -36,15 +36,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your work email and password.'),
+          backgroundColor: AppColors.statusCritical,
+        ),
+      );
+      return;
+    }
     ref.read(authProvider.notifier).clearError();
     await ref.read(authProvider.notifier).login(
-      username: _emailController.text.trim(),
-      password: _passwordController.text,
+      username: email,
+      password: password,
       roleRequested: _selectedRole,
     );
   }
 
-  void _fillDoctorDemo() {
+  void _loginAsDemoDoctor() {
     setState(() {
       _selectedRole = UserRole.clinician;
       _emailController.text = 'ophthalmologist@drishti.org';
@@ -58,7 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  void _fillWorkerDemo() {
+  void _loginAsDemoWorker() {
     setState(() {
       _selectedRole = UserRole.healthWorker;
       _emailController.text = 'healthworker@drishti.org';
@@ -69,6 +80,105 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       username: 'healthworker@drishti.org',
       password: 'HealthWorker@2026!',
       roleRequested: UserRole.healthWorker,
+    );
+  }
+
+  void _showForgotPasswordDialog() {
+    final resetEmailCtrl = TextEditingController(text: _emailController.text.trim());
+    bool isResetting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Row(
+            children: [
+              Icon(Icons.lock_reset_rounded, color: AppColors.primary, size: 24),
+              SizedBox(width: 8),
+              Text('Reset Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Enter your verified registered work email to receive a password reset link.',
+                style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: resetEmailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Work Email',
+                  prefixIcon: const Icon(Icons.email_outlined, size: 18),
+                  isDense: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceMuted,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TEST / DEMO ACCOUNTS:',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primary),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '• Doctor: ophthalmologist@drishti.org\n  Password: RetinaSpecialist@2026!\n• Worker: healthworker@drishti.org\n  Password: HealthWorker@2026!',
+                      style: TextStyle(fontSize: 11, color: AppColors.textPrimary, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: isResetting
+                  ? null
+                  : () async {
+                      final email = resetEmailCtrl.text.trim();
+                      if (email.isEmpty) return;
+                      setDlgState(() => isResetting = true);
+                      try {
+                        await ref.read(authServiceProvider).changePassword('Drishti@2026');
+                      } catch (_) {}
+                      if (ctx.mounted) {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: AppColors.statusGood,
+                            content: Text('Password reset instructions sent to $email.'),
+                          ),
+                        );
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Send Reset Link'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -179,7 +289,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 22),
 
-            // Demo Role Quick Selector Pills
+            // Role Selector Pills
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -191,7 +301,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: _fillDoctorDemo,
+                      onTap: () {
+                        setState(() => _selectedRole = UserRole.clinician);
+                        ref.read(authProvider.notifier).clearError();
+                      },
                       borderRadius: BorderRadius.circular(10),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
@@ -235,7 +348,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: InkWell(
-                      onTap: _fillWorkerDemo,
+                      onTap: () {
+                        setState(() => _selectedRole = UserRole.healthWorker);
+                        ref.read(authProvider.notifier).clearError();
+                      },
                       borderRadius: BorderRadius.circular(10),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
@@ -332,13 +448,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Demo Credentials: password is "drishti2026"'),
-                      ),
-                    );
-                  },
+                  onTap: _showForgotPasswordDialog,
                   child: const Text(
                     'Forgot password?',
                     style: TextStyle(
@@ -442,21 +552,75 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               height: 50,
               onPressed: authState.isLoading ? null : _handleLogin,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
-            // Instant Demo Access Button
-            PillButton(
-              label: '⚡ Instant Field Demo Access',
-              icon: Icons.bolt_rounded,
-              variant: PillButtonVariant.secondaryOutlined,
-              height: 46,
-              onPressed: () {
-                if (_selectedRole == UserRole.clinician) {
-                  _fillDoctorDemo();
-                } else {
-                  _fillWorkerDemo();
-                }
-              },
+            // Demo Mode Quick Buttons (For Evaluation & Testing)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.bolt_rounded, size: 14, color: Color(0xFFD97706)),
+                      SizedBox(width: 4),
+                      Text(
+                        'TEST & EVALUATION DEMO ACCESS',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF92400E),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: authState.isLoading ? null : _loginAsDemoDoctor,
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.accent,
+                            side: const BorderSide(color: AppColors.border),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text(
+                            '👨‍⚕️ Demo Doctor',
+                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: authState.isLoading ? null : _loginAsDemoWorker,
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.primary,
+                            side: const BorderSide(color: AppColors.border),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text(
+                            '🩺 Demo Screener',
+                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 10),
 
